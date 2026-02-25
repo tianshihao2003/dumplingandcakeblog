@@ -3,7 +3,7 @@ import type { Live2DModelConfig, SpineModelConfig } from "../types/config";
 // Spine 看板娘配置
 export const spineModelConfig: SpineModelConfig = {
 	// Spine 看板娘开关
-	enable: false,
+	enable: true,
 
 	// Spine模型配置
 	model: {
@@ -51,7 +51,7 @@ export const spineModelConfig: SpineModelConfig = {
 		],
 		// 点击时随机显示的文字消息
 		clickMessages: [
-			"你好呀！我是流萤~",
+			"你好呀！我是团子！~",
 			"今天也要加油哦！✨",
 			"想要一起去看星空吗？🌟",
 			"记得要好好休息呢~",
@@ -71,7 +71,7 @@ export const spineModelConfig: SpineModelConfig = {
 	// 响应式配置
 	responsive: {
 		// 在移动端隐藏
-		hideOnMobile: true,
+		hideOnMobile: false,
 		// 移动端断点
 		mobileBreakpoint: 768,
 	},
@@ -131,7 +131,7 @@ export const live2dModelConfig: Live2DModelConfig = {
 	// 响应式配置
 	responsive: {
 		// 在移动端隐藏
-		hideOnMobile: true,
+		hideOnMobile: false,
 		// 移动端断点
 		mobileBreakpoint: 768,
 	},
