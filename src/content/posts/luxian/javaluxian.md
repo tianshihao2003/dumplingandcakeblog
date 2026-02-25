@@ -4,7 +4,7 @@ published: 2025-09-01
 description: 这是文章的简短描述
 category: 学习路线
 tags: [java]
-image: "../images/008.webp"
+image: "https://free.picui.cn/free/2026/02/25/699ebcdea141c.webp"
 ---
 
 ## 符号表
