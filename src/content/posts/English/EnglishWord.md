@@ -6,6 +6,7 @@ description: 记录复习在Qwerty Learner上学习的英语单词。
 image: "https://re.tsh520.cn/img/016.webp"
 tags: [单词]
 category: "英语"
+pinned: true
 
 ---
 
