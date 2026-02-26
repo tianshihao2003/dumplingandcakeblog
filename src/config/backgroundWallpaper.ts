@@ -39,12 +39,14 @@ export const backgroundWallpaper: BackgroundWallpaperConfig = {
 		// 桌面背景图片（支持单张或多张随机）
 		// desktop: "assets/images/DesktopWallpaper/d1.avif",
 		desktop: [
-			"assets/images/DesktopWallpaper/003.jpeg",
+			// "assets/images/DesktopWallpaper/003.jpeg",
+			"https://re.tsh520.cn/img/DesktopWallpaper/003.webp",
 		],
 		// 移动背景图片（支持单张或多张随机）
 		// mobile: "assets/images/MobileWallpaper/m1.avif",
 		mobile: [
-			"assets/images/MobileWallpaper/18188682411036032.jpeg",
+			// "assets/images/MobileWallpaper/18188682411036032.jpeg",
+			"https://re.tsh520.cn/img/MobileWallpaper/18188682411036032.webp",
 		],
 	},
 	// Banner模式特有配置
