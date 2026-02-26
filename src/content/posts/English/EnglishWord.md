@@ -3,7 +3,7 @@
 title: 计算机专用英语
 published: 2026-02-25
 description: 记录复习在Qwerty Learner上学习的英语单词。
-image: "https://free.picui.cn/free/2026/02/25/699ebce1d2287.webp"
+image: "https://re.tsh520.cn/img/016.webp"
 tags: [单词]
 category: "英语"
 

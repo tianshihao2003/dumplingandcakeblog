@@ -2,7 +2,7 @@
 title: 网络教室脱离控制方法
 published: 2025-11-18
 description: 噢易多媒体网络教室软件V10.8.0 脱离控制方法分享。
-image: "https://free.picui.cn/free/2026/02/25/699ebce0cba52.webp"
+image: "https://re.tsh520.cn/img/014.webp"
 tags: [技术]
 category: "网络技术"
 ---
