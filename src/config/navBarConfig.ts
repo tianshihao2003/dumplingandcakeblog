@@ -44,6 +44,15 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 	// 友链
 	links.push(LinkPreset.Friends);
 
+	
+	// 项目推荐
+	links.push({
+		name: "常用网站",
+		url: "/projects/",
+		icon: "material-symbols:star",
+	});
+
+
 	// 根据配置决定是否添加留言板，在siteConfig关闭pages.guestbook时导航栏不显示留言板
 	if (siteConfig.pages.guestbook) {
 		links.push(LinkPreset.Guestbook);
