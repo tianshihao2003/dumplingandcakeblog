@@ -111,7 +111,7 @@ export const siteConfig: SiteConfig = {
 	// bangumi配置
 	bangumi: {
 		// Bangumi用户ID
-		userId: "1143164",
+		userId: "1219895",
 	},
 
 	// 页面开关配置 - 控制特定页面的访问权限，设为false会返回404
