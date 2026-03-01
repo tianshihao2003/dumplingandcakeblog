@@ -1,14 +1,12 @@
 ---
-
 title: 我的宝宝  
-published: 2026-01-06  
+published: 2026-01-06
+password: "1222"  
+passwordHint: "宝宝的生日"
 description: 记录她。  
 image: "https://re.tsh520.cn/img/baobao/default.jpeg"  
 tags: [宝宝]  
 category: "I Love You"  
-password: "1222"  
-passwordHint: "宝宝的生日"
-
 ---
 
 # 🍬 写给我的陈无敌宝贝 🍬
