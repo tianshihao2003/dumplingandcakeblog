@@ -3,7 +3,7 @@
 title: 英语词缀  
 published: 2026-03-01  
 description: 系统学习英语构词法中的前缀、后缀知识，通过拆解单词理解词义与词性变化规律。  
-image: "https://re.tsh520.cn/img/016.webp"  
+image: "https://re.tsh520.cn/img/xuexi/PixPin_2026-03-01_15-20-28.png"  
 tags: [词缀]  
 category: "英语"
 

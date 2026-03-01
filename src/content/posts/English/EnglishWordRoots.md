@@ -3,7 +3,7 @@
 title: 英语词根  
 published: 2026-03-01  
 description: 英语词根学习笔记。  
-image: "https://re.tsh520.cn/img/016.webp"  
+image: "https://re.tsh520.cn/img/xuexi/PixPin_2026-03-01_15-18-04.png"  
 tags: [词根]  
 category: "英语"
 
