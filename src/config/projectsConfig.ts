@@ -9,8 +9,8 @@ export const projectsConfig: FriendLink[] =
 
   {
     "title": "团子的邮箱",
-    "imgurl": "https://email.0824.uk/favicon.ico",
-    "desc": "个人使用的邮箱服务",
+    "imgurl": "https://re.tsh520.cn/zl/tx.webp",
+    "desc": "个人使用的邮箱服",
     "siteurl": "https://email.0824.uk/inbox",
     "tags": ["我的网站"],
     "weight": 8,
@@ -18,7 +18,7 @@ export const projectsConfig: FriendLink[] =
   },
   {
     "title": "团子的相册",
-    "imgurl": "https://ph.tsh520.cn/favicon.ico",
+    "imgurl": "https://re.tsh520.cn/zl/tx.webp",
     "desc": "个人照片存储与展示",
     "siteurl": "https://ph.tsh520.cn/",
     "tags": ["我的网站"],
@@ -27,7 +27,7 @@ export const projectsConfig: FriendLink[] =
   },
   {
     "title": "团子和蛋糕的博客",
-    "imgurl": "https://blog.tsh520.cn/favicon.ico",
+    "imgurl": "https://re.tsh520.cn/zl/tx.webp",
     "desc": "个人技术与生活分享博客",
     "siteurl": "https://blog.tsh520.cn/",
     "tags": ["我的网站"],

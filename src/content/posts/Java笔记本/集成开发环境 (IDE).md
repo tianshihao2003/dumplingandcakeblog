@@ -1,13 +1,14 @@
 ---
 
-title: 集成开发环境 (IDE)  
-published: 2026-03-02  
-description: 集成开发工具的使用。  
+title: Java基础  
+published: 2026-02-06  
+description: 记录Java基础学习笔记。  
 image: "https://re.tsh520.cn/img/001.webp"  
-tags: ["java","工具"]  
+tags: [java]  
 category: "编程学习"
 
 ---
+
 
 ## 一、集成开发环境 (IDE)
 
