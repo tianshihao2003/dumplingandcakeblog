@@ -1,0 +1,248 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { render } from "astro:content";
+import { Icon } from "astro-icon/components";
+import { formatDateToYYYYMMDD } from "@/utils/date-utils";
+import Markdown from "@/components/common/Markdown.astro";
+import { Image } from "astro:assets";
+
+interface Props {
+  moment: CollectionEntry<"moments">;
+}
+
+const { moment } = Astro.props;
+const { Content } = await render(moment);
+const { author, avatar, published, images, tags, location, device } = moment.data;
+
+// 计算图片网格的列数
+const getGridCols = (count: number) => {
+  if (count === 1) return "grid-cols-1";
+  if (count === 2 || count === 4) return "grid-cols-2";
+  return "grid-cols-3";
+};
+
+// 唯一的ID用于点赞和评论状态管理
+const momentId = moment.id;
+
+// 图片展示逻辑
+const maxImages = 9;
+const displayImages = images.slice(0, maxImages);
+const remainingCount = images.length - maxImages;
+const hiddenImages = images.slice(maxImages);
+---
+
+<div class="card-base w-full rounded-[var(--radius-large)] overflow-hidden relative p-5 md:p-6 mb-6 transition-all hover:-translate-y-1">
+  <div class="flex items-start gap-4 mb-3">
+    <!-- 头像 -->
+    <div class="w-12 h-12 rounded-full overflow-hidden shrink-0 bg-black/5 dark:bg-white/5">
+      {avatar ? (
+        <img src={avatar} alt={author} class="w-full h-full object-cover" loading="lazy" />
+      ) : (
+        <Icon name="material-symbols:person" class="w-full h-full text-black/20 dark:text-white/20 p-2" />
+      )}
+    </div>
+
+    <!-- 作者和时间 -->
+    <div class="flex flex-col justify-center flex-grow">
+      <div class="font-bold text-[var(--primary)] text-lg leading-tight">
+        {author || "匿名"}
+      </div>
+      <div class="text-sm text-[var(--content-meta)] flex flex-wrap items-center gap-2 mt-1">
+        <div class="flex items-center gap-1">
+          <Icon name="material-symbols:schedule-outline-rounded" class="text-base" />
+          <time datetime={published.toISOString()}>{formatDateToYYYYMMDD(published)}</time>
+        </div>
+        
+        {location && (
+          <div class="flex items-center gap-1">
+            <Icon name="material-symbols:location-on-outline-rounded" class="text-base" />
+            <span>{location}</span>
+          </div>
+        )}
+
+        {device && (
+          <div class="flex items-center gap-1">
+            <Icon name="material-symbols:smartphone-outline" class="text-base" />
+            <span>{device}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <!-- 内容 -->
+  <div class="prose dark:prose-invert max-w-none mb-4 text-[var(--content-text)] text-base">
+    <Markdown class="moment-content">
+      <Content />
+    </Markdown>
+  </div>
+
+  <!-- 图片 -->
+  {images && images.length > 0 && (
+    <div class={`grid gap-2 mb-4 ${images.length === 1 ? 'grid-cols-1 w-[70%] sm:w-[50%] md:w-[45%] max-w-[300px]' : 'max-w-2xl ' + getGridCols(Math.min(images.length, 9))}`}>
+      {/* 如果图片数量大于9，第9张图（index=8）作为"更多"的入口 */}
+      {displayImages.map((img, index) => {
+        const imgSrc = typeof img === 'string' ? img : img.src;
+        // 是否是第9张图，并且还有更多图片
+        const isMoreTrigger = index === maxImages - 1 && remainingCount > 0;
+        
+        return (
+          <div class={`${images.length === 1 ? 'aspect-auto max-h-[300px] flex justify-start' : 'aspect-square'} rounded-xl overflow-hidden cursor-pointer group relative`}>
+            <Image 
+              src={img} 
+              alt="Moment image" 
+              class={`${images.length === 1 ? 'w-auto h-auto max-w-full max-h-[300px] object-cover rounded-xl object-left' : 'w-full h-full object-cover'} transition-transform duration-300 group-hover:scale-105`} 
+              loading="lazy"
+              data-fancybox={`gallery-${moment.id}`}
+              data-src={imgSrc}
+              inferSize={typeof img === 'string'}
+            />
+            
+            {/* 第9张图上的遮罩显示剩余数量 */}
+            {isMoreTrigger && (
+              <div 
+                class="absolute inset-0 bg-black/50 flex items-center justify-center text-white font-bold text-2xl backdrop-blur-[2px] transition-opacity hover:bg-black/40 pointer-events-none"
+              >
+                +{remainingCount + 1}
+              </div>
+            )}
+          </div>
+        );
+      })}
+      
+      {/* 隐藏的图片 (为了让 Fancybox 能检测到并展示在灯箱里) */}
+      {/* 注意：hiddenImages 是从第10张图开始切片的 */}
+      {hiddenImages.map((img) => {
+        const imgSrc = typeof img === 'string' ? img : img.src;
+        return (
+          <Image 
+            src={img} 
+            alt="Hidden moment image" 
+            class="hidden"
+            data-fancybox={`gallery-${moment.id}`}
+            data-src={imgSrc}
+            inferSize={typeof img === 'string'}
+          />
+        );
+      })}
+    </div>
+  )}
+
+  <!-- 标签 -->
+  {tags && tags.length > 0 && (
+    <div class="flex flex-wrap gap-2 mt-2 mb-4">
+      {tags.map((tag) => (
+        <span class="btn-regular h-6 text-xs px-2 py-1 rounded-md text-[var(--content-meta)]">
+          #{tag}
+        </span>
+      ))}
+    </div>
+  )}
+
+  <!-- 互动区：点赞和评论按钮 -->
+  <div class="flex items-center justify-between border-t border-[var(--line-divider)] pt-3 mt-2 text-[var(--content-meta)]">
+    <div class="flex gap-4">
+      <!-- 评论按钮 -->
+      <button 
+        class="moment-comment-btn flex items-center gap-1.5 hover:text-[var(--primary)] transition-colors"
+        aria-label="跳至评论区"
+        onclick="document.getElementById('waline-comment')?.scrollIntoView({behavior: 'smooth'})"
+      >
+        <Icon name="material-symbols:chat-bubble-outline-rounded" class="text-xl" />
+        <span class="text-sm font-medium">评论</span>
+      </button>
+    </div>
+
+    <!-- 点赞按钮 -->
+    <button 
+      class="moment-like-btn flex items-center gap-1.5 transition-all active:scale-90"
+      data-id={momentId}
+      aria-label="点赞"
+    >
+      <div class="relative flex items-center justify-center">
+        <!-- 未点赞图标 -->
+        <Icon name="material-symbols:favorite-outline-rounded" class="text-xl icon-outline transition-all duration-300" />
+        <!-- 已点赞图标 (初始隐藏) -->
+        <Icon name="material-symbols:favorite-rounded" class="text-xl icon-filled text-red-500 absolute inset-0 opacity-0 scale-50 transition-all duration-300" />
+      </div>
+      <span class="text-sm font-medium like-count">点赞</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  // 客户端点赞逻辑 (使用 localStorage 模拟)
+  document.addEventListener("DOMContentLoaded", () => {
+    const likeBtns = document.querySelectorAll(".moment-like-btn");
+    
+    likeBtns.forEach(btn => {
+      const id = btn.getAttribute("data-id");
+      if (!id) return;
+      
+      const storageKey = `moment_like_${id}`;
+      const countKey = `moment_like_count_${id}`;
+      
+      const isLiked = localStorage.getItem(storageKey) === "true";
+      // 模拟一些初始点赞数，或者从 localStorage 读取
+      let likeCount = parseInt(localStorage.getItem(countKey) || String(Math.floor(Math.random() * 10) + 1));
+      
+      const outlineIcon = btn.querySelector(".icon-outline");
+      const filledIcon = btn.querySelector(".icon-filled");
+      const countSpan = btn.querySelector(".like-count");
+      
+      // 初始化状态
+      if (isLiked) {
+        outlineIcon?.classList.add("opacity-0", "scale-50");
+        filledIcon?.classList.remove("opacity-0", "scale-50");
+        if(countSpan) countSpan.textContent = String(likeCount);
+        countSpan?.classList.add("text-red-500");
+      } else {
+        if(countSpan) countSpan.textContent = "点赞"; // 未点赞时显示文字，或者也可以显示数字
+      }
+
+      // 点击事件
+      btn.addEventListener("click", () => {
+        const currentlyLiked = localStorage.getItem(storageKey) === "true";
+        
+        if (currentlyLiked) {
+          // 取消点赞
+          localStorage.setItem(storageKey, "false");
+          likeCount = Math.max(0, likeCount - 1);
+          localStorage.setItem(countKey, String(likeCount));
+          
+          outlineIcon?.classList.remove("opacity-0", "scale-50");
+          filledIcon?.classList.add("opacity-0", "scale-50");
+          if(countSpan) countSpan.textContent = "点赞";
+          countSpan?.classList.remove("text-red-500");
+        } else {
+          // 点赞
+          localStorage.setItem(storageKey, "true");
+          likeCount += 1;
+          localStorage.setItem(countKey, String(likeCount));
+          
+          outlineIcon?.classList.add("opacity-0", "scale-50");
+          filledIcon?.classList.remove("opacity-0", "scale-50");
+          if(countSpan) countSpan.textContent = String(likeCount);
+          countSpan?.classList.add("text-red-500");
+          
+          // 添加一个小特效类
+          filledIcon?.classList.add("animate-ping-once");
+          setTimeout(() => {
+            filledIcon?.classList.remove("animate-ping-once");
+          }, 300);
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  @keyframes ping-once {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  .animate-ping-once {
+    animation: ping-once 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+</style>

@@ -36,6 +36,7 @@
     "@iconify/utils": "^3.1.0",
     "@swup/astro": "^1.8.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@waline/client": "^3.13.0",
     "astro": "5.17.2",
     "astro-expressive-code": "^0.41.6",
     "astro-icon": "^1.1.5",

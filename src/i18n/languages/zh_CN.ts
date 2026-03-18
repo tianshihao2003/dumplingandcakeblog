@@ -78,11 +78,11 @@ export const zh_CN: Translation = {
 	[Key.updatedAt]: "更新于",
 	[Key.readTime]: "阅读时长",
 	[Key.license]: "许可协议",
-	[Key.bangumi]: "番组计划",
+	[Key.bangumi]: "收藏",
 
 	// 番组计划筛选和状态文本
 	[Key.bangumiTitle]: "我的番组计划",
-	[Key.bangumiSubtitle]: "记录我的二次元之旅",
+	[Key.bangumiSubtitle]: "在这里记录我喜欢的电影、书籍、游戏和剧集，与你分享我的热爱。",
 	[Key.bangumiFilterAll]: "全部",
 	[Key.bangumiFilterWatched]: "看过",
 	[Key.bangumiFilterWatching]: "在看",
@@ -115,8 +115,8 @@ export const zh_CN: Translation = {
 	[Key.bangumiStatusUnknown]: "未知",
 	[Key.bangumiNoData]: "暂无数据",
 	[Key.bangumiNoDataDescription]: "该分类下还没有任何条目",
-	[Key.bangumiEmpty]: "暂无数据",
-	[Key.bangumiEmptyReason]: "可能的原因：用户名不存在、网络连接问题或API限制",
+	[Key.bangumiEmpty]: "还没有收藏记录",
+	[Key.bangumiEmptyReason]: "如果你想展示你的收藏记录，请在配置文件中设置你的账号信息。",
 	[Key.bangumiUsername]: "用户名",
 	[Key.bangumiApi]: "API",
 	[Key.bangumiConfigTip]: "提示：请在页面配置中设置正确的Bangumi用户名",
@@ -128,13 +128,13 @@ export const zh_CN: Translation = {
 
 	// 番组分类
 	[Key.bangumiCategoryBook]: "书籍",
-	[Key.bangumiCategoryAnime]: "动画",
+	[Key.bangumiCategoryAnime]: "影视/动画",
 	[Key.bangumiCategoryMusic]: "音乐",
 	[Key.bangumiCategoryGame]: "游戏",
 	[Key.bangumiCategoryReal]: "三次元",
 
 	// 番组数据更新
-	[Key.bangumiLastUpdated]: "数据更新于",
+	[Key.bangumiLastUpdated]: "上次更新：",
 	[Key.bangumiUpdatedAt]: "构建时间",
 	[Key.bangumiDataStatic]: "静态数据",
 

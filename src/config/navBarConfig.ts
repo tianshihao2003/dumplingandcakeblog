@@ -16,6 +16,13 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 
 		// 归档
 		LinkPreset.Archive,
+
+		// 动态
+		{
+			name: "动态",
+			url: "/moments/",
+			icon: "material-symbols:local-cafe",
+		},
 	];
 
 	// 自定义导航栏链接,并且支持多级菜单
@@ -58,6 +65,15 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		links.push(LinkPreset.Guestbook);
 	}
 
+	// 收藏/足迹 (原本的番组计划)
+	if (siteConfig.pages.bangumi) {
+		links.push({
+			name: "收藏",
+			url: "/bangumi/",
+			icon: "material-symbols:movie",
+		});
+	}
+
 	// 关于及其子菜单
 	links.push({
 		name: "关于",
@@ -69,9 +85,6 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 
 			// 关于页面
 			LinkPreset.About,
-
-			// 根据配置决定是否添加番组计划，在siteConfig关闭pages.bangumi时导航栏不显示番组计划
-			...(siteConfig.pages.bangumi ? [LinkPreset.Bangumi] : []),
 		],
 	});
 
