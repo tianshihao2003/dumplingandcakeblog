@@ -1,0 +1,90 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { siteConfig } from "@/config";
+
+export const prerender = false;
+
+// 如果已经登录，直接跳转到后台首页
+if (Astro.cookies.get('admin_token')?.value === 'authenticated') {
+  return Astro.redirect('/admin/');
+}
+---
+
+<Layout title={`登录管理后台 - ${siteConfig.title}`}>
+  <div class="min-h-screen bg-[var(--page-bg)] flex items-center justify-center p-6">
+    <div class="card-base w-full max-w-md p-8 rounded-2xl border border-[var(--border-color)]">
+      <div class="flex flex-col items-center mb-8">
+        <div class="w-16 h-16 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h1 class="text-2xl font-bold text-[var(--text-color)]">Firefly 后台登录</h1>
+        <p class="text-[var(--content-meta)] mt-2">请输入管理员密码</p>
+      </div>
+
+      <form id="login-form" class="space-y-4">
+        <div>
+          <input 
+            type="password" 
+            name="password" 
+            id="password-input" 
+            placeholder="管理员密码" 
+            class="w-full px-4 py-3 rounded-xl bg-[var(--card-bg)] border border-[var(--border-color)] focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 outline-none transition-all text-center text-[var(--text-color)]"
+            required
+            autofocus
+          />
+        </div>
+        <div id="error-message" class="text-red-500 text-sm text-center hidden">密码错误，请重试</div>
+        <button 
+          type="submit" 
+          class="w-full py-3 rounded-xl bg-[var(--primary)] text-white font-bold transition-transform hover:scale-[0.98] active:scale-95 shadow-lg shadow-[var(--primary)]/20"
+        >
+          进入系统
+        </button>
+      </form>
+
+      <div class="mt-8 pt-6 border-t border-[var(--border-color)] text-center">
+        <a href="/" class="text-[var(--content-meta)] hover:text-[var(--primary)] transition-colors text-sm flex items-center justify-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          回到博客首页
+        </a>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { actions } from 'astro:actions';
+  
+  const loginForm = document.getElementById('login-form') as HTMLFormElement;
+  const passwordInput = document.getElementById('password-input') as HTMLInputElement;
+  const errorMsg = document.getElementById('error-message');
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const password = passwordInput.value;
+      
+      const { data } = await actions.login({ password });
+      
+      if (data?.success) {
+        window.location.href = '/admin/';
+      } else {
+        errorMsg?.classList.remove('hidden');
+        passwordInput.value = '';
+        passwordInput.classList.add('animate-shake');
+        setTimeout(() => passwordInput.classList.remove('animate-shake'), 500);
+      }
+    });
+  }
+</script>
+
+<style>
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+  }
+  .animate-shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  }
+</style>

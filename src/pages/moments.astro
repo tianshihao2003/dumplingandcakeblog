@@ -8,6 +8,8 @@ const moments = await getCollection("moments");
 const sortedMoments = moments.sort(
   (a, b) => b.data.published.getTime() - a.data.published.getTime()
 );
+
+export const prerender = true;
 ---
 
 <MainGridLayout title="日常动态" description="记录生活中的点点滴滴">

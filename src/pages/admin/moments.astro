@@ -1,0 +1,27 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import MomentEditor from "@/components/moments/MomentEditor.svelte";
+import { getCollection } from "astro:content";
+
+export const prerender = false;
+
+// 权限检查
+if (Astro.cookies.get('admin_token')?.value !== 'authenticated') {
+  return Astro.redirect('/admin/login/');
+}
+
+const moments = await getCollection("moments");
+// 按时间降序排序
+const sortedMoments = moments.sort((a, b) => b.data.published.getTime() - a.data.published.getTime());
+---
+
+<AdminLayout title="动态管理">
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-[var(--text-color)]">动态管理</h1>
+      <p class="text-[var(--content-meta)] mt-2">发布新动态或管理已有内容。</p>
+    </div>
+  </div>
+
+  <MomentEditor client:load initialMoments={sortedMoments} />
+</AdminLayout>

@@ -1,0 +1,29 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import PostEditor from "@/components/posts/PostEditor.svelte";
+import { getCollection } from "astro:content";
+
+export const prerender = false;
+
+// 权限检查
+if (Astro.cookies.get('admin_token')?.value !== 'authenticated') {
+  return Astro.redirect('/admin/login/');
+}
+
+const posts = await getCollection("posts");
+// 按发布时间降序排序
+const sortedPosts = posts.sort(
+  (a, b) => b.data.published.getTime() - a.data.published.getTime()
+);
+---
+
+<AdminLayout title="文章管理">
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold text-[var(--text-color)]">文章管理</h1>
+      <p class="text-[var(--content-meta)] mt-2">在这里撰写、编辑或删除博客文章。</p>
+    </div>
+  </div>
+
+  <PostEditor client:load initialPosts={sortedPosts} />
+</AdminLayout>

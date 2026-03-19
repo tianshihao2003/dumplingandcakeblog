@@ -1,0 +1,50 @@
+---
+import Layout from "./Layout.astro";
+import { siteConfig } from "@/config";
+
+interface Props {
+	title?: string;
+}
+
+const { title = "管理后台" } = Astro.props;
+
+// 简单状态获取
+const cookies = Astro.cookies;
+const isAuth = cookies.get('admin_token')?.value === 'authenticated';
+const currentPath = Astro.url.pathname;
+---
+
+<Layout title={`${title} - ${siteConfig.title}`}>
+  <div class="min-h-screen bg-[var(--page-bg)] text-[var(--text-color)] flex">
+    {isAuth && (
+      <aside class="w-64 bg-[var(--card-bg)] border-r border-[var(--border-color)] hidden md:flex flex-col">
+        <div class="p-6 border-b border-[var(--border-color)]">
+          <h1 class="text-xl font-bold text-[var(--primary)]">{siteConfig.title} Admin</h1>
+        </div>
+        <nav class="flex-grow p-4 space-y-2">
+          <a href="/admin/" class={`block px-4 py-2 rounded-lg hover:bg-[var(--primary)]/10 ${currentPath === '/admin/' ? 'bg-[var(--primary)]/10 text-[var(--primary)] font-bold' : ''}`}>仪表盘</a>
+          <a href="/admin/posts/" class={`block px-4 py-2 rounded-lg hover:bg-[var(--primary)]/10 ${currentPath === '/admin/posts/' ? 'bg-[var(--primary)]/10 text-[var(--primary)] font-bold' : ''}`}>文章管理</a>
+          <a href="/admin/moments/" class={`block px-4 py-2 rounded-lg hover:bg-[var(--primary)]/10 ${currentPath === '/admin/moments/' ? 'bg-[var(--primary)]/10 text-[var(--primary)] font-bold' : ''}`}>动态管理</a>
+          <a href="/" class="block px-4 py-2 rounded-lg hover:bg-[var(--primary)]/10 mt-auto">回到首页</a>
+        </nav>
+        <div class="p-4 border-t border-[var(--border-color)]">
+          <button id="logout-btn" class="w-full text-left px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-lg">退出登录</button>
+        </div>
+      </aside>
+    )}
+    <main class="flex-grow p-6 md:p-10 overflow-auto">
+      <slot />
+    </main>
+  </div>
+</Layout>
+
+<script>
+  import { actions } from 'astro:actions';
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await actions.logout();
+      window.location.href = '/admin/login/';
+    });
+  }
+</script>
