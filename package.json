@@ -78,7 +78,7 @@
   },
   "devDependencies": {
     "@astrojs/ts-plugin": "^1.10.7",
-    "@biomejs/biome": "2.3.15",
+    "@biomejs/biome": "2.4.8",
     "@iconify-json/mdi": "^1.2.3",
     "@iconify-json/svg-spinners": "^1.2.4",
     "@iconify/types": "^2.0.0",
