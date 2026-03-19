@@ -14,6 +14,42 @@ const { moment } = Astro.props;
 const { Content } = await render(moment);
 const { author, avatar, published, images, tags, location, device } = moment.data;
 
+// 获取 moments 资产目录下的所有图片
+const momentAssets = import.meta.glob<{ default: ImageMetadata }>("../../content/moments/assets/*.{jpeg,jpg,png,gif,webp,avif}", { eager: true });
+
+// 解析图片路径，支持 frontmatter 中的 images 数组/字符串 (逗号分隔)
+const parseImages = (imagesData: any): (string | ImageMetadata)[] => {
+  // 1. 从 frontmatter 提取 (处理数组和字符串)
+  let rawPaths: string[] = [];
+  if (Array.isArray(imagesData)) {
+    rawPaths = imagesData.map(img => typeof img === 'string' ? img : (img.src || img));
+  } else if (typeof imagesData === 'string' && imagesData.trim()) {
+    // 支持逗号或分号分隔的路径字符串
+    rawPaths = imagesData.split(/[,;]/).map(img => img.trim()).filter(img => img);
+  }
+  
+  // 处理本地相对路径，将其映射到经过 Astro 处理后的 URL 或 Metadata 对象
+  return Array.from(new Set(rawPaths)).map(img => {
+    if (img.startsWith('http://') || img.startsWith('https://') || img.startsWith('/')) {
+      return img;
+    }
+    
+    // 处理形如 assets/xxx.jpg 或 ./assets/xxx.jpg 的路径
+    const cleanPath = img.replace(/^\.\//, '');
+    if (cleanPath.startsWith('assets/')) {
+      const fileName = cleanPath.replace('assets/', '');
+      // 在 import.meta.glob 的结果中查找匹配的文件
+      for (const path in momentAssets) {
+        if (path.endsWith(fileName)) {
+          // 返回整个 Metadata 对象，供 Astro <Image /> 组件处理
+          return momentAssets[path].default;
+        }
+      }
+    }
+    return img;
+  }).filter(img => img);
+};
+
 // 计算图片网格的列数
 const getGridCols = (count: number) => {
   if (count === 1) return "grid-cols-1";
@@ -25,10 +61,17 @@ const getGridCols = (count: number) => {
 const momentId = moment.id;
 
 // 图片展示逻辑
+const imagesArray = parseImages(images);
 const maxImages = 9;
-const displayImages = images.slice(0, maxImages);
-const remainingCount = images.length - maxImages;
-const hiddenImages = images.slice(maxImages);
+const displayImages = imagesArray.slice(0, maxImages);
+const remainingCount = imagesArray.length - maxImages;
+const hiddenImages = imagesArray.slice(maxImages);
+
+// 获取图片的 URL 字符串 (用于 Fancybox 等)
+const getImgSrc = (img: string | ImageMetadata): string => {
+  if (typeof img === 'string') return img;
+  return img.src;
+};
 ---
 
 <div class="card-base w-full rounded-[var(--radius-large)] overflow-hidden relative p-5 md:p-6 mb-6 transition-all hover:-translate-y-1">
@@ -78,25 +121,36 @@ const hiddenImages = images.slice(maxImages);
   </div>
 
   <!-- 图片 -->
-  {images && images.length > 0 && (
-    <div class={`grid gap-2 mb-4 ${images.length === 1 ? 'grid-cols-1 w-[70%] sm:w-[50%] md:w-[45%] max-w-[300px]' : 'max-w-2xl ' + getGridCols(Math.min(images.length, 9))}`}>
+  {imagesArray && imagesArray.length > 0 && (
+    <div class={`grid gap-2 mb-4 ${imagesArray.length === 1 ? 'grid-cols-1 w-[70%] sm:w-[50%] md:w-[45%] max-w-[300px]' : 'max-w-2xl ' + getGridCols(Math.min(imagesArray.length, 9))}`}>
       {/* 如果图片数量大于9，第9张图（index=8）作为"更多"的入口 */}
       {displayImages.map((img, index) => {
-        const imgSrc = typeof img === 'string' ? img : img.src;
+        const imgSrc = getImgSrc(img);
         // 是否是第9张图，并且还有更多图片
         const isMoreTrigger = index === maxImages - 1 && remainingCount > 0;
         
         return (
-          <div class={`${images.length === 1 ? 'aspect-auto max-h-[300px] flex justify-start' : 'aspect-square'} rounded-xl overflow-hidden cursor-pointer group relative`}>
-            <Image 
-              src={img} 
-              alt="Moment image" 
-              class={`${images.length === 1 ? 'w-auto h-auto max-w-full max-h-[300px] object-cover rounded-xl object-left' : 'w-full h-full object-cover'} transition-transform duration-300 group-hover:scale-105`} 
-              loading="lazy"
-              data-fancybox={`gallery-${moment.id}`}
-              data-src={imgSrc}
-              inferSize={typeof img === 'string'}
-            />
+          <div class={`${imagesArray.length === 1 ? 'aspect-auto max-h-[300px] flex justify-start' : 'aspect-square'} rounded-xl overflow-hidden cursor-pointer group relative`}>
+            {typeof img === 'string' ? (
+              <Image 
+                src={img} 
+                alt="Moment image" 
+                class={`${imagesArray.length === 1 ? 'w-auto h-auto max-w-full max-h-[300px] object-cover rounded-xl object-left' : 'w-full h-full object-cover'} transition-transform duration-300 group-hover:scale-105`} 
+                loading="lazy"
+                data-fancybox={`gallery-${moment.id}`}
+                data-src={imgSrc}
+                inferSize={true}
+              />
+            ) : (
+              <Image 
+                src={img} 
+                alt="Moment image" 
+                class={`${imagesArray.length === 1 ? 'w-auto h-auto max-w-full max-h-[300px] object-cover rounded-xl object-left' : 'w-full h-full object-cover'} transition-transform duration-300 group-hover:scale-105`} 
+                loading="lazy"
+                data-fancybox={`gallery-${moment.id}`}
+                data-src={imgSrc}
+              />
+            )}
             
             {/* 第9张图上的遮罩显示剩余数量 */}
             {isMoreTrigger && (
@@ -113,15 +167,23 @@ const hiddenImages = images.slice(maxImages);
       {/* 隐藏的图片 (为了让 Fancybox 能检测到并展示在灯箱里) */}
       {/* 注意：hiddenImages 是从第10张图开始切片的 */}
       {hiddenImages.map((img) => {
-        const imgSrc = typeof img === 'string' ? img : img.src;
-        return (
+        const imgSrc = getImgSrc(img);
+        return typeof img === 'string' ? (
           <Image 
             src={img} 
             alt="Hidden moment image" 
             class="hidden"
             data-fancybox={`gallery-${moment.id}`}
             data-src={imgSrc}
-            inferSize={typeof img === 'string'}
+            inferSize={true}
+          />
+        ) : (
+          <Image 
+            src={img} 
+            alt="Hidden moment image" 
+            class="hidden"
+            data-fancybox={`gallery-${moment.id}`}
+            data-src={imgSrc}
           />
         );
       })}

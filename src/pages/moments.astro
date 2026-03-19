@@ -88,76 +88,111 @@ const sortedMoments = moments.sort(
   const CORRECT_PASSWORD = "0824";
   const AUTH_KEY = "moments_authenticated";
 
-  // 获取 DOM 元素
-  const lockScreen = document.getElementById("moments-lock-screen");
-  const contentArea = document.getElementById("moments-content");
-  const passwordForm = document.getElementById("moments-password-form");
-  const passwordInput = document.getElementById("moments-password-input") as HTMLInputElement;
-  const errorMsg = document.getElementById("password-error");
-
-  // 解锁函数
-  function unlock() {
-    if (lockScreen && contentArea) {
-      lockScreen.style.opacity = "0";
-      setTimeout(() => {
-        lockScreen.style.display = "none";
-        contentArea.classList.remove("opacity-0", "pointer-events-none", "h-0", "overflow-hidden");
-        contentArea.classList.add("opacity-100");
-        
-        // 解锁后初始化评论系统
-        initWaline();
-      }, 500);
-    }
-  }
-
   // 初始化 Waline
   function initWaline() {
-    // 确保容器存在且没有被初始化过
     const container = document.getElementById('waline-comment');
     if (container && !container.hasChildNodes()) {
       init({
         el: '#waline-comment',
-        serverURL: 'https://co.tsh520.cn', // 从你的配置中读取的地址
+        serverURL: 'https://co.tsh520.cn', 
         lang: 'zh-CN',
-        path: '/moments/', // 指定固定路径，防止带参数导致评论分散
+        path: '/moments/', 
         reaction: true,
       });
     }
   }
 
-  // 页面加载时检查是否已经验证过
-  document.addEventListener("DOMContentLoaded", () => {
-    // 使用 sessionStorage，这样关闭浏览器标签页后密码会失效，更安全
-    if (sessionStorage.getItem(AUTH_KEY) === "true") {
-      unlock();
+  // 解锁函数
+  function unlock(immediate = false) {
+    const lockScreen = document.getElementById("moments-lock-screen");
+    const contentArea = document.getElementById("moments-content");
+    
+    if (!lockScreen || !contentArea) return;
+
+    if (immediate) {
+      lockScreen.style.display = "none";
+      contentArea.classList.remove("opacity-0", "pointer-events-none", "h-0", "overflow-hidden");
+      contentArea.classList.add("opacity-100");
+      initWaline();
+    } else {
+      lockScreen.style.opacity = "0";
+      setTimeout(() => {
+        lockScreen.style.display = "none";
+        contentArea.classList.remove("opacity-0", "pointer-events-none", "h-0", "overflow-hidden");
+        contentArea.classList.add("opacity-100");
+        initWaline();
+      }, 500);
     }
-  });
+  }
 
-  // 处理表单提交
-  if (passwordForm) {
-    passwordForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const inputVal = passwordInput?.value;
+  // 设置表单监听
+  function setupAuthForm() {
+    const passwordForm = document.getElementById("moments-password-form");
+    const passwordInput = document.getElementById("moments-password-input") as HTMLInputElement;
+    const errorMsg = document.getElementById("password-error");
 
-      if (inputVal === CORRECT_PASSWORD) {
-        // 密码正确
-        if (errorMsg) errorMsg.classList.add("hidden");
-        sessionStorage.setItem(AUTH_KEY, "true");
-        unlock();
-      } else {
-        // 密码错误
-        if (errorMsg) {
-          errorMsg.classList.remove("hidden");
-          // 震动动画提示
+    if (passwordForm) {
+      passwordForm.onsubmit = (e) => {
+        e.preventDefault();
+        const inputVal = passwordInput?.value;
+
+        if (inputVal === CORRECT_PASSWORD) {
+          if (errorMsg) errorMsg.classList.add("hidden");
+          sessionStorage.setItem(AUTH_KEY, "true");
+          unlock();
+        } else {
+          if (errorMsg) errorMsg.classList.remove("hidden");
           passwordInput?.classList.add("animate-shake");
           setTimeout(() => {
             passwordInput?.classList.remove("animate-shake");
           }, 500);
+          if (passwordInput) passwordInput.value = "";
         }
-        if (passwordInput) passwordInput.value = "";
-      }
-    });
+      };
+    }
   }
+
+  // 检查权限并初始化
+  function checkAuth() {
+    // 强制清理可能残留的 Swup 缓存或旧状态
+    const isAuth = sessionStorage.getItem(AUTH_KEY) === "true";
+    
+    if (isAuth) {
+      unlock(true);
+    } else {
+      // 确保锁屏可见
+      const lockScreen = document.getElementById("moments-lock-screen");
+      if (lockScreen) {
+        lockScreen.style.display = "flex";
+        lockScreen.style.opacity = "1";
+      }
+      setupAuthForm();
+    }
+  }
+
+  // 针对 Swup 页面切换的监听
+  const initAuth = () => {
+    if (window.swup) {
+      // 只有当存在旧的处理器时才尝试移除，避免 Swup 抛出 "Handler not found" 警告
+      if (window.__moments_auth_handler) {
+        window.swup.hooks.off('content:replace', window.__moments_auth_handler);
+      }
+      // 将当前处理器存入全局，以便下次进入页面时清理
+      window.__moments_auth_handler = checkAuth;
+      window.swup.hooks.on('content:replace', window.__moments_auth_handler);
+    }
+    checkAuth();
+  };
+
+  // 初始化触发
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuth);
+  } else {
+    initAuth();
+  }
+
+  // 如果 swup 是异步启用的
+  document.addEventListener('swup:enable', initAuth);
 </script>
 
 <style>

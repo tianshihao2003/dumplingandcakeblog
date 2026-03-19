@@ -40,7 +40,7 @@ const momentsCollection = defineCollection({
 		author: z.string().optional().default(""),
 		avatar: z.string().optional().default(""),
 		published: z.date(),
-		images: z.array(image().or(z.string())).optional().default([]),
+		images: z.array(image().or(z.string())).or(z.string()).optional().default([]),
 		tags: z.array(z.string()).optional().default([]),
 		location: z.string().optional().default(""),
 		device: z.string().optional().default(""),
