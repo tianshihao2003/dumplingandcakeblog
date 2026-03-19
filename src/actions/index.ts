@@ -11,7 +11,7 @@ import {
 	upsertRepoFile,
 } from '@/utils/github-repo';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "0824";
+const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD ?? "0824").trim();
 const MOMENTS_DIR = path.resolve('src/content/moments');
 const MOMENTS_ASSETS_DIR = path.resolve('src/content/moments/assets');
 const POSTS_DIR = path.resolve('src/content/posts');
@@ -44,7 +44,7 @@ const login = defineAction({
     password: z.string(),
   }),
   handler: async ({ password }, { cookies }) => {
-    if (password === ADMIN_PASSWORD) {
+    if (password.trim() === ADMIN_PASSWORD) {
       cookies.set('admin_token', 'authenticated', {
         path: '/',
         httpOnly: true,
