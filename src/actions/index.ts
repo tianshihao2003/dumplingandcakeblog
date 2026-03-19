@@ -26,10 +26,20 @@ function ensureMarkdownExtRepoPath(repoPath: string) {
 	return `${repoPath}.md`;
 }
 
-const gh = getGitHubEnv();
-
 function isProd() {
 	return process.env.NODE_ENV === 'production';
+}
+
+function getGitHubEnvOrNull() {
+	return getGitHubEnv();
+}
+
+function requireGitHubEnv() {
+	const env = getGitHubEnvOrNull();
+	if (!env) {
+		throw new Error('GitHub 环境变量未生效：请在 Vercel 配置 GITHUB_TOKEN 与 GITHUB_REPO，并重新部署');
+	}
+	return env;
 }
 
 // 辅助函数：验证权限
@@ -93,6 +103,7 @@ const addMoment = defineAction({
 
     const fileContent = matter.stringify(input.content, data);
 
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			const repoPath = ensureMarkdownExtRepoPath(`src/content/moments/${filename}`);
 			await upsertRepoFile(gh, {
@@ -101,6 +112,8 @@ const addMoment = defineAction({
 				message: `chore(moments): add ${filename}`,
 			});
 			await triggerVercelDeploy(gh);
+		} else if (isProd()) {
+			requireGitHubEnv();
 		} else {
 			await fs.writeFile(filepath, fileContent, 'utf-8');
 		}
@@ -115,11 +128,14 @@ const deleteMoment = defineAction({
   }),
   handler: async ({ id }, { cookies }) => {
     checkAuth(cookies);
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			const repoPath = ensureMarkdownExtRepoPath(`src/content/moments/${id}`);
 			const existing = await getRepoFile(gh, repoPath);
 			await deleteRepoFile(gh, repoPath, existing.sha, `chore(moments): delete ${id}`);
 			await triggerVercelDeploy(gh);
+		} else if (isProd()) {
+			requireGitHubEnv();
 		} else {
 			const filepath = ensureMarkdownExt(path.join(MOMENTS_DIR, id));
 			await fs.unlink(filepath);
@@ -135,11 +151,15 @@ const getMomentContent = defineAction({
 	handler: async ({ id }, { cookies }) => {
 		checkAuth(cookies);
 		let raw: string;
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			const repoPath = ensureMarkdownExtRepoPath(`src/content/moments/${id}`);
 			const existing = await getRepoFile(gh, repoPath);
 			const b64 = (existing.content || '').replace(/\n/g, '');
 			raw = Buffer.from(b64, 'base64').toString('utf-8');
+		} else if (isProd()) {
+			requireGitHubEnv();
+			throw new Error('GitHub 环境变量未生效');
 		} else {
 			const filepath = ensureMarkdownExt(path.join(MOMENTS_DIR, id));
 			raw = await fs.readFile(filepath, 'utf-8');
@@ -163,12 +183,16 @@ const updateMoment = defineAction({
 		checkAuth(cookies);
 		let raw: string;
 		let sha: string | undefined;
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			const repoPath = ensureMarkdownExtRepoPath(`src/content/moments/${input.id}`);
 			const existing = await getRepoFile(gh, repoPath);
 			sha = existing.sha;
 			const b64 = (existing.content || '').replace(/\n/g, '');
 			raw = Buffer.from(b64, 'base64').toString('utf-8');
+		} else if (isProd()) {
+			requireGitHubEnv();
+			throw new Error('GitHub 环境变量未生效');
 		} else {
 			const filepath = ensureMarkdownExt(path.join(MOMENTS_DIR, input.id));
 			raw = await fs.readFile(filepath, 'utf-8');
@@ -198,6 +222,8 @@ const updateMoment = defineAction({
 				message: `chore(moments): update ${input.id}`,
 			});
 			await triggerVercelDeploy(gh);
+		} else if (isProd()) {
+			requireGitHubEnv();
 		} else {
 			const filepath = ensureMarkdownExt(path.join(MOMENTS_DIR, input.id));
 			await fs.writeFile(filepath, fileContent, 'utf-8');
@@ -217,6 +243,7 @@ const uploadMomentImage = defineAction({
     const buffer = Buffer.from(await file.arrayBuffer());
     const filename = `${Date.now()}-${file.name}`;
 
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			const repoPath = `src/content/moments/assets/${filename}`;
 			await upsertRepoFile(gh, {
@@ -225,6 +252,8 @@ const uploadMomentImage = defineAction({
 				message: `chore(moments): upload ${filename}`,
 			});
 			await triggerVercelDeploy(gh);
+		} else if (isProd()) {
+			requireGitHubEnv();
 		} else {
 			// 确保资产目录存在
 			try {
@@ -274,6 +303,7 @@ const savePost = defineAction({
 
     const fileContent = matter.stringify(input.content, data);
 
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			let sha: string | undefined;
 			try {
@@ -297,6 +327,8 @@ const savePost = defineAction({
 			}
 
 			await triggerVercelDeploy(gh);
+		} else if (isProd()) {
+			requireGitHubEnv();
 		} else {
 			// 确保目录存在
 			await fs.mkdir(categoryDir, { recursive: true });
@@ -321,11 +353,14 @@ const deletePost = defineAction({
   }),
   handler: async ({ path: postPath }, { cookies }) => {
     checkAuth(cookies);
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			const repoPath = ensureMarkdownExtRepoPath(`src/content/posts/${postPath}`);
 			const existing = await getRepoFile(gh, repoPath);
 			await deleteRepoFile(gh, repoPath, existing.sha, `chore(posts): delete ${postPath}`);
 			await triggerVercelDeploy(gh);
+		} else if (isProd()) {
+			requireGitHubEnv();
 		} else {
 			let fullPath = ensureMarkdownExt(path.join(POSTS_DIR, postPath));
 			await fs.unlink(fullPath);
@@ -341,11 +376,15 @@ const getPostContent = defineAction({
   handler: async ({ path: postPath }, { cookies }) => {
     checkAuth(cookies);
 		let raw: string;
+		const gh = getGitHubEnvOrNull();
 		if (gh) {
 			const repoPath = ensureMarkdownExtRepoPath(`src/content/posts/${postPath}`);
 			const existing = await getRepoFile(gh, repoPath);
 			const b64 = (existing.content || '').replace(/\n/g, '');
 			raw = Buffer.from(b64, 'base64').toString('utf-8');
+		} else if (isProd()) {
+			requireGitHubEnv();
+			throw new Error('GitHub 环境变量未生效');
 		} else {
 			const fullPath = ensureMarkdownExt(path.join(POSTS_DIR, postPath));
 			raw = await fs.readFile(fullPath, 'utf-8');

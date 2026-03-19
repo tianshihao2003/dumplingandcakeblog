@@ -8,8 +8,8 @@ type GitHubEnv = {
 };
 
 export function getGitHubEnv(): GitHubEnv | null {
-	const token = process.env.GITHUB_TOKEN;
-	const repo = process.env.GITHUB_REPO;
+	const token = (process.env.GITHUB_TOKEN || '').trim();
+	const repo = (process.env.GITHUB_REPO || '').trim();
 	if (!token || !repo) return null;
 
 	const [owner, name] = repo.split('/');
@@ -20,8 +20,8 @@ export function getGitHubEnv(): GitHubEnv | null {
 		repo,
 		owner,
 		name,
-		branch: process.env.GITHUB_BRANCH || 'main',
-		deployHookUrl: process.env.VERCEL_DEPLOY_HOOK_URL,
+		branch: (process.env.GITHUB_BRANCH || 'main').trim(),
+		deployHookUrl: (process.env.VERCEL_DEPLOY_HOOK_URL || '').trim() || undefined,
 	};
 }
 
