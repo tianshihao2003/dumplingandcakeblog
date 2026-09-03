@@ -14,7 +14,9 @@
       "!**/dist/**/*",
       "!**/node_modules/**/*",
       "!**/src/constants/icons.ts",
-      "!**/.obsidian/**/*"
+      "!**/.obsidian/**/*",
+      "!**/.opencode/**/*",
+      "!**/.copilot/**/*"
     ]
   },
   "formatter": {
