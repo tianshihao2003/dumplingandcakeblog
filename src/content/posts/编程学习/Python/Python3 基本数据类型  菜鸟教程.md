@@ -12,6 +12,17 @@ Python 中的变量不需要声明。每个变量在使用前都必须赋值，�
 在 Python 中，变量就是变量，它**没有类型**，我们所说的类型是变量所指的**内存中对象的类型**。
 
 等号 = 用来给变量赋值。等号左边是变量名，右边是存储在变量中的值。
+``` python
+#!/usr/bin/python3
+
+counter = 100          # 整型变量
+miles   = 1000.0       # 浮点型变量
+name    = "runoob"     # 字符串
+
+print(counter)
+print(miles)
+print(name)
+```
 
 ### 多个变量赋值
 
@@ -326,17 +337,24 @@ List（列表）是 Python 中使用最频繁的数据类型。
 
 ## 实例
 
-#!/usr/bin/python3  
-  
-my\_list = \['abcd', 786, 2.23, 'runoob', 70.2\] # 避免使用 list 作为变量名，会覆盖内置类型  
-tinylist = \[123, 'runoob'\]  
-  
-print(my\_list) # 打印整个列表：\['abcd', 786, 2.23, 'runoob', 70.2\]  
-print(my\_list\[0\]) # 打印第一个元素（索引 0）：abcd  
-print(my\_list\[1:3\]) # 打印索引 1 和 2 的元素（不含索引 3）：\[786, 2.23\]  
-print(my\_list\[2:\]) # 打印从索引 2 开始到末尾的所有元素：\[2.23, 'runoob', 70.2\]  
-print(tinylist \* 2) # 重复打印 tinylist 两次：\[123, 'runoob', 123, 'runoob'\]  
-print(my\_list + tinylist) # 拼接两个列表
+``` python
+#!/usr/bin/python3
+# 避免使用 list 作为变量名，会覆盖内置类型
+my_list = ['abcd', 786, 2.23, 'runoob', 70.2]  
+tinylist = [123, 'runoob']
+ # 打印整个列表：['abcd', 786, 2.23, 'runoob', 70.2]
+print(my_list)        
+ # 打印第一个元素（索引 0）：abcd    
+print(my_list[0])
+# 打印索引 1 和 2 的元素（不含索引 3）：[786, 2.23]
+print(my_list[1:3])        
+ # 打印从索引 2 开始到末尾的所有元素：[2.23, 'runoob', 70.2]
+print(my_list[2:])
+# 重复打印 tinylist 两次：[123, 'runoob', 123, 'runoob']        
+print(tinylist * 2)        
+# 拼接两个列表
+print(my_list + tinylist)  
+```
 
 以上实例输出结果：
 
@@ -353,14 +371,16 @@ abcd
 
 ## 实例
 
-\>>> a = \[1, 2, 3, 4, 5, 6\]  
-\>>> a\[0\] = 9  
-\>>> a\[2:5\] = \[13, 14, 15\]  
-\>>> a  
-\[9, 2, 13, 14, 15, 6\]  
-\>>> a\[2:5\] = \[\] # 将对应的元素值设置为空列表，即删除这些元素  
-\>>> a  
-\[9, 2, 6\]
+```
+>>> a = [1, 2, 3, 4, 5, 6]
+>>> a[0] = 9
+>>> a[2:5] = [13, 14, 15]
+>>> a
+[9, 2, 13, 14, 15, 6]
+>>> a[2:5] = []   # 将对应的元素值设置为空列表，即删除这些元素
+>>> a
+[9, 2, 6]
+```
 
 List 内置了有很多方法，例如 `append()` 、 `pop()` 等等，这在后面会讲到。
 
@@ -378,27 +398,28 @@ Python 列表截取可以接收第三个参数，参数作用是截取的步长�
 如果第三个参数为负数表示逆向读取，以下实例用于翻转字符串中的单词顺序：
 
 ## 实例
+``` python
+def reverseWords(input):
 
-def reverseWords(input):  
-  
-\# 通过空格将字符串分隔，把各个单词分隔为列表  
-inputWords = input.split(" ")  
-  
-\# inputWords\[-1::-1\] 三个参数说明：  
-\# 第一个参数 -1 表示从最后一个元素开始  
-\# 第二个参数为空，表示移动到列表开头  
-\# 第三个参数 -1 表示逆向步进（每次向左移动一个位置）  
-inputWords = inputWords\[-1::-1\]  
-  
-\# 重新用空格拼接单词  
-output = ' '.join(inputWords)  
-  
-return output  
-  
-if \_\_name\_\_ == "\_\_main\_\_":  
-input = 'I like runoob'  
-rw = reverseWords(input)  
-print(rw)
+    # 通过空格将字符串分隔，把各个单词分隔为列表
+    inputWords = input.split(" ")
+
+    # inputWords[-1::-1] 三个参数说明：
+    # 第一个参数 -1 表示从最后一个元素开始
+    # 第二个参数为空，表示移动到列表开头
+    # 第三个参数 -1 表示逆向步进（每次向左移动一个位置）
+    inputWords = inputWords[-1::-1]
+
+    # 重新用空格拼接单词
+    output = ' '.join(inputWords)
+
+    return output
+
+if __name__ == "__main__":
+    input = 'I like runoob'
+    rw = reverseWords(input)
+    print(rw)
+```
 
 输出结果为：
 
