@@ -54,7 +54,6 @@ src/.trash
 src/notes
 src/.copilot
 src/.opencode
-src/copilot
 
 .env*
 
