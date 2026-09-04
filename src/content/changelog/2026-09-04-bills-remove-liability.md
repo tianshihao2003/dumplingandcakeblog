@@ -1,5 +1,5 @@
 ---
-version: "v1.33.0"
+version: "v1.34.0"
 date: 2026-09-04
 type: removal
 description: 账单页去掉负债功能，只保留支出与收入两种类型（对齐妙蛙记账的纯收支模型）
