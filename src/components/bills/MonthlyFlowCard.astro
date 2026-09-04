@@ -83,10 +83,10 @@ const icons: Record<string, string> = {
           ))}
         </div>
       )}
-      {m.days.length > 3 && (
+      {m.days.length > 2 && (
         <div class="flow-pager">
           <button type="button" data-dir="-1" aria-label="上一页">‹</button>
-          <span class="flow-pager-info">1 / {Math.ceil(m.days.length / 3)}</span>
+          <span class="flow-pager-info">1 / {Math.ceil(m.days.length / 2)}</span>
           <button type="button" data-dir="1" aria-label="下一页">›</button>
         </div>
       )}
@@ -95,7 +95,7 @@ const icons: Record<string, string> = {
 </div>
 <script is:inline>
 (function(){
-  var DAYS_PER_PAGE = 3;
+  var DAYS_PER_PAGE = 2;
   function initPager(monthEl){
     if(monthEl.dataset.pagerInit === "1") return;
     monthEl.dataset.pagerInit = "1";
