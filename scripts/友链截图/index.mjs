@@ -6,6 +6,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { slug as githubSlug } from "github-slugger";
 import { chromium } from "playwright";
 import sharp from "sharp";
 
@@ -21,9 +22,10 @@ function readEntries() {
 	for (const f of fs.readdirSync(FRIENDS_DIR).filter((x) => x.endsWith(".md"))) {
 		const raw = fs.readFileSync(path.join(FRIENDS_DIR, f), "utf8");
 		const m = raw.match(/^siteurl:\s*(.+)$/m);
-		// id 必须转小写：Astro glob loader 的 entry id 是全小写 slug，
-		// 截图文件名若保留大写，线上（Linux 大小写敏感）卡片会退化、Windows dev 则 404
-		if (m) entries.push({ id: f.replace(/\.md$/, "").toLowerCase(), url: m[1].trim().replace(/^["']|["']$/g, "") });
+		// id 必须与 Astro glob loader 的 entry id 一致：github-slugger 规则（小写 + 移除标点、空格转连字符）。
+		// 仅 toLowerCase 不够：文件名含全角逗号等标点时 Astro id 会去掉标点（如 39-胡超，作品集 → 39-胡超作品集），
+		// 截图文件名若对不上，页面 shotExists() 匹配失败，卡片退化为无截图
+		if (m) entries.push({ id: githubSlug(f.replace(/\.md$/, "")), url: m[1].trim().replace(/^["']|["']$/g, "") });
 	}
 	return entries;
 }

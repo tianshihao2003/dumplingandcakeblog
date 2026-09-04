@@ -2,6 +2,7 @@
 import { getCollection, getEntry, render } from "astro:content";
 import fs from "node:fs";
 import path from "node:path";
+import { domainToUnicode } from "node:url";
 import Comment from "@components/comment/index.astro";
 import Markdown from "@components/common/Markdown.astro";
 import FriendCard from "@components/features/FriendCard.astro";
@@ -24,28 +25,19 @@ const items = friendsEntries
 	.filter((item) => item.data.enabled !== false)
 	.sort((a, b) => (b.data.weight || 0) - (a.data.weight || 0));
 
-// 新朋友：按添加日期（added）降序取最近 3 个；无 added 时兜底按文件 mtime（无需手动补日期，插件新建时自动写入 added）
-const getFileTime = (item: (typeof items)[number]): number => {
-	try {
-		const filePath = path.join(
-			process.cwd(),
-			"src",
-			"content",
-			"friends",
-			`${item.id}.md`,
-		);
-		const stat = fs.statSync(filePath);
-		return stat.mtime.getTime();
-	} catch {
-		return 0;
-	}
-};
-const getAddedTime = (item: (typeof items)[number]): number => {
-	if (item.data.added) return item.data.added.getTime();
-	return getFileTime(item);
-};
+// 新朋友：按添加日期（added）降序取最近 3 个。
+// 禁止用文件 mtime 兜底：CI 全新 clone 时所有文件 mtime 都等于构建时刻，
+// 会让缺 added 的旧友链永远霸占"新朋友"区块（2026-09 线上事故根因）
+const missingAdded = items.filter((item) => !item.data.added);
+if (missingAdded.length > 0) {
+	console.warn(
+		`[friends] ${missingAdded.length} 个友链缺少 added 字段，不参与"新朋友"排序：${missingAdded.map((item) => item.id).join("、")}`,
+	);
+}
 const latestItems = [...items]
-	.sort((a, b) => getAddedTime(b) - getAddedTime(a))
+	.sort(
+		(a, b) => (b.data.added?.getTime() ?? 0) - (a.data.added?.getTime() ?? 0),
+	)
 	.slice(0, 3);
 
 // 新朋友区块独立展示后，从分组中排除，避免同一站点出现两次
@@ -53,7 +45,8 @@ const latestIds = new Set(latestItems.map((item) => item.id));
 
 // 我的朋友们 / 更多伙伴（group 缺省为 other）
 const myFriends = items.filter(
-	(item) => (item.data.group ?? "other") === "friend",
+	(item) =>
+		(item.data.group ?? "other") === "friend" && !latestIds.has(item.id),
 );
 const moreFriends = items.filter(
 	(item) =>
@@ -72,10 +65,12 @@ const shotsDir = path.join(process.cwd(), "public", "assets", "friends-shots");
 const shotExists = (id: string) =>
 	fs.existsSync(path.join(shotsDir, `${id}.webp`));
 
-// 域名（new URL().host，取不到时回退空串）
+// 域名（还原为 Unicode 显示，避免 IDN 域名显示成 xn-- punycode；取不到时回退空串）
 const hostOf = (siteurl: string) => {
 	try {
-		return new URL(siteurl).host;
+		const url = new URL(siteurl);
+		const hostname = domainToUnicode(url.hostname);
+		return url.port ? `${hostname}:${url.port}` : hostname;
 	} catch {
 		return "";
 	}

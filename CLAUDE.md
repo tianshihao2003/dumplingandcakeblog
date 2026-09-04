@@ -649,6 +649,8 @@ return controller;
 | 把敏感内容/交互组件移出 `EncryptGate` 加密区，或把 `PasswordGate` 放到 `MainGridLayout` 外 | 内容明文出现在 HTML（加密失效）；PasswordGate 在 Swup 容器外时 SPA 导航进入加密页不重新挂载，门与解密注入全失效（2026-08-30 实测教训） | 加密页敏感内容必须包在 `<EncryptGate gateId>` 内且不含 client:Svelte 组件（is:inline 脚本放加密区外靠事件委托）；PasswordGate 必须放 `</MainGridLayout>` 之前（Swup 容器内） | 见 §3.4 |
 | 解密注入后未派发 `swup:content:replaced` | 加密区内的账单翻页、笔记本展开收起、评论按钮等依赖该事件重扫的内联脚本全部失灵 | `PasswordGate.svelte` 的 `finishUnlock()` 已同步派发，勿删 | 见 §3.4 |
 | 把 API Key / Token / 密码硬编码进任何被 git 跟踪的文件（scripts/、注释、markdown 都算），或轻信注释里"会被 .gitignore 保护"的声明而不实测 | 公开仓库全历史可读，GitGuardian 告警、密钥被扫描器批量收割滥用（2026-08-30 GitGuardian 事故：DashScope Key 硬编码在 `scripts/生成摘要/index.ts` 长期公开，声明受 .gitignore 保护但实际从未生效） | 密钥一律放 `.env`（已 gitignore）+ `process.env.XXX` 读取，脚本调用带 `--env-file=.env`，`.env.example` 只留空模板；新增任何疑似含密钥的文件，提交前必须实测 `git check-ignore <path>` 与 `git ls-files <path>` 确认未被跟踪；一旦泄露：**先去对应控制台吊销重发（唯一根治）**，再从代码清除，git 历史清理通常不必要且代价大 |
+| 用文件 mtime 做集合排序/展示的兜底依据 | CI（EdgeOne/GitHub Actions）每次全新 clone，所有文件 mtime 都等于构建时刻、比任何业务日期都新——缺字段的旧条目会永远霸占"最新"区块（2026-09 友链页"新朋友"事故） | 排序只认 frontmatter 业务字段（如 friends 的 `added`）；字段缺失时构建期 `console.warn` 并让条目落到最后 |
+| 拿 Astro content 集合的 `item.id` 拼磁盘路径 / 匹配 public 静态文件 | id 是 github-slugger 规则（小写 + 移除标点、空格转连字符），与磁盘文件名不一致（`39-胡超，作品集.md` → id `39-胡超作品集`、`33-RAGNote.md` → `33-ragnote`），Linux CI 大小写敏感必失配 | 文件名 ↔ id 换算必须走同一 slug 规则（截图脚本 `scripts/友链截图/index.mjs` 已内置 github-slugger）；新增含大写/标点文件名的友链后核对 `public/assets/friends-shots/` 截图命名 |
 
 ---
 
@@ -664,6 +666,7 @@ return controller;
 | pnpm | 9.14.x | 唯一包管理器 |
 | Node.js | >= 22 | 运行时要求 |
 | Playwright | devDep（2026-08） | 友链截图脚本用（scripts/友链截图，chromium） |
+| github-slugger | devDep（2026-09） | 友链截图脚本生成与 Astro 一致的 entry id（scripts/友链截图） |
 
 > ⚠️ `stylus` 依赖已于 2026-08 移除（实测 Astro 7 构建不依赖它）——**勿新建 Stylus 文件**，统一用纯 CSS。
 

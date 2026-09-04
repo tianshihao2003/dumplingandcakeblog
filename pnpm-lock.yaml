@@ -243,6 +243,9 @@ importers:
       '@types/sanitize-html':
         specifier: ^2.16.0
         version: 2.16.1
+      github-slugger:
+        specifier: ^2.0.0
+        version: 2.0.0
       js-yaml:
         specifier: ^5.2.3
         version: 5.2.3
