@@ -72,53 +72,59 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
     <div class="bills-grid">
       <div class="bills-col">
         <div class="order-net"><BalanceCard income={yearStats.income} expense={yearStats.expense} balance={yearBalance} /></div>
-        <div class="order-today">
-          <div class="today-card">
-            <div class="today-head">
-              <h3 class="today-title">今日流水</h3>
-              <span class="today-date">{todayStats.label}</span>
-            </div>
-            <div class="today-body">
-              <div class="today-item">
-                <span class="today-item-label">支出</span>
-                <b class="today-item-value today-expense">¥{fmt(todayStats.expense)}</b>
-              </div>
-              <div class="today-item">
-                <span class="today-item-label">收入</span>
-                <b class="today-item-value today-income">¥{fmt(todayStats.income)}</b>
-              </div>
-              <div class="today-item">
-                <span class="today-item-label">记账笔数</span>
-                <b class="today-item-value today-count">{todayStats.count}</b>
-              </div>
-            </div>
-            {todayEntries.length > 0 ? (
-              <ul class="today-list">
-                {todayEntries.map((e) => (
-                  <li class="today-row">
-                    <span class="today-row-desc">{e.data.description || e.data.title || e.data.category}</span>
-                    <span class="today-row-meta">
-                      {e.data.time && <span class="today-row-time">{e.data.time}</span>}
-                      <span class="today-row-cat">{e.data.category}</span>
-                      <span class="today-row-slash">/</span>
-                      <b class="today-row-amt" data-type={e.data.type}>
-                        {e.data.type === "income" ? "+" : "-"}
-                        {fmt(Math.abs(e.data.amount))}
-                      </b>
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p class="today-empty">今天还没有记账</p>
-            )}
+      </div>
+      <div class="bills-col">
+        <div class="order-monthly"><MonthlySummaryCard income={monthIncome} expense={monthExpense} balance={monthBalance} /></div>
+      </div>
+    </div>
+    <div class="order-today">
+      <div class="today-card">
+        <div class="today-head">
+          <h3 class="today-title">今日流水</h3>
+          <span class="today-date">{todayStats.label}</span>
+        </div>
+        <div class="today-body">
+          <div class="today-item">
+            <span class="today-item-label">支出</span>
+            <b class="today-item-value today-expense">¥{fmt(todayStats.expense)}</b>
+          </div>
+          <div class="today-item">
+            <span class="today-item-label">收入</span>
+            <b class="today-item-value today-income">¥{fmt(todayStats.income)}</b>
+          </div>
+          <div class="today-item">
+            <span class="today-item-label">记账笔数</span>
+            <b class="today-item-value today-count">{todayStats.count}</b>
           </div>
         </div>
+        {todayEntries.length > 0 ? (
+          <ul class="today-list">
+            {todayEntries.map((e) => (
+              <li class="today-row">
+                <span class="today-row-desc">{e.data.description || e.data.title || e.data.category}</span>
+                <span class="today-row-meta">
+                  {e.data.time && <span class="today-row-time">{e.data.time}</span>}
+                  <span class="today-row-cat">{e.data.category}</span>
+                  <span class="today-row-slash">/</span>
+                  <b class="today-row-amt" data-type={e.data.type}>
+                    {e.data.type === "income" ? "+" : "-"}
+                    {fmt(Math.abs(e.data.amount))}
+                  </b>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="today-empty">今天还没有记账</p>
+        )}
+      </div>
+    </div>
+    <div class="bills-grid">
+      <div class="bills-col">
         <div class="order-daily"><DailyTrendCard year={year} month={month} data={daily} /></div>
         <div class="order-income"><IncomeCategoryCard data={incomeList} totalCount={incomeTotalCount} totalIncome={incomeTotalAmt} /></div>
       </div>
       <div class="bills-col">
-        <div class="order-monthly"><MonthlySummaryCard income={monthIncome} expense={monthExpense} balance={monthBalance} /></div>
         <div class="order-yearly"><YearlyFlowCard year={year} data={yearly} /></div>
         <div class="order-expense"><ExpenseRankCard data={expenseRank} totalCount={expenseCount} totalExpense={expenseTotal} /></div>
       </div>
@@ -178,13 +184,6 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
 @media(max-width:900px){
   .bills-grid{ grid-template-columns:1fr; }
   .bills-col{ display:contents; }
-  .order-net{ order:1; }
-  .order-today{ order:2; }
-  .order-monthly{ order:3; }
-  .order-daily{ order:4; }
-  .order-yearly{ order:5; }
-  .order-income{ order:6; }
-  .order-expense{ order:7; }
 }
 /* 中间放不下时等比再缩一点 */
 @media(max-width:1200px){
