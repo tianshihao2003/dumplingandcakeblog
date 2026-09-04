@@ -78,6 +78,16 @@ function injectPayload(html: string) {
 	if (!holder) return;
 	holder.innerHTML = html;
 	holder.classList.remove("encrypt-payload");
+	// innerHTML 注入的 <script> 不会执行：重建 script 元素激活解密内容里的
+	// 内联脚本（账单筛选/分页等），脚本自身用 dataset guard 保证幂等
+	holder.querySelectorAll("script").forEach((old) => {
+		const s = document.createElement("script");
+		for (const attr of Array.from(old.attributes)) {
+			s.setAttribute(attr.name, attr.value);
+		}
+		s.textContent = old.textContent;
+		old.parentNode?.replaceChild(s, old);
+	});
 }
 
 function lockBackgroundScroll() {

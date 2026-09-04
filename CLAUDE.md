@@ -56,7 +56,7 @@ src/
 │   ├── layout/          # 布局组件：Navbar, Footer, SideBar, HomeHero... (19)
 │   ├── misc/            # License, RelatedPosts, SharePoster (3)
 │   ├── moments/         # 动态卡片与评论弹窗
-│   ├── bills/         # 账单/资金（6：Balance 年度结余横幅卡 + 今日流水（含时刻，位于结余卡下）+ DailyTrend/ExpenseRank/IncomeCategory/MonthlySummary/YearlyFlow，按图两栏等比缩小）
+│   ├── bills/         # 账单/资金（7：Balance 年度结余横幅卡 + MonthlyFlow 月度流水（按日分组/月份筛选/分页）+ BillCalendar 账单日历（农历+每日收支）+ DailyTrend/ExpenseRank/IncomeCategory/MonthlySummary/YearlyFlow，按图两栏等比缩小）
 │   ├── schedules/     # 日程（3：ScheduleCalendar/ScheduleList/SchedulesView 周视图默认 + 提醒 + 分页等高）
 │   ├── security/        # 页面加密（2：EncryptGate.astro 构建时 AES 加密壳 + PasswordGate.svelte 毛玻璃密码门）
 │   ├── pages/           # 页面级组件：bangumi, books（Bookshelf/BookCard：3D 书本卡片 + 影视页同款胶囊筛选（分类+读过/在读/想读）+ ClientPagination 分页 8/6 本每页，SSR 隐藏非首页防闪烁）, movies-games, music (10)

@@ -1,0 +1,104 @@
+---
+interface CalCell {
+	day: number;
+	lunar: string;
+	inMonth: boolean;
+	income: number;
+	expense: number;
+	dateKey: string;
+}
+interface CalMonth {
+	key: string;
+	label: string;
+	weeks: CalCell[][];
+}
+interface Props {
+	months: CalMonth[];
+	currentMonth: string;
+}
+const { months, currentMonth } = Astro.props;
+const fmt = (n: number) => n.toFixed(2);
+const WEEK_HEADS = ["日", "一", "二", "三", "四", "五", "六"];
+---
+<div class="cal-card" data-cal-card data-current-month={currentMonth}>
+  <div class="cal-head">
+    <h3 class="cal-title">账单日历</h3>
+    <span class="cal-sub">农历 · 每日收支</span>
+  </div>
+  {months.map((m) => (
+    <div class="cal-month" data-month-block={m.key} hidden={m.key !== currentMonth}>
+      <div class="cal-grid cal-week-heads">
+        {WEEK_HEADS.map((w) => (
+          <span class="cal-wd">{w}</span>
+        ))}
+      </div>
+      {m.weeks.map((week) => (
+        <div class="cal-grid">
+          {week.map((cell) => (
+            <div class="cal-cell" class:cal-out={!cell.inMonth} data-cal-date={cell.dateKey}>
+              <span class="cal-day">{cell.day}</span>
+              <span class="cal-lunar">{cell.lunar}</span>
+              {cell.expense > 0 && <span class="cal-amt cal-exp">-{fmt(cell.expense)}</span>}
+              {cell.income > 0 && <span class="cal-amt cal-inc">+{fmt(cell.income)}</span>}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  ))}
+</div>
+<script is:inline>
+(function(){
+  function init(root){
+    if(!root || root.dataset.calInit === "1") return;
+    root.dataset.calInit = "1";
+    var currentMonth = root.dataset.currentMonth || "";
+    function apply(month){
+      root.querySelectorAll('[data-month-block]').forEach(function(el){
+        el.hidden = el.dataset.monthBlock !== month;
+      });
+    }
+    var flowSelect = document.querySelector('.flow-month-select');
+    apply(flowSelect && flowSelect.value ? flowSelect.value : currentMonth);
+    document.addEventListener('bills:month-change', function(ev){
+      var m = ev.detail && ev.detail.month;
+      if(m) apply(m);
+    });
+    var now = new Date();
+    var todayKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    root.querySelectorAll('[data-cal-date]').forEach(function(el){
+      el.classList.toggle('is-today', el.dataset.calDate === todayKey);
+    });
+  }
+  function scan(){ document.querySelectorAll('[data-cal-card]').forEach(init); }
+  scan();
+  document.addEventListener('swup:content:replaced', scan);
+})();
+</script>
+<style>
+@reference "../../styles/main.css";
+.cal-card{ background:#fff; border:1px solid oklch(0 0 0 / 0.06); border-radius:0.75rem; padding:0.8rem 0.95rem; }
+:root.dark .cal-card{ background: oklch(0.16 0 0 / 0.86); border-color: oklch(1 0 0 / 0.08); }
+.cal-head{ display:flex; align-items:baseline; justify-content:space-between; gap:0.6rem; margin-bottom:0.55rem; }
+.cal-title{ font-size:0.82rem; font-weight:700; margin:0; }
+:root.dark .cal-title{ color: oklch(0.90 0 0); }
+.cal-sub{ font-size:0.62rem; color:var(--guestbook-muted); white-space:nowrap; }
+.cal-grid{ display:grid; grid-template-columns:repeat(7, 1fr); gap:0.4rem; }
+.cal-grid + .cal-grid{ margin-top:0.4rem; }
+.cal-week-heads{ margin-bottom:0.15rem; }
+.cal-wd{ text-align:center; font-size:0.66rem; color:var(--guestbook-muted); padding:0.15rem 0; }
+.cal-cell{ background: oklch(0 0 0 / 0.03); border-radius:0.55rem; padding:0.42rem 0.2rem 0.45rem; display:flex; flex-direction:column; align-items:center; gap:0.1rem; min-height:3.6rem; }
+:root.dark .cal-cell{ background: oklch(1 0 0 / 0.05); }
+.cal-cell.cal-out{ opacity:0.42; }
+.cal-cell.is-today{ outline:1.5px solid oklch(0.72 0.15 155 / 0.55); }
+.cal-day{ font-size:0.82rem; font-weight:700; line-height:1; }
+:root.dark .cal-day{ color: oklch(0.90 0 0); }
+.cal-cell.is-today .cal-day{ color:#16a34a; }
+:root.dark .cal-cell.is-today .cal-day{ color: oklch(0.72 0.15 155); }
+.cal-lunar{ font-size:0.58rem; color:var(--guestbook-muted); line-height:1.25; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cal-amt{ font-size:0.6rem; font-weight:600; line-height:1.25; font-variant-numeric:tabular-nums; }
+.cal-exp{ color:#0e7490; }
+:root.dark .cal-exp{ color: oklch(0.72 0.1 210); }
+.cal-inc{ color:#ef4444; }
+:root.dark .cal-inc{ color: oklch(0.72 0.15 25); }
+</style>

@@ -1,9 +1,12 @@
 ---
 import { getCollection } from "astro:content";
+import { Solar } from "lunar-javascript";
 import BalanceCard from "@/components/bills/BalanceCard.astro";
+import BillCalendarCard from "@/components/bills/BillCalendarCard.astro";
 import DailyTrendCard from "@/components/bills/DailyTrendCard.astro";
 import ExpenseRankCard from "@/components/bills/ExpenseRankCard.astro";
 import IncomeCategoryCard from "@/components/bills/IncomeCategoryCard.astro";
+import MonthlyFlowCard from "@/components/bills/MonthlyFlowCard.astro";
 import MonthlySummaryCard from "@/components/bills/MonthlySummaryCard.astro";
 import YearlyFlowCard from "@/components/bills/YearlyFlowCard.astro";
 import EncryptGate from "@/components/security/EncryptGate.astro";
@@ -14,8 +17,10 @@ import {
 	categoryIncomeList,
 	dailyIncomeExpense,
 	getTodayMonthYearStats,
+	groupBillsByDay,
 	yearlyMonthlyFlow,
 } from "@/utils/bill-adapter";
+import { lunarLabel } from "@/utils/lunar";
 
 const bills = await getCollection("bills");
 const sorted = [...bills].sort(
@@ -33,32 +38,124 @@ const incomeList = categoryIncomeList(sorted, year, month, 100);
 const monthIncome = period.month.income;
 const monthExpense = period.month.expense;
 const monthBalance = monthIncome - monthExpense;
-// 今日支出区块数据
-const todayStats = period.today;
-const fmt = (n: number) => n.toFixed(2);
-// 当天记录的每一条账单（支出/收入）
-const todayStart = new Date(
-	now.getFullYear(),
-	now.getMonth(),
-	now.getDate(),
-	0,
-	0,
-	0,
-);
-const todayEnd = new Date(
-	now.getFullYear(),
-	now.getMonth(),
-	now.getDate(),
-	23,
-	59,
-	59,
-);
-const todayEntries = sorted
-	.filter((e) => e.data.date >= todayStart && e.data.date <= todayEnd)
-	.sort((a, b) => (b.data.time || "").localeCompare(a.data.time || ""));
 // 结余卡：年统计口径（本年收入 − 本年支出）
 const yearStats = period.year;
 const yearBalance = yearStats.income - yearStats.expense;
+// 月度流水：全部账单按月分桶，月内按天分组（降序），天按 time 降序
+const WEEKDAYS = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+const nowMonth = `${year}-${String(month).padStart(2, "0")}`;
+const monthsMap = new Map<
+	string,
+	{
+		key: string;
+		label: string;
+		days: {
+			key: string;
+			label: string;
+			income: number;
+			expense: number;
+			entries: {
+				cat: string;
+				desc: string;
+				time: string;
+				amount: number;
+				type: string;
+			}[];
+		}[];
+	}
+>();
+for (const [dayKey, entries] of groupBillsByDay(sorted)) {
+	const monthKey = dayKey.slice(0, 7);
+	let bucket = monthsMap.get(monthKey);
+	if (!bucket) {
+		const [y, m] = monthKey.split("-").map(Number);
+		bucket = { key: monthKey, label: `${y}年${m}月`, days: [] };
+		monthsMap.set(monthKey, bucket);
+	}
+	const d = entries[0].data.date;
+	const dayEntries = [...entries]
+		.sort((a, b) => (b.data.time || "").localeCompare(a.data.time || ""))
+		.map((e) => ({
+			cat: e.data.category || "其他",
+			desc: e.data.description || e.data.title || "",
+			time: e.data.time || "",
+			amount: e.data.amount,
+			type: e.data.type,
+		}));
+	bucket.days.push({
+		key: dayKey,
+		label: `${d.getMonth() + 1}月${d.getDate()}日(${WEEKDAYS[d.getDay()]})`,
+		income: dayEntries
+			.filter((e) => e.type === "income")
+			.reduce((s, e) => s + e.amount, 0),
+		expense: dayEntries
+			.filter((e) => e.type === "expense")
+			.reduce((s, e) => s + Math.abs(e.amount), 0),
+		entries: dayEntries,
+	});
+}
+if (!monthsMap.has(nowMonth)) {
+	monthsMap.set(nowMonth, {
+		key: nowMonth,
+		label: `${year}年${month}月`,
+		days: [],
+	});
+}
+const flowMonths = [...monthsMap.values()];
+// 账单日历：农历（初一显示月名）+ 每日收支，前后补齐整周
+function calLunarLabel(y: number, m: number, d: number): string {
+	try {
+		const lunar = Solar.fromYmd(y, m, d).getLunar();
+		if (lunar.getDayInChinese() === "初一") {
+			return `${lunar.getMonthInChinese()}月`;
+		}
+	} catch {
+		// 农历换算失败时回退普通标签
+	}
+	return lunarLabel(y, m, d);
+}
+const calendar = flowMonths.map((fm) => {
+	const [y, m] = fm.key.split("-").map(Number);
+	const totals = new Map(
+		fm.days.map((d) => [d.key, { income: d.income, expense: d.expense }]),
+	);
+	const lead = new Date(y, m - 1, 1).getDay();
+	const daysInMonth = new Date(y, m, 0).getDate();
+	const cells: {
+		day: number;
+		lunar: string;
+		inMonth: boolean;
+		income: number;
+		expense: number;
+		dateKey: string;
+	}[] = [];
+	const push = (date: Date, inMonth: boolean) => {
+		const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+		const t = inMonth ? totals.get(key) : undefined;
+		cells.push({
+			day: date.getDate(),
+			lunar: calLunarLabel(
+				date.getFullYear(),
+				date.getMonth() + 1,
+				date.getDate(),
+			),
+			inMonth,
+			income: t?.income ?? 0,
+			expense: t?.expense ?? 0,
+			dateKey: key,
+		});
+	};
+	for (let i = lead - 1; i >= 0; i--) push(new Date(y, m - 1, 1 - i), false);
+	for (let d = 1; d <= daysInMonth; d++) push(new Date(y, m - 1, d), true);
+	let tail = 1;
+	while (cells.length % 7 !== 0) {
+		push(new Date(y, m - 1, daysInMonth + tail), false);
+		tail++;
+	}
+	const weeks: (typeof cells)[] = [];
+	for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+	return { key: fm.key, label: fm.label, weeks };
+});
 // 支出排行总数
 const expenseTotal = expenseRank.reduce((s, r) => s + r.amount, 0);
 const expenseCount = expenseRank.reduce((s, r) => s + r.count, 0);
@@ -78,46 +175,10 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
       </div>
     </div>
     <div class="order-today">
-      <div class="today-card">
-        <div class="today-head">
-          <h3 class="today-title">今日流水</h3>
-          <span class="today-date">{todayStats.label}</span>
-        </div>
-        <div class="today-body">
-          <div class="today-item">
-            <span class="today-item-label">支出</span>
-            <b class="today-item-value today-expense">¥{fmt(todayStats.expense)}</b>
-          </div>
-          <div class="today-item">
-            <span class="today-item-label">收入</span>
-            <b class="today-item-value today-income">¥{fmt(todayStats.income)}</b>
-          </div>
-          <div class="today-item">
-            <span class="today-item-label">记账笔数</span>
-            <b class="today-item-value today-count">{todayStats.count}</b>
-          </div>
-        </div>
-        {todayEntries.length > 0 ? (
-          <ul class="today-list">
-            {todayEntries.map((e) => (
-              <li class="today-row">
-                <span class="today-row-desc">{e.data.description || e.data.title || e.data.category}</span>
-                <span class="today-row-meta">
-                  {e.data.time && <span class="today-row-time">{e.data.time}</span>}
-                  <span class="today-row-cat">{e.data.category}</span>
-                  <span class="today-row-slash">/</span>
-                  <b class="today-row-amt" data-type={e.data.type}>
-                    {e.data.type === "income" ? "+" : "-"}
-                    {fmt(Math.abs(e.data.amount))}
-                  </b>
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p class="today-empty">今天还没有记账</p>
-        )}
-      </div>
+      <MonthlyFlowCard months={flowMonths} currentMonth={nowMonth} />
+    </div>
+    <div class="order-cal">
+      <BillCalendarCard months={calendar} currentMonth={nowMonth} />
     </div>
     <div class="bills-grid">
       <div class="bills-col">
@@ -143,41 +204,6 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
 .bills-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; align-items:start; }
 /* 整体等比缩小：各卡片已按 0.9 比例缩减（padding/字号），此处再做容器级微缩 */
 .bills-col{ display:flex; flex-direction:column; gap:0.9rem; }
-/* 今日支出区块 */
-.today-card{ background:#fff; border:1px solid oklch(0 0 0 / 0.06); border-radius:0.75rem; padding:0.8rem 0.95rem; }
-:root.dark .today-card{ background: oklch(0.16 0 0 / 0.86); border-color: oklch(1 0 0 / 0.08); }
-.today-head{ display:flex; align-items:baseline; justify-content:space-between; gap:0.6rem; margin-bottom:0.55rem; }
-.today-title{ font-size:0.82rem; font-weight:700; margin:0; }
-:root.dark .today-title{ color: oklch(0.90 0 0); }
-.today-date{ font-size:0.62rem; color:var(--guestbook-muted); white-space:nowrap; }
-.today-body{ display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem; }
-.today-item{ display:flex; flex-direction:column; align-items:center; gap:0.15rem; padding:0.5rem 0.4rem; border-radius:0.5rem; background: oklch(0 0 0 / 0.03); }
-:root.dark .today-item{ background: oklch(1 0 0 / 0.05); }
-.today-item-label{ font-size:0.66rem; color:var(--guestbook-muted); }
-.today-item-value{ font-size:1.05rem; font-weight:800; letter-spacing:-0.01em; line-height:1.1; }
-.today-expense{ color:#0e7490; }
-.today-income{ color:#ef4444; }
-.today-count{ color:var(--deep-text); }
-:root.dark .today-expense{ color: oklch(0.72 0.1 210); }
-:root.dark .today-income{ color: oklch(0.72 0.15 25); }
-@media(max-width:480px){
-  .today-item-value{ font-size:0.92rem; }
-}
-/* 今日流水：当天明细列表 */
-.today-list{ list-style:none; margin:0.55rem 0 0; padding:0; display:flex; flex-direction:column; }
-.today-row{ display:flex; justify-content:space-between; align-items:baseline; gap:0.75rem; padding:0.42rem 0.15rem; border-top:1px solid oklch(0 0 0 / 0.05); font-size:0.75rem; }
-:root.dark .today-row{ border-color: oklch(1 0 0 / 0.06); }
-.today-row:first-child{ border-top:none; }
-.today-row-desc{ color:var(--deep-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
-:root.dark .today-row-desc{ color: oklch(0.88 0 0); }
-.today-row-meta{ display:inline-flex; align-items:baseline; gap:0.28rem; flex-shrink:0; white-space:nowrap; }
-.today-row-cat{ font-size:0.66rem; color:var(--guestbook-muted); }
-.today-row-time{ font-size:0.64rem; color:var(--guestbook-muted); opacity:0.85; font-variant-numeric:tabular-nums; }
-.today-row-slash{ color:var(--guestbook-muted); opacity:0.55; }
-.today-row-amt{ font-weight:700; white-space:nowrap; }
-.today-row-amt[data-type="expense"]{ color:#0e7490; }
-.today-row-amt[data-type="income"]{ color:#ef4444; }
-.today-empty{ margin:0.55rem 0 0; padding:0.5rem 0; text-align:center; font-size:0.74rem; color:var(--guestbook-muted); }
 .bills-footer{ display:flex; justify-content:center; padding-top:0.6rem; }
 .bills-custom-btn{ padding:0.45rem 0.9rem; border:1px solid oklch(0 0 0 / 0.12); border-radius:0.5rem; background:#fff; font-size:0.72rem; color:var(--guestbook-muted); cursor:pointer; }
 :root.dark .bills-custom-btn{ background: oklch(0.16 0 0 / 0.86); border-color: oklch(1 0 0 / 0.12); color:var(--guestbook-muted); }
