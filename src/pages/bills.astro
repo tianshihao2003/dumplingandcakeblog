@@ -10,7 +10,6 @@ import EncryptGate from "@/components/security/EncryptGate.astro";
 import PasswordGate from "@/components/security/PasswordGate.svelte";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import {
-	calcBillStats,
 	categoryExpenseRank,
 	categoryIncomeList,
 	dailyIncomeExpense,
@@ -22,7 +21,6 @@ const bills = await getCollection("bills");
 const sorted = [...bills].sort(
 	(a, b) => b.data.date.getTime() - a.data.date.getTime(),
 );
-const stats = calcBillStats(sorted);
 const now = new Date();
 // 固定用当前本地时间计算周期统计（图中为 2026-08-21，本月 08-01~08-31，本年 2026）
 const period = getTodayMonthYearStats(sorted, now);
@@ -55,9 +53,12 @@ const todayEnd = new Date(
 	59,
 	59,
 );
-const todayEntries = sorted.filter(
-	(e) => e.data.date >= todayStart && e.data.date <= todayEnd,
-);
+const todayEntries = sorted
+	.filter((e) => e.data.date >= todayStart && e.data.date <= todayEnd)
+	.sort((a, b) => (b.data.time || "").localeCompare(a.data.time || ""));
+// 结余卡：年统计口径（本年收入 − 本年支出）
+const yearStats = period.year;
+const yearBalance = yearStats.income - yearStats.expense;
 // 支出排行总数
 const expenseTotal = expenseRank.reduce((s, r) => s + r.amount, 0);
 const expenseCount = expenseRank.reduce((s, r) => s + r.count, 0);
@@ -70,7 +71,49 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
     <div class="bills-page">
     <div class="bills-grid">
       <div class="bills-col">
-        <div class="order-net"><BalanceCard income={stats.income} expense={stats.expense} balance={stats.balance} /></div>
+        <div class="order-net"><BalanceCard income={yearStats.income} expense={yearStats.expense} balance={yearBalance} /></div>
+        <div class="order-today">
+          <div class="today-card">
+            <div class="today-head">
+              <h3 class="today-title">今日流水</h3>
+              <span class="today-date">{todayStats.label}</span>
+            </div>
+            <div class="today-body">
+              <div class="today-item">
+                <span class="today-item-label">支出</span>
+                <b class="today-item-value today-expense">¥{fmt(todayStats.expense)}</b>
+              </div>
+              <div class="today-item">
+                <span class="today-item-label">收入</span>
+                <b class="today-item-value today-income">¥{fmt(todayStats.income)}</b>
+              </div>
+              <div class="today-item">
+                <span class="today-item-label">记账笔数</span>
+                <b class="today-item-value today-count">{todayStats.count}</b>
+              </div>
+            </div>
+            {todayEntries.length > 0 ? (
+              <ul class="today-list">
+                {todayEntries.map((e) => (
+                  <li class="today-row">
+                    <span class="today-row-desc">{e.data.description || e.data.title || e.data.category}</span>
+                    <span class="today-row-meta">
+                      {e.data.time && <span class="today-row-time">{e.data.time}</span>}
+                      <span class="today-row-cat">{e.data.category}</span>
+                      <span class="today-row-slash">/</span>
+                      <b class="today-row-amt" data-type={e.data.type}>
+                        {e.data.type === "income" ? "+" : "-"}
+                        {fmt(Math.abs(e.data.amount))}
+                      </b>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p class="today-empty">今天还没有记账</p>
+            )}
+          </div>
+        </div>
         <div class="order-daily"><DailyTrendCard year={year} month={month} data={daily} /></div>
         <div class="order-income"><IncomeCategoryCard data={incomeList} totalCount={incomeTotalCount} totalIncome={incomeTotalAmt} /></div>
       </div>
@@ -79,45 +122,6 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
         <div class="order-yearly"><YearlyFlowCard year={year} data={yearly} /></div>
         <div class="order-expense"><ExpenseRankCard data={expenseRank} totalCount={expenseCount} totalExpense={expenseTotal} /></div>
       </div>
-    </div>
-    <div class="today-card">
-      <div class="today-head">
-        <h3 class="today-title">今日流水</h3>
-        <span class="today-date">{todayStats.label}</span>
-      </div>
-      <div class="today-body">
-        <div class="today-item">
-          <span class="today-item-label">支出</span>
-          <b class="today-item-value today-expense">¥{fmt(todayStats.expense)}</b>
-        </div>
-        <div class="today-item">
-          <span class="today-item-label">收入</span>
-          <b class="today-item-value today-income">¥{fmt(todayStats.income)}</b>
-        </div>
-        <div class="today-item">
-          <span class="today-item-label">记账笔数</span>
-          <b class="today-item-value today-count">{todayStats.count}</b>
-        </div>
-      </div>
-      {todayEntries.length > 0 ? (
-        <ul class="today-list">
-          {todayEntries.map((e) => (
-            <li class="today-row">
-              <span class="today-row-desc">{e.data.description || e.data.title || e.data.category}</span>
-              <span class="today-row-meta">
-                <span class="today-row-cat">{e.data.category}</span>
-                <span class="today-row-slash">/</span>
-                <b class="today-row-amt" data-type={e.data.type}>
-                  {e.data.type === "income" ? "+" : "-"}
-                  {fmt(Math.abs(e.data.amount))}
-                </b>
-              </span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p class="today-empty">今天还没有记账</p>
-      )}
     </div>
     <div class="bills-footer">
       <button class="bills-custom-btn" type="button">+ 自定义首页</button>
@@ -162,6 +166,7 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
 :root.dark .today-row-desc{ color: oklch(0.88 0 0); }
 .today-row-meta{ display:inline-flex; align-items:baseline; gap:0.28rem; flex-shrink:0; white-space:nowrap; }
 .today-row-cat{ font-size:0.66rem; color:var(--guestbook-muted); }
+.today-row-time{ font-size:0.64rem; color:var(--guestbook-muted); opacity:0.85; font-variant-numeric:tabular-nums; }
 .today-row-slash{ color:var(--guestbook-muted); opacity:0.55; }
 .today-row-amt{ font-weight:700; white-space:nowrap; }
 .today-row-amt[data-type="expense"]{ color:#0e7490; }
@@ -174,11 +179,12 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
   .bills-grid{ grid-template-columns:1fr; }
   .bills-col{ display:contents; }
   .order-net{ order:1; }
-  .order-monthly{ order:2; }
-  .order-daily{ order:3; }
-  .order-yearly{ order:4; }
-  .order-income{ order:5; }
-  .order-expense{ order:6; }
+  .order-today{ order:2; }
+  .order-monthly{ order:3; }
+  .order-daily{ order:4; }
+  .order-yearly{ order:5; }
+  .order-income{ order:6; }
+  .order-expense{ order:7; }
 }
 /* 中间放不下时等比再缩一点 */
 @media(max-width:1200px){

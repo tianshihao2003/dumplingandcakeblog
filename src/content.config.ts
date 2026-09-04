@@ -293,6 +293,12 @@ const billsCollection = defineCollection({
 		category: z.string().default("其他"),
 		account: z.string().default("其他"),
 		date: z.coerce.date(),
+		time: z
+			.string()
+			.regex(/^\d{2}:\d{2}$/)
+			.or(z.literal(""))
+			.optional()
+			.default(""),
 		description: z.string().optional().default(""),
 		tags: z.array(z.string()).optional().default([]),
 	}),

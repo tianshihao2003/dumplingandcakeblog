@@ -872,6 +872,10 @@ content:
             options:
               time: false
               format: yyyy-MM-dd
+          - name: time
+            label: 时间
+            type: string
+            description: 记账时刻，格式 HH:mm（如 09:30），可留空
           - name: description
             label: 备注
             type: text

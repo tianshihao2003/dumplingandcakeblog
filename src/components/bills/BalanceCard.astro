@@ -11,15 +11,15 @@ const fmt = (n: number) => n.toFixed(2);
   <div class="balance-card__bg" aria-hidden="true"></div>
   <div class="balance-card__overlay"></div>
   <div class="balance-card__content">
-    <div class="balance-card__label">累计结余</div>
+    <div class="balance-card__label">年度结余</div>
     <div class="balance-card__value">
       <span class="balance-card__num">{fmt(balance)}</span>
       <span class="balance-card__eye" aria-hidden="true">◉</span>
     </div>
     <div class="balance-card__sub">
-      <span>总收入 {fmt(income)}</span>
+      <span>本年收入 {fmt(income)}</span>
       <span class="balance-card__divider">|</span>
-      <span>总支出 {fmt(expense)}</span>
+      <span>本年支出 {fmt(expense)}</span>
     </div>
   </div>
 </div>
