@@ -1,0 +1,42 @@
+---
+interface Props {
+	income: number;
+	expense: number;
+	balance: number;
+}
+const { income, expense, balance } = Astro.props;
+const fmt = (n: number) => n.toFixed(2);
+---
+<div class="balance-card">
+  <div class="balance-card__bg" aria-hidden="true"></div>
+  <div class="balance-card__overlay"></div>
+  <div class="balance-card__content">
+    <div class="balance-card__label">累计结余</div>
+    <div class="balance-card__value">
+      <span class="balance-card__num">{fmt(balance)}</span>
+      <span class="balance-card__eye" aria-hidden="true">◉</span>
+    </div>
+    <div class="balance-card__sub">
+      <span>总收入 {fmt(income)}</span>
+      <span class="balance-card__divider">|</span>
+      <span>总支出 {fmt(expense)}</span>
+    </div>
+  </div>
+</div>
+<style>
+@reference "../../styles/main.css";
+.balance-card{ position:relative; height:10.2rem; border-radius:0.75rem; overflow:hidden; background:#87c7e8; }
+.balance-card__bg{ position:absolute; inset:0; background-image:url("https://img.tsh520.cn/file/blog/随机封面图/1787466729659_【哲风壁纸】奶牛-树木-牛.webp"); background-size:cover; background-position:center 35%; }
+.balance-card__overlay{ position:absolute; inset:0; background: linear-gradient(90deg, oklch(0 0 0 / 0.28) 0%, oklch(0 0 0 / 0.06) 45%, transparent 65%); }
+.balance-card__content{ position:relative; z-index:1; height:100%; display:flex; flex-direction:column; justify-content:center; gap:0.35rem; padding:1.1rem 1.2rem; color:#fff; }
+.balance-card__label{ font-size:0.72rem; opacity:0.92; letter-spacing:0.04em; }
+.balance-card__value{ display:flex; align-items:center; gap:0.45rem; line-height:1; }
+.balance-card__num{ font-size:1.9rem; font-weight:800; letter-spacing:-0.02em; text-shadow:0 1px 8px oklch(0 0 0 / 0.18); }
+.balance-card__eye{ font-size:0.95rem; opacity:0.9; }
+.balance-card__sub{ display:flex; align-items:center; gap:0.5rem; font-size:0.7rem; opacity:0.92; margin-top:0.15rem; }
+.balance-card__divider{ opacity:0.6; }
+@media(max-width:768px){
+  .balance-card{ height:9rem; }
+  .balance-card__num{ font-size:1.6rem; }
+}
+</style>

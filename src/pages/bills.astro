@@ -1,10 +1,10 @@
 ---
 import { getCollection } from "astro:content";
+import BalanceCard from "@/components/bills/BalanceCard.astro";
 import DailyTrendCard from "@/components/bills/DailyTrendCard.astro";
 import ExpenseRankCard from "@/components/bills/ExpenseRankCard.astro";
 import IncomeCategoryCard from "@/components/bills/IncomeCategoryCard.astro";
 import MonthlySummaryCard from "@/components/bills/MonthlySummaryCard.astro";
-import NetAssetCard from "@/components/bills/NetAssetCard.astro";
 import YearlyFlowCard from "@/components/bills/YearlyFlowCard.astro";
 import EncryptGate from "@/components/security/EncryptGate.astro";
 import PasswordGate from "@/components/security/PasswordGate.svelte";
@@ -38,7 +38,7 @@ const monthBalance = monthIncome - monthExpense;
 // 今日支出区块数据
 const todayStats = period.today;
 const fmt = (n: number) => n.toFixed(2);
-// 当天记录的每一条账单（含全部类型：支出/收入/负债/转账）
+// 当天记录的每一条账单（支出/收入）
 const todayStart = new Date(
 	now.getFullYear(),
 	now.getMonth(),
@@ -70,7 +70,7 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
     <div class="bills-page">
     <div class="bills-grid">
       <div class="bills-col">
-        <div class="order-net"><NetAssetCard netAsset={stats.netAsset} asset={stats.asset} liability={stats.liability} /></div>
+        <div class="order-net"><BalanceCard income={stats.income} expense={stats.expense} balance={stats.balance} /></div>
         <div class="order-daily"><DailyTrendCard year={year} month={month} data={daily} /></div>
         <div class="order-income"><IncomeCategoryCard data={incomeList} totalCount={incomeTotalCount} totalIncome={incomeTotalAmt} /></div>
       </div>
@@ -108,7 +108,7 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
                 <span class="today-row-cat">{e.data.category}</span>
                 <span class="today-row-slash">/</span>
                 <b class="today-row-amt" data-type={e.data.type}>
-                  {e.data.type === "income" || e.data.type === "liability" ? "+" : e.data.type === "expense" ? "-" : ""}
+                  {e.data.type === "income" ? "+" : "-"}
                   {fmt(Math.abs(e.data.amount))}
                 </b>
               </span>
@@ -165,9 +165,7 @@ const incomeTotalAmt = incomeList.reduce((s, r) => s + r.amount, 0);
 .today-row-slash{ color:var(--guestbook-muted); opacity:0.55; }
 .today-row-amt{ font-weight:700; white-space:nowrap; }
 .today-row-amt[data-type="expense"]{ color:#0e7490; }
-.today-row-amt[data-type="income"],
-.today-row-amt[data-type="liability"]{ color:#ef4444; }
-.today-row-amt[data-type="transfer"]{ color:var(--guestbook-muted); font-weight:600; }
+.today-row-amt[data-type="income"]{ color:#ef4444; }
 .today-empty{ margin:0.55rem 0 0; padding:0.5rem 0; text-align:center; font-size:0.74rem; color:var(--guestbook-muted); }
 .bills-footer{ display:flex; justify-content:center; padding-top:0.6rem; }
 .bills-custom-btn{ padding:0.45rem 0.9rem; border:1px solid oklch(0 0 0 / 0.12); border-radius:0.5rem; background:#fff; font-size:0.72rem; color:var(--guestbook-muted); cursor:pointer; }

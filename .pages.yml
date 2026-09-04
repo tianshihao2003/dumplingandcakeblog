@@ -857,8 +857,6 @@ content:
               values:
                 - { label: 支出, value: expense }
                 - { label: 收入, value: income }
-                - { label: 转账, value: transfer }
-                - { label: 负债, value: liability }
           - name: category
             label: 分类
             type: string

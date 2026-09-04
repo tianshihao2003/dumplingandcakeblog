@@ -29,7 +29,6 @@
 
 /* --- 基础重置 --- */
 @import './base/reset.css';
-@import './base/cursor.css';
 
 /* --- 组件样式 --- */
 @import './components/theme-transition.css';

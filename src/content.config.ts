@@ -289,9 +289,7 @@ const billsCollection = defineCollection({
 	schema: z.object({
 		title: z.string().optional().default(""),
 		amount: z.number(),
-		type: z
-			.enum(["income", "expense", "transfer", "liability"])
-			.default("expense"),
+		type: z.enum(["income", "expense"]).default("expense"),
 		category: z.string().default("其他"),
 		account: z.string().default("其他"),
 		date: z.coerce.date(),
