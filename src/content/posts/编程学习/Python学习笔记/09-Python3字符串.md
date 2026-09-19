@@ -29,9 +29,9 @@ Python 访问子字符串，可以使用方括号 \[\] 来截取字符串，字�
 
 索引值以 **0** 为开始值， **\-1** 为从末尾的开始位置。
 
-![](https://static.jyshare.com/wp-content/uploads/123456-20200923-1.svg)
+![](https://img.tsh520.cn/file/blog/article/123456-20200923-1(1).svg)
 
-![](https://www.runoob.com/wp-content/uploads/2014/05/python-str-runoob.png)
+![](https://img.tsh520.cn/file/blog/article/python-str-runoob.png)
 
 如下实例：
 

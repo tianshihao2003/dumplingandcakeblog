@@ -91,7 +91,7 @@ with open('example.txt', 'r') as file:
 
 ### 执行流程
 
-![](https://www.runoob.com/wp-content/uploads/2025/06/python-with-runoob2.png)
+![](https://img.tsh520.cn/file/blog/article/python-with-runoob2.png)
 
 ### 异常处理机制
 

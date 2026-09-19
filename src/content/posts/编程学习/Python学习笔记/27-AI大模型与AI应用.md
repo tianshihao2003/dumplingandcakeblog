@@ -47,9 +47,9 @@ AI（人工智能，学科统称）
 - AI 生成图像：短剧/故事配图
 - 电商导购：京东 AI 助手按用户描述推荐商品
 
-![豆包：AI 对话助手](assets/27-AI大模型与AI应用/doubao-chat.png)
+![豆包：AI 对话助手](https://img.tsh520.cn/file/blog/article/doubao-chat.png)
 
-![浙江政务服务网的办事服务智能问答：AI 应用在政务场景的落地](assets/27-AI大模型与AI应用/gov-smart-qa.png)
+![浙江政务服务网的办事服务智能问答：AI 应用在政务场景的落地](https://img.tsh520.cn/file/blog/article/gov-smart-qa.png)
 
 ## AI 应用开发要学什么
 

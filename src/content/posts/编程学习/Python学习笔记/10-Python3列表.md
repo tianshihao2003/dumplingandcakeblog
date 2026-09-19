@@ -37,7 +37,7 @@ list4 = ['red', 'green', 'blue', 'yellow', 'white', 'black']
 
 通过索引列表可以进行截取、组合等操作。
 
-![](https://www.runoob.com/wp-content/uploads/2014/05/positive-indexes-1.png)
+![](https://img.tsh520.cn/file/blog/article/positive-indexes-1.png)
 
 ## 实例
 
@@ -60,7 +60,7 @@ blue
 
 索引也可以从尾部开始，最后一个元素的索引为 -1，往前一位为 -2，以此类推。
 
-![](https://www.runoob.com/wp-content/uploads/2014/05/negative-indexes.png)
+![](https://img.tsh520.cn/file/blog/article/negative-indexes.png)
 
 ## 实例
 
@@ -83,7 +83,7 @@ yellow
 
 使用下标索引来访问列表中的值，同样你也可以使用方括号 [] 的形式截取字符，如下所示：
 
-![](https://www.runoob.com/wp-content/uploads/2014/05/first-slice.png)
+![](https://img.tsh520.cn/file/blog/article/first-slice.png)
 
 ## 实例
 

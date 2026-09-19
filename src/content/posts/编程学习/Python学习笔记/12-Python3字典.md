@@ -16,7 +16,7 @@ d = {key1 : value1, key2 : value2, key3 : value3 }
 
 **注意：** dict 作为 Python 的关键字和内置函数，变量名不建议命名为 **dict** 。
 
-![](https://www.runoob.com/wp-content/uploads/2016/04/py-dict-3.png)
+![](https://img.tsh520.cn/file/blog/article/py-dict-3.png)
 
 键必须是唯一的，但值则不必。
 
@@ -28,7 +28,7 @@ d = {key1 : value1, key2 : value2, key3 : value3 }
 tinydict = {'name': 'runoob', 'likes': 123, 'url': 'www.runoob.com'}
 ```
 
-![](https://www.runoob.com/wp-content/uploads/2016/04/py-dict-2.png)
+![](https://img.tsh520.cn/file/blog/article/py-dict-2.png)
 
 也可如此创建字典：
 

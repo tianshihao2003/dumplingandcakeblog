@@ -10,11 +10,11 @@ Python 条件语句是通过一条或多条语句的执行结果（True 或者 F
 
 可以通过下图来简单了解条件语句的执行过程:
 
-![](https://www.runoob.com/wp-content/uploads/2013/11/if-condition.jpg)
+![](https://img.tsh520.cn/file/blog/article/if-condition.jpg)
 
 代码执行过程：
 
-![](https://static.jyshare.com/images/mix/python-if.webp)
+![](https://img.tsh520.cn/file/blog/article/python-if.webp)
 
 ### 条件判断关键字
 
@@ -49,7 +49,7 @@ Python 中用 **elif** 代替了 **else if** ，所以if语句的关键字为：
 
 Gif 演示：
 
-![](https://www.runoob.com/wp-content/uploads/2014/05/006faQNTgw1f5wnm0mcxrg30ci07o47l.gif)
+![](https://img.tsh520.cn/file/blog/article/006faQNTgw1f5wnm0mcxrg30ci07o47l.gif)
 
 ### 实例
 

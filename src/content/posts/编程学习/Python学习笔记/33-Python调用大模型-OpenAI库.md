@@ -42,7 +42,7 @@ DeepSeek 的 API **兼容 OpenAI 的接口格式**，所以可以直接用 `open
 
 官方文档"首次调用 API"页给出的就是这三个值：
 
-![DeepSeek 官方文档-首次调用 API](assets/33-Python调用大模型-OpenAI库/deepseek-api-docs.png)
+![DeepSeek 官方文档-首次调用 API](https://img.tsh520.cn/file/blog/article/deepseek-api-docs.png)
 
 > [!NOTE]
 > 官方文档说明：出于与 OpenAI 兼容考虑，`base_url` 也可以设置成 `https://api.deepseek.com/v1` 来使用，但此处的 `v1` 与模型版本无关。

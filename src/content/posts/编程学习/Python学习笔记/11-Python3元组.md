@@ -12,7 +12,7 @@ Python 的元组与列表类似，不同之处在于元组的元素不能修改�
 
 元组创建很简单，只需要在括号中添加元素，并使用逗号隔开即可。
 
-![](https://www.runoob.com/wp-content/uploads/2016/04/tup-2020-10-27-10-26-2.png)
+![](https://img.tsh520.cn/file/blog/article/tup-2020-10-27-10-26-2.png)
 
 ## 实例(Python 3.0+)
 
@@ -46,7 +46,7 @@ tup1 = ()
 
 元组与字符串类似，下标索引从 0 开始，可以进行截取，组合等。
 
-![](https://www.runoob.com/wp-content/uploads/2016/04/py-tup-10-26.png)
+![](https://img.tsh520.cn/file/blog/article/py-tup-10-26.png)
 
 ---
 
@@ -145,7 +145,7 @@ NameError: name 'tup' is not defined
 tup = ('Google', 'Runoob', 'Taobao', 'Wiki', 'Weibo','Weixin')
 ```
 
-![](https://www.runoob.com/wp-content/uploads/2016/04/py-tup-7.png)
+![](https://img.tsh520.cn/file/blog/article/py-tup-7.png)
 
 | Python 表达式 | 结果 | 描述 |
 | --- | --- | --- |

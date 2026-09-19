@@ -17,7 +17,7 @@ Python 的设计具有很强的可读性，相比其他语言经常使用英文�
 - **Python 是面向对象语言:** 这意味着Python支持面向对象的风格或代码封装在对象的编程技术。
 - **Python 是初学者的语言：** Python 对初级程序员而言，是一种伟大的语言，它支持广泛的应用程序开发，从简单的文字处理到 WWW 浏览器再到游戏。
 
-![499](https://www.runoob.com/wp-content/uploads/2019/09/a700b5c8-d654-48f4-8c4c-63fc0070774f.webp)
+![499](https://img.tsh520.cn/file/blog/article/a700b5c8-d654-48f4-8c4c-63fc0070774f.webp)
 
 ---
 
@@ -42,7 +42,7 @@ Python3 最新源码，二进制文档，新闻资讯等可以在 Python 的官�
 
 Python 官网： [https://www.python.org/](https://www.python.org/)
 
-![](https://www.runoob.com/wp-content/uploads/2018/07/33d69961-710e-452e-9429-93cfdf2d3110.png)
+![](https://img.tsh520.cn/file/blog/article/33d69961-710e-452e-9429-93cfdf2d3110.png)
 
 Python3 提供了完整的中文文档： [https://docs.python.org/zh-cn/3/](https://docs.python.org/zh-cn/3/)
 
@@ -52,7 +52,7 @@ Python3 提供了完整的中文文档： [https://docs.python.org/zh-cn/3/](htt
 
 以下为各平台对应的 Python 安装包下载地址：
 
-![](https://www.runoob.com/wp-content/uploads/2018/07/9e11647a-cd0e-4117-8c49-976c3027aabe.png)
+![](https://img.tsh520.cn/file/blog/article/9e11647a-cd0e-4117-8c49-976c3027aabe.png)
 
 **Source Code** 可用于 Linux 上的安装。
 
@@ -64,7 +64,7 @@ Python3 提供了完整的中文文档： [https://docs.python.org/zh-cn/3/](htt
 
 打开 WEB 浏览器访问 [https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/) ：
 
-![](https://www.runoob.com/wp-content/uploads/2018/07/1bf7d20f853bf2c4a8f03c03c864982f.png)
+![](https://img.tsh520.cn/file/blog/article/1bf7d20f853bf2c4a8f03c03c864982f.png)
 
 这些链接提供了不同类型的 Python 安装文件，适用于不同类型的 Windows 系统和使用情景：
 
@@ -77,17 +77,17 @@ Python3 提供了完整的中文文档： [https://docs.python.org/zh-cn/3/](htt
 
 记得勾选 **Add Python 3.6 to PATH** 。
 
-![](https://www.runoob.com/wp-content/uploads/2018/07/20180226150011548.png)
+![](https://img.tsh520.cn/file/blog/article/20180226150011548.png)
 
 注意：如果没有勾选 **Add Python3.6 to PATH** 」，会导致命令行无法识别 python/python3 命令，需手动配置环境变量。
 
 按 Win+R 键，输入 cmd 调出命令提示符，输入 python:
 
-![](https://www.runoob.com/wp-content/uploads/2018/07/20170707155742110.png)
+![](https://img.tsh520.cn/file/blog/article/20170707155742110.png)
 
 也可以在开始菜单中搜索 **IDLE** ：
 
-![](https://www.runoob.com/wp-content/uploads/2018/07/460F6DFB-3BBF-4683-BEA0-23BE8DF021B0.jpg)
+![](https://img.tsh520.cn/file/blog/article/460F6DFB-3BBF-4683-BEA0-23BE8DF021B0.jpg)
 
 ### Unix & Linux 平台安装 Python3
 
@@ -146,7 +146,7 @@ Python 3.6.1
 
 MAC 系统都自带有 Python 环境，你可以在链接 [https://www.python.org/downloads/mac-osx/](https://www.python.org/downloads/mac-osx/) 上下载最新版安装。
 
-![](https://www.runoob.com/wp-content/uploads/2018/07/aecef1c5-7bf6-4668-a6d7-6937a242817e.png)
+![](https://img.tsh520.cn/file/blog/article/aecef1c5-7bf6-4668-a6d7-6937a242817e.png)
 
 你也可以参考源码安装的方式来安装。
 
@@ -215,7 +215,7 @@ PATH="$PATH:/usr/local/bin/python"
 - 在「用户变量」或「系统变量」中找到 Path 变量，双击编辑。
 - 点击「新建」，分别添加 Python3 的安装根路径和Scripts文件夹路径，点击「确定」保存所有配置。
 
-![](https://www.runoob.com/wp-content/uploads/2013/11/201209201707594792.png)
+![](https://img.tsh520.cn/file/blog/article/201209201707594792.png)
 
 > 更多详细配置内容参考： [https://www.runoob.com/w3cnote/add-python-to-path-on-windows-11.html](https://www.runoob.com/w3cnote/add-python-to-path-on-windows-11.html)
 
@@ -289,7 +289,7 @@ PyCharm 安装地址： [https://www.runoob.com/pycharm/pycharm-install.html](ht
 
 PyCharm 界面：
 
-![](https://www.runoob.com/wp-content/uploads/2026/07/newrunoob_1784096869537.png)
+![](https://img.tsh520.cn/file/blog/article/newrunoob_1784096869537.png)
 
 ---
 
@@ -339,13 +339,13 @@ Notebook 文件为 JSON 格式，由多个 Cell 组成，可混合代码与文�
 
 VSCode 安装也很简单，打开官网 [https://code.visualstudio.com/](https://code.visualstudio.com/) ，下载软件包，一步步安装即可，安装过程注意安装路径设置、环境变量默认自动添加到系统中，勾选以下所有选项：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/RM04TZb.png)
+![](https://img.tsh520.cn/file/blog/article/RM04TZb.png)
 
 VSCode 完整安装教程参考： [https://www.runoob.com/vscode/vscode-tutorial.html](https://www.runoob.com/vscode/vscode-tutorial.html)
 
 接着我们安装 Python 扩展：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/de824f4aad280b93a3c54a5a088c81ca.png)
+![](https://img.tsh520.cn/file/blog/article/de824f4aad280b93a3c54a5a088c81ca.png)
 
 ---
 
@@ -353,15 +353,15 @@ VSCode 完整安装教程参考： [https://www.runoob.com/vscode/vscode-tutoria
 
 打开 VScode，然后点击新建文件：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/vscode-py-1.jpeg)
+![](https://img.tsh520.cn/file/blog/article/vscode-py-1.jpeg)
 
 点击选择语言：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/vscode-py-2.jpg)
+![](https://img.tsh520.cn/file/blog/article/vscode-py-2.jpg)
 
 在搜索框输入 Python，选中 Python 选项：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/vscode-py-3.jpg)
+![](https://img.tsh520.cn/file/blog/article/vscode-py-3.jpg)
 
 输入代码：
 
@@ -371,15 +371,15 @@ print("Runoob")
 
 右击鼠标，选择在交互式窗口运行文件， **如果有提示需要安装扩展，直接点安装即可(没有安装会一直显示在连接 Python 内核)：**
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/vscode-py-4.jpeg)
+![](https://img.tsh520.cn/file/blog/article/vscode-py-4.jpeg)
 
 另外，我们也可以打开一个已存在的文件或目录（文件夹），比如我们打开一个 runoob-test，你也可以自己创建一个：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/326906F8-C20B-4D76-AC86-FED6544B3DB5.jpeg)
+![](https://img.tsh520.cn/file/blog/article/326906F8-C20B-4D76-AC86-FED6544B3DB5.jpeg)
 
 然后我们创建一个 test.py 文件，点击下面新建文件图标，输入文件名 test.py：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/86278531-3C46-4E05-BBE9-3E76CE82722A.jpg)
+![](https://img.tsh520.cn/file/blog/article/86278531-3C46-4E05-BBE9-3E76CE82722A.jpg)
 
 **注：** runoob-test 里面包含了一个.vscode 文件夹，是一些配置信息，可以先不用管。
 
@@ -391,11 +391,11 @@ print("Runoob")
 
 点击右上角绿色图标，即可运行：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/438AF06B-6E02-42F0-9062-53337E8E90AD.jpg)
+![](https://img.tsh520.cn/file/blog/article/438AF06B-6E02-42F0-9062-53337E8E90AD.jpg)
 
 可以右击文件，选择"在终端中运行 Python 文件"：
 
-![](https://www.runoob.com/wp-content/uploads/2021/08/16743E52-BE92-424B-AE7B-F9F602A44462.jpeg)
+![](https://img.tsh520.cn/file/blog/article/16743E52-BE92-424B-AE7B-F9F602A44462.jpeg)
 
 当然也可以在代码窗口上右击鼠标，选择"在终端中运行 Python 文件"。
 

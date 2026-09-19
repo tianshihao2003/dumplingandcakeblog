@@ -247,7 +247,7 @@ Python 中的字符串用单引号 ' 或双引号 " 括起来，同时使用反�
 
 索引值以 0 为开始值，-1 为从末尾开始的位置。
 
-![](https://static.jyshare.com/wp-content/uploads/123456-20200923-1.svg)
+![](https://img.tsh520.cn/file/blog/article/123456-20200923-1.svg)
 
 加号 + 是字符串的连接符，星号 \* 表示复制当前字符串，与之结合的数字为复制的次数。实例如下：
 
@@ -396,7 +396,7 @@ List（列表）是 Python 中使用最频繁的数据类型。
 
 索引值以 0 为开始值，-1 为从末尾的开始位置。
 
-![](https://www.runoob.com/wp-content/uploads/2014/08/list_slicing1_new1.png)
+![](https://img.tsh520.cn/file/blog/article/list_slicing1_new1.png)
 
 加号 + 是列表连接运算符，星号 \* 是重复操作。如下实例：
 
@@ -453,7 +453,7 @@ List 内置了有很多方法，例如 `append()` 、 `pop()` 等等，这在后
 
 Python 列表截取可以接收第三个参数，参数作用是截取的步长，以下实例在索引 1 到索引 4 的位置设置步长为 2（每隔一个位置取一个元素）来截取列表：
 
-![](https://www.runoob.com/wp-content/uploads/2014/08/py-dict-1.png)
+![](https://img.tsh520.cn/file/blog/article/py-dict-1.png)
 
 如果第三个参数为负数表示逆向读取，以下实例用于翻转字符串中的单词顺序：
 

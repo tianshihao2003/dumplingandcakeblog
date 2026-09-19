@@ -12,7 +12,7 @@ Python 中的循环语句有 for 和 while。
 
 Python 循环语句的控制结构图如下所示：
 
-![](https://www.runoob.com/wp-content/uploads/2015/12/loop.png)
+![](https://img.tsh520.cn/file/blog/article/loop.png)
 
 ### 循环控制关键字与方法
 
@@ -40,11 +40,11 @@ while 判断条件(condition)：
 
 执行流程图如下：
 
-![](https://www.runoob.com/wp-content/uploads/2013/11/886A6E10-58F1-4A9B-8640-02DBEFF0EF9A.jpg)
+![](https://img.tsh520.cn/file/blog/article/886A6E10-58F1-4A9B-8640-02DBEFF0EF9A.jpg)
 
 执行 Gif 演示：
 
-![](https://www.runoob.com/wp-content/uploads/2014/05/006faQNTgw1f5wnm06h3ug30ci08cake.gif)
+![](https://img.tsh520.cn/file/blog/article/006faQNTgw1f5wnm06h3ug30ci08cake.gif)
 
 同样需要注意冒号和缩进。另外，在 Python 中没有 do..while 循环。
 
@@ -171,7 +171,7 @@ for \<variable> in \<sequence>: \<statements> else: \<statements>
 
 **流程图：**
 
-![](https://www.runoob.com/wp-content/uploads/2013/11/A71EC47E-BC53-4923-8F88-B027937EE2FF.jpg)
+![](https://img.tsh520.cn/file/blog/article/A71EC47E-BC53-4923-8F88-B027937EE2FF.jpg)
 
 Python for 循环实例：
 
@@ -390,19 +390,19 @@ print("完成循环!")
 
 **break 执行流程图：**
 
-![](https://www.runoob.com/wp-content/uploads/2014/09/E5A591EF-6515-4BCB-AEAA-A97ABEFC5D7D.jpg)
+![](https://img.tsh520.cn/file/blog/article/E5A591EF-6515-4BCB-AEAA-A97ABEFC5D7D.jpg)
 
 **continue 执行流程图：**
 
-![](https://www.runoob.com/wp-content/uploads/2014/09/8962A4F1-B78C-4877-B328-903366EA1470.jpg)
+![](https://img.tsh520.cn/file/blog/article/8962A4F1-B78C-4877-B328-903366EA1470.jpg)
 
 while 语句代码执行过程：
 
-![](https://static.jyshare.com/images/mix/python-while.webp)
+![](https://img.tsh520.cn/file/blog/article/python-while.webp)
 
 for 语句代码执行过程：
 
-![](https://www.runoob.com/wp-content/uploads/2014/05/break-continue-536.png)
+![](https://img.tsh520.cn/file/blog/article/break-continue-536.png)
 
 **break** 语句可以跳出 for 和 while 的循环体。如果你从 for 或 while 循环中终止，任何对应的循环 else 块将不执行。
 
