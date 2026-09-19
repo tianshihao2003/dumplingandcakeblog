@@ -752,6 +752,7 @@ EdgeOne Pages（GitHub 集成自动构建：pnpm build → dist/，需配 13 个
    - 升级/降级依赖 → 更新第 16 节技术栈版本
    - 发现新的坑/规范/反模式 → 写入对应章节（或第 15 节反模式清单）
    - 完成模块/功能 → 按第 21 节更新 `changelog`，按第 22 节做收尾
+   - **Obsidian 插件 `plug-in/Obsidian/obsidian-image-manager/` 功能变更 → 必须同步更新博客文章 `src/content/posts/技术分享/Obsidian插件系列-ImageManager图床上传管理指南.md`（功能说明/设置项/操作步骤），并在文末"版本历史"加一行；同时升插件 manifest.json 版本号并重新 `pnpm build`**
 3. **新增规范**（本次添加）：文档不准确时（数字过时、功能删除等），及时修正，禁止"文档写的和实际不一致还照着做"
 4. **验证**：提交前跑 `pnpm build`；文档修改与代码修改在同一提交或相邻提交
 
