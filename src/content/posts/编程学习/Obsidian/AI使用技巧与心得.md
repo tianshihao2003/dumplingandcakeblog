@@ -72,7 +72,7 @@ AI 会在 `E:\GithubProgect\MyRunProject\Daily-Learning\python` 下创建以笔�
   ```python
   代码...
   ```
-```
+``` markdown
 
 **练习文件中的普通小练习题：**
 ```python
