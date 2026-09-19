@@ -189,6 +189,8 @@ Streamlit 的交互模型是：**用户每做一次交互（点按钮、输入�
 
 ### 二、裸写题
 
+
+
 - [ ] **2-1 做一个展示页**
   页面包含：大标题、一级标题、一段文字、分隔线、一个表格（三人三列，含总分行）。运行后能正常看到页面。
 
@@ -196,6 +198,25 @@ Streamlit 的交互模型是：**用户每做一次交互（点按钮、输入�
   > **一级 · 思路**：从大到小摆：标题 → 文字 → 分隔 → 表格
   > **二级 · 方法**：`st.title` / `st.header` / `st.write` / `st.divider` / `st.table`
   > **三级 · 骨架**：表格数据用字典表示，键是列名、值是列表
+
+  > [!TIP]- 参考答案（做完再点开）
+  > ```python
+  > import streamlit as st
+  > 
+  > st.title("我的展示页")
+  > st.header("一、成绩表格")
+  > st.write("下面是一个成绩表格，最后一列是总分。")
+  > st.divider()
+  > 
+  > data = {
+  >     "姓名": ["王林", "李慕婉", "贝罗"],
+  >     "语文": [98, 90, 59],
+  >     "数学": [88, 78, 65],
+  >     "英语": [99, 89, 87],
+  >     "总分": [285, 257, 211],
+  > }
+  > st.table(data)
+  > ```
 
 - [ ] **2-2 输入组件与回显**
   放三个输入组件（姓名、密码、性别单选），把用户输入的内容回显到页面上。
@@ -205,6 +226,20 @@ Streamlit 的交互模型是：**用户每做一次交互（点按钮、输入�
   > **二级 · 方法**：`st.text_input`（密码加 `type="password"`）、`st.radio`
   > **三级 · 骨架**：`gender = st.radio("性别", ["男","女","未知"], index=____)`
 
+  > [!TIP]- 参考答案（做完再点开）
+  > ```python
+  > import streamlit as st
+  > 
+  > name = st.text_input("请输入姓名")
+  > password = st.text_input("请输入密码", type="password")
+  > gender = st.radio("请输入您的性别", ["男", "女", "未知"], index=2)
+  > 
+  > st.divider()
+  > st.write(f"您输入的姓名为: {name}")
+  > st.write(f"您输入的密码为: {password}")
+  > st.write(f"您的性别为: {gender}")
+  > ```
+
 - [ ] **2-3 页面配置与媒体**
   给页面配置标题和图标、加 Logo，并放一张图片、一段音频、一段视频（用课程 resources 目录里的文件）。
 
@@ -212,3 +247,17 @@ Streamlit 的交互模型是：**用户每做一次交互（点按钮、输入�
   > **一级 · 思路**：页面配置要放在所有组件之前；媒体组件直接给文件路径
   > **二级 · 方法**：`st.set_page_config` / `st.logo` / `st.image` / `st.audio` / `st.video`
   > **三级 · 骨架**：路径相对于**运行命令时所在的目录**，写错会报找不到文件
+
+  > [!TIP]- 参考答案（做完再点开）
+  > ```python
+  > import streamlit as st
+  > 
+  > st.set_page_config(page_title="我的第一个页面", page_icon="🧊", layout="wide")
+  > 
+  > st.title("页面配置与媒体演示")
+  > st.logo("resources/logo.png")
+  > 
+  > st.image("resources/cat.jpg")
+  > st.audio("resources/news.mp3")
+  > st.video("resources/news.mp4")
+  > ```

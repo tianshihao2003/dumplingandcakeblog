@@ -110,6 +110,8 @@ if os.path.exists("sessions/2026-01-11_18-00-05.json"):
 
 ### 二、裸写题
 
+
+
 - [ ] **2-1 生成会话标识**
   打印一个形如 `2026-01-11_18-00-05` 的时间字符串；再打印一个中文格式的日期，如 `2026年01月11日`。
 
@@ -117,6 +119,19 @@ if os.path.exists("sessions/2026-01-11_18-00-05.json"):
   > **一级 · 思路**：取当前时间 → 用格式化字符串拼成想要的样式
   > **二级 · 方法**：`datetime.now().strftime("格式串")`
   > **三级 · 骨架**：中文格式就是格式串里直接写中文：`"%Y年%m月%d日"`
+
+  > [!TIP]- 参考答案（做完再点开）
+  > ```python
+  > from datetime import datetime
+  > 
+  > # 会话标识格式
+  > print(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+  > 
+  > # 中文日期格式（格式串里可以直接写中文）
+  > print(datetime.now().strftime("%Y年%m月%d日"))
+  > 
+  > # 连续运行两次，秒数不同（同一个脚本里两次 now() 也会不同）
+  > ```
 
 - [ ] **2-2 目录准备与列目录**
   写一个函数：如果 `sessions` 目录不存在就创建；然后列出该目录下所有 `.json` 文件名（去掉扩展名后打印）。
@@ -126,6 +141,29 @@ if os.path.exists("sessions/2026-01-11_18-00-05.json"):
   > **二级 · 方法**：`os.path.exists` / `os.mkdir` / `os.listdir` / `endswith(".json")`
   > **三级 · 骨架**：`if not os.path.____("sessions"):`
 
+  > [!TIP]- 参考答案（做完再点开）
+  > ```python
+  > import os
+  > 
+  > # 1. 目录不存在就创建
+  > if not os.path.exists("sessions"):
+  >     os.mkdir("sessions")
+  > 
+  > # 2. 造两个 json 文件
+  > with open("sessions/2026-01-11_18-00-05.json", "w", encoding="utf-8") as f:
+  >     f.write("{}")
+  > with open("sessions/2026-01-11_18-04-42.json", "w", encoding="utf-8") as f:
+  >     f.write("{}")
+  > 
+  > # 3. 列出 .json 文件并去掉后缀
+  > session_list = []
+  > for filename in os.listdir("sessions"):
+  >     if filename.endswith(".json"):
+  >         session_list.append(filename[:-5])
+  > session_list.sort(reverse=True)
+  > print(session_list)
+  > ```
+
 - [ ] **2-3 安全地删除文件**
   写一个函数：先创建一个临时文件（如 `temp_demo.txt`）并写入内容，再判断它存在后删除它，最后再列一次目录确认删掉了。
 
@@ -133,3 +171,22 @@ if os.path.exists("sessions/2026-01-11_18-00-05.json"):
   > **一级 · 思路**：删除前一定先判断存在，否则会抛异常
   > **二级 · 方法**：`os.path.exists` / `os.remove`
   > **三级 · 骨架**：`if os.path.____(path): os.____(path)`
+
+  > [!TIP]- 参考答案（做完再点开）
+  > ```python
+  > import os
+  > 
+  > # 1. 创建临时文件
+  > with open("temp_demo.txt", "w", encoding="utf-8") as f:
+  >     f.write("删除我\n")
+  > 
+  > # 2. 判断存在后删除
+  > if os.path.exists("temp_demo.txt"):
+  >     os.remove("temp_demo.txt")
+  >     print("已删除")
+  > 
+  > # 3. 确认
+  > print("temp_demo.txt" in os.listdir("."))
+  > 
+  > # 如果不判断存在就删，会抛：FileNotFoundError
+  > ```

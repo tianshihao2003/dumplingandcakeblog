@@ -123,6 +123,42 @@ curl https://api.deepseek.com/chat/completions \
 
 ### 二、动手写（写在笔记本上或直接发我）
 
+
+
 - [ ] **2-1** 手写一个最小的请求体 JSON：模型用 deepseek-chat，system 让 AI 自称"小甜甜"，user 问"你是谁"，不要流式
+
+  > [!TIP]- 参考答案（做完再点开）
+  > ```json
+  > {
+  >   "model": "deepseek-chat",
+  >   "messages": [
+  >     { "role": "system", "content": "你是一名可爱的AI助手, 你的名字叫小甜甜, 请以亲切、可爱语气来回答用户的问题" },
+  >     { "role": "user", "content": "你是谁" }
+  >   ],
+  >   "stream": false
+  > }
+  > ```
+
 - [ ] **2-2** 在上面基础上，补一条 assistant 的历史回复，说明"滚雪球"是怎么实现会话记忆的
+
+  > [!TIP]- 参考答案（做完再点开）
+  > 在 messages 里再加一条 assistant 的历史回复，模型就能"看到"自己说过什么：
+
+  > [!TIP]- 参考答案（做完再点开）
+  > ```json
+  > {
+  >   "model": "deepseek-chat",
+  >   "messages": [
+  >     { "role": "system", "content": "你是一名可爱的AI助手, 你的名字叫小甜甜, 请以亲切、可爱语气来回答用户的问题" },
+  >     { "role": "user", "content": "12个苹果,3个人怎么均分?" },
+  >     { "role": "assistant", "content": "嘻嘻，12个苹果分给3个人，每个人可以分到 4个苹果 哦～" },
+  >     { "role": "user", "content": "那2个人呢?" }
+  >   ],
+  >   "stream": false
+  > }
+  > ```
+
 - [ ] **2-3** 如果 Apifox 里返回 401，你会先检查请求头里的哪一项？为什么？
+
+  > [!TIP]- 参考答案（做完再点开）
+  > 先看请求头里的 `Authorization`：401 表示"未认证"，通常是没带这个头、没写 `Bearer `（Bearer+空格）、或者 API Key 写错/已失效。
