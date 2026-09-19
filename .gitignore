@@ -43,7 +43,13 @@ scripts/fill-descriptions/index.ts
 
 # AI 工具与临时文件
 .agent
-.agents
+.agents/*
+# 例外：笔记整理规范技能需要随仓库备份（规范正文见 src/content/posts/编程学习/Python学习笔记/99-笔记整理规范.md）
+!.agents/skills
+.agents/skills/*
+!.agents/skills/note-organizer
+# 其它层级的 .agents（如 src/.agents）仍全部忽略：旧规则是裸 .agents 匹配任意层级，改成 .agents/* 后必须显式补回
+src/.agents
 .mimocode
 .pnpm-store
 note-organizer-workspace
