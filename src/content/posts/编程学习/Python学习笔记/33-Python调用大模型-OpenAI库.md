@@ -93,3 +93,45 @@ print(response.choices[0].message.content)
 | 让回复逐字蹦出来（打字机效果） | [实战-AI智能伴侣-流式输出](/posts/编程学习/python学习笔记/37-实战-ai智能伴侣-流式输出/) |
 | 让 AI 记住之前的对话 | [实战-AI智能伴侣-会话记忆](/posts/编程学习/python学习笔记/38-实战-ai智能伴侣-会话记忆/) |
 | 让 AI 按指定身份和风格回答 | [提示词工程](/posts/编程学习/python学习笔记/34-提示词工程/) |
+
+## 练习题
+
+### 一、回忆填空（写完再展开对答案）
+
+1. Python 第三方软件包的官方仓库叫 ____，包管理工具叫 ____
+2. 安装指定版本的**正确**写法：`pip install openai____2.13.0`（写出符号）
+3. 卸载：`pip ____ openai`；列出已安装：`pip ____`；查看详情：`pip ____ openai`
+4. DeepSeek 的 API 兼容 ____ 的接口格式，所以可以直接用 `openai` 这个库调用
+5. 创建客户端：`client = ____(api_key=os.____.get("DEEPSEEK_API_KEY"), base_url="____")`
+6. 发起对话请求：`client.____.____.create(model="deepseek-chat", messages=[...], stream=False)`
+7. 非流式取回复文本：`response.____[0].____.content`
+8. 用环境变量存 API Key 是为了避免把密钥 ____
+
+> [!TIP]- 填空答案（做完再点开）
+> 1. PyPI、pip　2. `==`（双等号，单个 `=` 会报错）　3. uninstall、list、show　4. OpenAI　5. OpenAI / environ / https://api.deepseek.com　6. chat.completions　7. choices、message　8. 写死在代码里（泄露）
+
+### 二、裸写题
+
+- [ ] **2-1 最小调用程序**
+  写一个程序：从环境变量读 API Key，向 deepseek-chat 提一个问题，把回复打印出来。
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：先建"打电话的客户端"，再用它发消息，最后从返回结果里挖出文本
+  > **二级 · 方法**：`OpenAI(...)` / `client.chat.completions.create(...)` / `response.choices[0].message.content`
+  > **三级 · 骨架**：`client = OpenAI(api_key=os.environ.get("DEEPSEEK_API_KEY"), base_url="https://api.deepseek.com")`
+
+- [ ] **2-2 流式输出**
+  把上面的调用改成流式，把回复**逐段**打印到控制台（不是一次性打印）。
+
+  > [!TIP]- 提示
+  > **一级 · 思路**：让接口一段一段给，而不是等全部生成完
+  > **二级 · 方法**：`stream=True` + `for chunk in response:`
+  > **三级 · 骨架**：`if chunk.choices[0].____.content is not None:`
+
+- [ ] **2-3 用 system 设定身份**
+  给 AI 设定身份"你是一名非常可爱的AI助理，名字叫小甜甜"，再问"你是谁"，对比不设身份时的回答有什么不同。
+
+  > [!TIP]- 提示
+  > **一级 · 思路**：身份写在 messages 的第一条，角色不是 user
+  > **二级 · 方法**：`{"role": "system", "content": "..."}`
+  > **三级 · 骨架**：`messages=[{"role": "____", "content": 身份}, {"role": "user", "content": "你是谁"}]`

@@ -104,3 +104,25 @@ curl https://api.deepseek.com/chat/completions \
 - [HTTP 协议](/posts/编程学习/python学习笔记/30-http协议/)
 - [JSON 数据格式与 json 模块](/posts/编程学习/python学习笔记/31-json数据格式与json模块/)
 - [Python 调用大模型（openai 库）](/posts/编程学习/python学习笔记/33-python调用大模型-openai库/)
+
+## 练习题
+
+### 一、回忆填空（写完再展开对答案）
+
+1. 调用 DeepSeek 的三要素：____ 地址、____（json 格式）、请求头
+2. 请求方式用 ____，url 是 `https://api.deepseek.com/____`
+3. 请求头 `Content-Type` 的值是 ____
+4. 请求头 `Authorization` 的值格式是 `Bearer ____`
+5. 请求体三个常用参数：`model`、____、____
+6. messages 里三种 role：____（设定身份和行为准则）、____（用户提问）、____（AI 回复）
+7. `stream` 为 `true` 表示 ____ 输出
+8. Apifox 的作用是 ____，写代码之前先用它调通接口，可以把"接口问题"和"____问题"分开
+
+> [!TIP]- 填空答案（做完再点开）
+> 1. url、请求体　2. POST、chat/completions　3. `application/json`　4. API Key（前面有 Bearer 和一个空格）　5. `messages`、`stream`　6. system、user、assistant　7. 流式　8. API 接口测试 / 代码
+
+### 二、动手写（写在笔记本上或直接发我）
+
+- [ ] **2-1** 手写一个最小的请求体 JSON：模型用 deepseek-chat，system 让 AI 自称"小甜甜"，user 问"你是谁"，不要流式
+- [ ] **2-2** 在上面基础上，补一条 assistant 的历史回复，说明"滚雪球"是怎么实现会话记忆的
+- [ ] **2-3** 如果 Apifox 里返回 401，你会先检查请求头里的哪一项？为什么？

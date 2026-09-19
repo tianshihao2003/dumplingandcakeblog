@@ -126,3 +126,45 @@ with open("resources/user.json", "r", encoding="utf-8") as f:
 
 - [Python 文件操作](/posts/编程学习/python学习笔记/39-python文件操作/)
 - [实战-AI智能伴侣-会话管理](/posts/编程学习/python学习笔记/41-实战-ai智能伴侣-会话管理/)（用 JSON 文件保存会话）
+
+## 练习题
+
+### 一、回忆填空（写完再展开对答案）
+
+1. JSON 里所有的 key 都必须用 ____ 引起来
+2. 把 Python 对象写进文件：`json.____(obj, f)`
+3. 从文件读取并变成 Python 对象：`json.____(f)`
+4. 另外两个操作字符串（不落文件）的方法：`json.____()` 和 `json.____()`
+5. 写中文时必须加 `ensure_ascii=____`，否则中文会变成 ____ 形式
+6. `indent=2` 的作用是给输出的 JSON 加 ____
+7. 对应关系：JSON 对象 ↔ Python ____；JSON 列表 ↔ Python ____；`true/false` ↔ ____；`null` ↔ ____
+8. JSON 语法比 Python 严格：不支持 ____ 引号、不支持 ____、最后不能有多余的逗号
+
+> [!TIP]- 填空答案（做完再点开）
+> 1. 双引号（`""`）　2. `dump`　3. `load`　4. `dumps`、`loads`（带 s 的操作字符串）　5. `False`、`\uXXXX` 转义　6. 缩进（格式化）　7. 字典 dict、列表 list、`True/False`、`None`　8. 单引号、注释
+
+### 二、裸写题
+
+- [ ] **2-1 把字典写进 JSON 文件**
+  把一个包含姓名、年龄、性别、爱好的字典写进 `resources/user.json`，要求文件里能看到中文、并且有缩进方便阅读。
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：写文件要先能打开文件，再用 json 模块提供的方法把对象"倒"进去；中文别被转义，格式要好看
+  > **二级 · 方法**：`with open(...)` + `json.dump(obj, f, ensure_ascii=..., indent=...)`
+  > **三级 · 骨架**：`with open("resources/user.json", "w", encoding="utf-8") as f:\n    json.____(user, f, ensure_ascii=____, indent=____)`
+
+- [ ] **2-2 读回 JSON 文件**
+  读取上一步写出的 `resources/user.json`，打印内容并打印它的类型。
+
+  > [!TIP]- 提示
+  > **一级 · 思路**：读文件 + 把 JSON 文本变回 Python 对象
+  > **二级 · 方法**：`json.load(f)`、`type()`
+  > **三级 · 骨架**：`with open("resources/user.json", "r", encoding="utf-8") as f:\n    user = json.____(f)`
+
+- [ ] **2-3 不落文件的字符串互转**
+  把一个字典转成 JSON 字符串打印出来，再把这个字符串转回字典并取出其中一个值。
+
+  > [!TIP]- 提示
+  > **一级 · 思路**：想想哪两个方法名带 `s`（string）
+  > **二级 · 方法**：`json.dumps()` / `json.loads()`
+  > **三级 · 骨架**：`s = json.____(obj)` ／ `obj2 = json.____(s)`
