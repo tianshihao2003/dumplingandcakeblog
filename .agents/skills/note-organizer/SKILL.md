@@ -51,3 +51,4 @@ description: 整理学习笔记（图片/PPT/PDF → 规范 Markdown）并管理
 - `pnpm cli desc` — AI 批量补全缺失的 description（不覆盖已有）
 - PPT 取文字/取图：`unzip -q 文件.pptx -d <临时目录>`，文字在 `ppt/slides/slideN.xml`（`<a:t>` 标签内），图片在 `ppt/media/`；中文字体与排版信息会丢失，代码以附带的真实源码文件为准
 - 批量改链接/字段：写 Node 脚本（仓库规则：**禁止用 Python 操作文件**），预演（只打印）→ 确认无误 → 再 `--apply`
+- ⚠️ **`git mv` 的坑**：它只搬索引里的**旧内容**，工作区新改的内容不会进暂存（状态显示 `RM`，容易漏出提交）。重命名 + 改内容同时做时，顺序要么「先改内容 → `git mv` → 再 `git add` 一次」，要么搬完统一 `git add`，提交前用 `git diff --cached` 核对内容确实带上了。
