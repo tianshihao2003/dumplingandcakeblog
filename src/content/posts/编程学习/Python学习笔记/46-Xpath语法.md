@@ -43,7 +43,7 @@ Xpath：一种在 HTML/XML 文档中**导航或定位元素**的查询语言，�
 | `*` | 匹配任何元素节点 | `//body/div/*` |
 | `@*` | 匹配元素的任何属性 | `//body/div/a/@*` |
 | `text()` | 获取文本内容 | `//div/p/text()` |
-
+![267](https://img.tsh520.cn/file/blog/article/file-20260919172427382.png)
 ## 配合 lxml 使用
 
 ```python
@@ -99,7 +99,7 @@ with open("resources/仙逆人物志.html", "r", encoding="utf-8") as f:
 
 ### 二、裸写题
 
-对着 `resources/仙逆人物志.html`（或本篇开头的简化 HTML）写出 Xpath 表达式：
+对着 `resources/仙逆人物 志.html`（或本篇开头的简化 HTML）写出 Xpath 表达式：
 
 - [ ] **2-1** 取 `<h1>` 的文本
 - [ ] **2-2** 取链接 `<a>` 的 href 属性值

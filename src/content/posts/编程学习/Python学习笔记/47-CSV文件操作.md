@@ -52,13 +52,13 @@ with open("csv_data/02.csv", "r", encoding="utf-8") as f:
         print(row)        # 每行是一个字典，如 {'姓名': '小王', '年龄': '18', ...}
 ```
 
-| 要点 | 说明 |
-| --- | --- |
-| `newline=""` | 写 CSV 必须加：避免 Windows 下每行之间多出空行 |
-| `csv.DictWriter(f, fieldnames=...)` | 按**字典**写入，fieldnames 指定列名和顺序 |
-| `writer.writeheader()` | 写入表头（就是 fieldnames 那一行） |
-| `writer.writerow(字典)` | 写一行；`writer.writerows(列表)` 一次写多行 |
-| `csv.DictReader(f)` | 按字典读，第一行自动当表头，每行是 `{列名: 值}` |
+| 要点                                  | 说明                               |
+| ----------------------------------- | -------------------------------- |
+| `newline=""`                        | 写 CSV 必须加：避免 Windows 下每行之间多出空行   |
+| `csv.DictWriter(f, fieldnames=...)` | 按**字典**写入，fieldnames 指定列名和顺序     |
+| `writer.writeheader()`              | 写入表头（就是 fieldnames 那一行）          |
+| `writer.writerow(字典)`               | 写一行；`writer.writerows(列表)` 一次写多行 |
+| `csv.DictReader(f)`                 | 按字典读，第一行自动当表头，每行是 `{列名: 值}`      |
 
 ## 相关
 
