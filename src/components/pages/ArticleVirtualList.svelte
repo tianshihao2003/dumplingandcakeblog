@@ -262,7 +262,10 @@ function initViews() {
 		!serverURL
 	)
 		return;
-	if (document.querySelectorAll(".article-views .waline-pageview-count").length === 0)
+	if (
+		document.querySelectorAll(".article-views .waline-pageview-count")
+			.length === 0
+	)
 		return;
 	let disposed = false;
 	import("@waline/client/pageview")

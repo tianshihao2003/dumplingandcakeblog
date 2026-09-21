@@ -15,25 +15,41 @@ const allEntries = await getCollection("daohang");
  * Astro 生成 entry id 时会把大写转小写、空格转连字符（`AI 工具` → `ai-工具`），
  * 所以映射表不能只按原样匹配。
  */
-const CATEGORY_META: Record<string, { display: string; order: number; icon: string }> = {
-	"未分类": { display: "未分类", order: 13, icon: "material-symbols:link" },
-	"我的网站": { display: "我的网站", order: 0, icon: "material-symbols:person" },
-	"常用网站": { display: "常用网站", order: 1, icon: "material-symbols:star" },
-	"在用网站": { display: "在用网站", order: 1.5, icon: "material-symbols:star" },
-	"资源网站": { display: "资源网站", order: 2, icon: "material-symbols:folder" },
-	"工具网站": { display: "工具网站", order: 3, icon: "material-symbols:handyman" },
-	"学习网站": { display: "学习网站", order: 5, icon: "material-symbols:school" },
-	"文档": { display: "文档", order: 6, icon: "material-symbols:description" },
-	"设计资源": { display: "设计资源", order: 7, icon: "material-symbols:palette" },
-	"实用项目": { display: "实用项目", order: 8, icon: "material-symbols:deployed-code" },
-	"API": { display: "API", order: 9, icon: "material-symbols:api" },
-	"AI 工具": { display: "AI 工具", order: 10, icon: "material-symbols:smart-toy" },
-	"影视网站": { display: "影视网站", order: 11, icon: "material-symbols:movie" },
-	"其他网站": { display: "其他网站", order: 12, icon: "material-symbols:link" },
+const CATEGORY_META: Record<
+	string,
+	{ display: string; order: number; icon: string }
+> = {
+	未分类: { display: "未分类", order: 13, icon: "material-symbols:link" },
+	我的网站: { display: "我的网站", order: 0, icon: "material-symbols:person" },
+	常用网站: { display: "常用网站", order: 1, icon: "material-symbols:star" },
+	在用网站: { display: "在用网站", order: 1.5, icon: "material-symbols:star" },
+	资源网站: { display: "资源网站", order: 2, icon: "material-symbols:folder" },
+	工具网站: {
+		display: "工具网站",
+		order: 3,
+		icon: "material-symbols:handyman",
+	},
+	学习网站: { display: "学习网站", order: 5, icon: "material-symbols:school" },
+	文档: { display: "文档", order: 6, icon: "material-symbols:description" },
+	设计资源: { display: "设计资源", order: 7, icon: "material-symbols:palette" },
+	实用项目: {
+		display: "实用项目",
+		order: 8,
+		icon: "material-symbols:deployed-code",
+	},
+	API: { display: "API", order: 9, icon: "material-symbols:api" },
+	"AI 工具": {
+		display: "AI 工具",
+		order: 10,
+		icon: "material-symbols:smart-toy",
+	},
+	影视网站: { display: "影视网站", order: 11, icon: "material-symbols:movie" },
+	其他网站: { display: "其他网站", order: 12, icon: "material-symbols:link" },
 };
 
 /** 归一化：小写 + 空格转连字符，与 Astro 的 entry id 规则对齐 */
-const normalizeCatKey = (name: string) => name.toLowerCase().replace(/\s+/g, "-");
+const normalizeCatKey = (name: string) =>
+	name.toLowerCase().replace(/\s+/g, "-");
 
 /** 从 entry id 取分类：id 形如「我的网站/xxx.md」或「xxx.md」 */
 function getFolderCategory(id: string): string {
@@ -51,13 +67,21 @@ function getCategoryMeta(folder: string) {
 }
 
 // 按分类分组
-const categoryMap = new Map<string, { items: typeof allEntries; display: string; order: number; icon: string }>();
+const categoryMap = new Map<
+	string,
+	{ items: typeof allEntries; display: string; order: number; icon: string }
+>();
 
 allEntries.forEach((entry) => {
 	const folder = getFolderCategory(entry.id);
 	const meta = getCategoryMeta(folder);
 	if (!categoryMap.has(folder)) {
-		categoryMap.set(folder, { items: [], display: meta.display, order: meta.order, icon: meta.icon });
+		categoryMap.set(folder, {
+			items: [],
+			display: meta.display,
+			order: meta.order,
+			icon: meta.icon,
+		});
 	}
 	categoryMap.get(folder)?.items.push(entry);
 });
