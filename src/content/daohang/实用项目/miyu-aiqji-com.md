@@ -1,8 +1,0 @@
----
-name: "你的聊天记录	| 微信读取加密库"
-url: https://miyu.aiqji.com/
-icon: https://miyu.aiqji.com/favicon.ico
-description: 密语（CipherTalk）是一款专业的微信聊天记录本地查看工具。支持数据库解密、聊天记录查看、多格式导出等功能。所有数据仅在本地处理，完全保护您的隐私安全。
----
-
-密语（CipherTalk）是一款专业的微信聊天记录本地查看工具。支持数据库解密、聊天记录查看、多格式导出等功能。所有数据仅在本地处理，完全保护您的隐私安全。

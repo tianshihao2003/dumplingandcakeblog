@@ -1,8 +1,0 @@
----
-name: 哲风壁纸
-url: https://haowallpaper.com/
-icon: https://haowallpaper.com/favicon.ico
-description: 类似于Wallpaper的网内壁纸网站
----
-
-类似于Wallpaper的网内壁纸网站
