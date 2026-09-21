@@ -14,12 +14,12 @@
 	gap: 0.375rem;
 	padding: 0.375rem;
 	border-radius: 1rem;
-	border: 2px solid #000;
+	border: 1px solid oklch(0.25 0 0);
 	margin-bottom: 1.5rem;
 	min-width: 0;
 }
 :root.dark .ap-tabs {
-	border-color: #fff;
+	border-color: oklch(0.85 0 0);
 }
 
 /* 滑动指示条：实心圆角，覆盖在激活按钮下方 */
