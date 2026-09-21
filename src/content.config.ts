@@ -276,7 +276,7 @@ const daohangCollection = defineCollection({
 		url: z.string(),
 		icon: z.string().optional().default(""),
 		description: z.string().optional().default(""),
-		category: z.string().default("未分类"),
+		// 分类已废弃：改由文件夹路径自动推导（src/pages/projects.astro 的 getCategoryMeta），历史 frontmatter 中的 category 将被迁移脚本移除
 		tags: z.array(z.string()).optional().default([]),
 		color: z.string().optional().default(""),
 		image: z.string().optional().default(""),

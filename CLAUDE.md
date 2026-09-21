@@ -18,6 +18,8 @@
 | `pnpm icons` | 重新生成图标（scripts/生成图标，build 自动前置执行） |
 | `pnpm compress-images` | 压缩图片（`--dry-run` 预检）；另有 rename-images / import-wallpapers 图片脚本 |
 | `pnpm cli` | 仓库工具 CLI（scripts/cli.js） |
+| `pnpm cli cover [--dry-run] [--limit=N] [--force] [--only=分类] [--provider=dashscope\|gemini\|mock]` | AI 批量生成文章封面（scripts/生成封面，黑板粉笔手绘风，详见第 2 节「文章封面生成」） |
+| `pnpm cli desc` | AI 批量补全文章摘要（scripts/生成摘要，需 `DASHSCOPE_API_KEY`） |
 | `node scripts/友链截图/index.mjs [友链id] [--force]` | 站点截图（Playwright，伪装真实浏览器/字体+网络空闲等待/3 次尝试；产物 public/assets/friends-shots/{id小写}.webp；Action 每周日全量 + push friends 变化自动跑） |
 | `node scripts/友链状态检测/index.mjs` | 友链延迟检测（产物 public/friends-status.json；Action 每天自动跑） |
 | `bash "scripts/TTS服务/自测.sh"` | 服务器上自测朗读服务（见 `docs/deploy-edge-tts.md`） |
@@ -96,7 +98,7 @@ src/
 .pages.yml                # PagesCMS 后台配置（11 集合声明，见第 19 节）
 .claude/settings.json     # 命令白名单（分类器不可用时不卡 Bash）
 pagefind.yml              # Pagefind 索引排除配置（katex、搜索面板等）
-scripts/                  # 开发脚本：11 个中文命名脚本目录（生成图标/新建文章/生成摘要/转WebP/添加导航/下载影视/下载音乐/回填友链字段/友链截图/友链状态检测/TTS服务）+ cli.js、vision.mjs（图片识别）、compress-images.mjs、rename-images.mjs、import-wallpapers.mjs、check-svelte-warnings.mjs（脚本清单见第 0 节；TTS服务 为 edge-tts 朗读服务，部署产物，教程见 docs/deploy-edge-tts.md）
+scripts/                  # 开发脚本：12 个中文命名脚本目录（生成图标/新建文章/生成摘要/生成封面/转WebP/添加导航/下载影视/下载音乐/回填友链字段/友链截图/友链状态检测/TTS服务）+ cli.js、vision.mjs（图片识别）、compress-images.mjs、rename-images.mjs、import-wallpapers.mjs、check-svelte-warnings.mjs（脚本清单见第 0 节；生成封面 见第 2 节「文章封面生成」；TTS服务 为 edge-tts 朗读服务，部署产物，教程见 docs/deploy-edge-tts.md）
 docs/                     # 部署文档（deploy-pagescms-vercel.md 等）
 write_places.cjs          # 一次性脚本：生成 life/places 足迹页
 ```
@@ -109,7 +111,8 @@ write_places.cjs          # 一次性脚本：生成 life/places 足迹页
 **`public/assets/images/`**（构建直出、不优化）：
 | 目录 | 用途 |
 |------|------|
-| `covers/` | 文章随机封面池（62 张） |
+| `covers/` | 文章随机封面池（62 张，`coverImageConfig.randomCoverImage` 从中随机取，文件名 1.webp 起编号） |
+| `post-covers/` | **每篇文章的专属封面**（`pnpm cli cover` 生成，见下方「文章封面生成」）；与上面的随机池分开，避免被随机逻辑抽中 |
 | `home/main/`、`home/portrait/` | 首页套图（hero 数据图 / 竖版背景） |
 | `emoji/` | 表情与小图标（openai-dark/light.png 等） |
 | `icons/` | 组件图标（profile.png 等） |
@@ -126,6 +129,18 @@ write_places.cjs          # 一次性脚本：生成 life/places 足迹页
 - 文件名英文小写+连字符，**禁止空格、括号、拼音**
 - 转 webp 后删原始 png/jpg；新增图片必须进对应功能目录
 - 移动/重命名图片必须同步改全部引用，grep 旧路径验证零残留
+
+### 文章封面生成（2026-09-21）
+
+`pnpm cli cover`（脚本 `scripts/生成封面/index.ts`，tsx 运行）批量给缺封面的文章生成「黑板粉笔手绘风」专属封面，并把 `image:` 写回 frontmatter。要点：
+
+- **提示词**改自 tblog.mmzhiku.xyz 公开的「黑板封面」模板；风格集中在脚本顶部 `STYLE_TEMPLATE` 相关常量（`MASCOT` 是封面里的固定角色形象，换吉祥物改这里）
+- **负向提示词里故意不含「文字」**：参考站原模板带了「文字」，会压制封面上的大标题，抄的时候必须删掉（脚本内已有注释标注）
+- **provider**：`dashscope`（qwen-image，默认，走 `DASHSCOPE_API_KEY`，国内直连）/ `gemini`（Nano Banana，走 `GEMINI_API_KEY` + `HTTPS_PROXY`，Node 24 靠 `NODE_USE_ENV_PROXY=1` 让原生 fetch 认代理，cli.js 已自动设置）/ `mock`（不联网，生成纯色占位图，用于验证流水线）
+- **文件名必须 ASCII**：脚本取相对路径的 ASCII 片段 + 8 位路径哈希（`makeOutName`）。中文标题会退化成 `cover-<hash>.webp`，这是为满足上文「禁止中文文件名」硬性规则；哈希跨平台稳定，重跑不会改名
+- **安全**：`writeImageField` 只改 frontmatter 区间。仓库里有若干篇讲封面配置的教程，**正文示例里也含 `image:` 开头的行**，全文件正则替换会改坏正文（已用 `博客指南/博客使用指南.md` 实测验证：diff 必须恰好 1 行新增、0 删除）
+- **`image` 字段**：`src/content.config.ts` 里是 `z.string()`，`processCoverImageSync` 原样返回，所以本地路径 `/assets/images/post-covers/x.webp` 与外部图床 URL 都可用
+- 可反复中断续跑：已有 `image:` 的文章默认跳过，`--force` 才覆盖
 
 ---
 
@@ -190,6 +205,8 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 > ⚠️ **朋友圈数据链路（强制提醒义务）**：友链朋友圈页（`/circle/`）的数据来自 `cir.tsh520.cn/data.json`，由独立仓库 `E:\GithubProgect\OtherRunProject\hexo-circle-of-friends`（GitHub: tianshihao2003/hexo-circle-of-friends）每 2 小时生成并提交。该程序的 firefly 主题解析器**依赖本博客友链页卡片结构**（`css_rules.yaml`）：名字=[`.friend-card`]`data-title`、链接=[`.friend-card`]`data-siteurl`、头像=[`.friend-card-avatar__img`]`data-src`。**凡是修改友链页卡片 HTML/friends 集合字段/友链 Card 组件结构，必须同步检查并提醒站长**：一是确认 `css_rules.yaml` 的 firefly 选择器仍匹配新结构（必要时同步修改并推送到 hexo-circle-of-friends 仓库）；二是验证「data.json 的 last_updated_time 与文章数」确实更新（抓一次页面或等下一轮 Action）。2026-08 曾因友链卡 class 从 `.friend-card-name/.friend-card-link` 改为 data 属性导致朋友圈停更 6 天，务必引以为戒。
 
 > **分类系统（2026-08-20 文件夹即分类）**：`posts` 的 `category` 已从 `src/content.config.ts` 的 Zod schema 移除，分类 100% 由 `src/utils/category-tree.ts#getCategoryFromId(entry.id)` 的文件夹路径推导（`编程学习/Java学习` → `CategoryNode{fullPath, count, directCount, children}`），URL 分段编码 `src/utils/url-utils.ts#getCategoryUrl` + 路由 `src/pages/categories/[...category].astro`（catch-all，子树聚合 `startsWith(parent+"/")`），卡片 `src/components/widget/CategoryFolders.astro` 递归树（有子展开看子树/无子整卡跳转，已删右侧跳转按钮），`.pages.yml` 已删 `category` 字段，`scripts/新建文章/index.js` 不再写 `category`，Obsidian 插件 `plug-in/Obsidian/obsidian-category-autofill` 已废弃写入（`logic.ts#getTargetCategory` 恒返回 null，模板移除 `category`）。**禁止再写 `frontmatter.category`，分类只靠建文件夹**。
+
+> **导航站分类（2026-09-21 文件夹即分类）**：`daohang` 同样移除了 `category`（schema 与 `.pages.yml` 都已删），改为按 `src/content/daohang/<分类>/xxx.md` 的**文件夹**归类，分类名 = 文件夹名。读取逻辑在 `src/pages/projects.astro`：`getFolderCategory(entry.id)` 取目录段，`getCategoryMeta()` 查 `CATEGORY_META` 表得到显示名/排序/图标。**Astro 生成 entry id 时会把大写转小写、空格转连字符**（文件夹 `AI 工具` → id `ai-工具`），所以查表统一走 `normalizeCatKey`（小写 + 空格转连字符）归一化——新增分类时在 `CATEGORY_META` 里按正常写法（`"AI 工具": {...}`）补一条即可，未登记的文件夹会原样显示并排在末尾。
 
 ### 3.6 文章排序规则（2026-09-21 统一）
 

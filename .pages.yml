@@ -686,7 +686,7 @@ content:
           field: create
         view:
           primary: name
-          fields: [name, category, url, featured]
+          fields: [name, url, featured]
           sort: ["order asc"]
         fields:
           - name: name
@@ -706,11 +706,6 @@ content:
           - name: description
             label: 描述
             type: string
-
-          - name: category
-            label: 分类
-            type: string
-            default: 未分类
 
           - name: tags
             label: 标签

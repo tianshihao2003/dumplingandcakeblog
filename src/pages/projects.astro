@@ -6,67 +6,78 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 // 获取所有导航数据
 const allEntries = await getCollection("daohang");
 
-// 按分类分组
-const categoryMap = new Map<string, typeof allEntries>();
-const allCategories: string[] = [];
+// 分类由「文件所在的文件夹」决定（不再写 frontmatter.category）
+// 迁移前的老数据都在 daohang 根目录，没有目录时归入「未分类」
 
-allEntries.forEach((entry) => {
-	const cat = entry.data.category || "未分类";
-	if (!categoryMap.has(cat)) {
-		categoryMap.set(cat, []);
-		allCategories.push(cat);
-	}
-	const list = categoryMap.get(cat) ?? [];
-	list.push(entry);
-	categoryMap.set(cat, list);
-});
-
-// 排序
-const categoryOrder: Record<string, number> = {
-	我的网站: 0,
-	常用网站: 1,
-	资源网站: 2,
-	工具网站: 3,
-	大佬博客: 4,
-	学习网站: 5,
-	文档: 6,
-	其他网站: 7,
+/**
+ * 分类元数据：显示名 / 排序 / 图标。
+ * key 用文件夹名，比较时统一按「小写 + 空格转连字符」归一化：
+ * Astro 生成 entry id 时会把大写转小写、空格转连字符（`AI 工具` → `ai-工具`），
+ * 所以映射表不能只按原样匹配。
+ */
+const CATEGORY_META: Record<string, { display: string; order: number; icon: string }> = {
+	"未分类": { display: "未分类", order: 13, icon: "material-symbols:link" },
+	"我的网站": { display: "我的网站", order: 0, icon: "material-symbols:person" },
+	"常用网站": { display: "常用网站", order: 1, icon: "material-symbols:star" },
+	"在用网站": { display: "在用网站", order: 1.5, icon: "material-symbols:star" },
+	"资源网站": { display: "资源网站", order: 2, icon: "material-symbols:folder" },
+	"工具网站": { display: "工具网站", order: 3, icon: "material-symbols:handyman" },
+	"学习网站": { display: "学习网站", order: 5, icon: "material-symbols:school" },
+	"文档": { display: "文档", order: 6, icon: "material-symbols:description" },
+	"设计资源": { display: "设计资源", order: 7, icon: "material-symbols:palette" },
+	"实用项目": { display: "实用项目", order: 8, icon: "material-symbols:deployed-code" },
+	"API": { display: "API", order: 9, icon: "material-symbols:api" },
+	"AI 工具": { display: "AI 工具", order: 10, icon: "material-symbols:smart-toy" },
+	"影视网站": { display: "影视网站", order: 11, icon: "material-symbols:movie" },
+	"其他网站": { display: "其他网站", order: 12, icon: "material-symbols:link" },
 };
 
-const sortedCategories = [...allCategories].sort((a, b) => {
-	return (categoryOrder[a] ?? 99) - (categoryOrder[b] ?? 99);
+/** 归一化：小写 + 空格转连字符，与 Astro 的 entry id 规则对齐 */
+const normalizeCatKey = (name: string) => name.toLowerCase().replace(/\s+/g, "-");
+
+/** 从 entry id 取分类：id 形如「我的网站/xxx.md」或「xxx.md」 */
+function getFolderCategory(id: string): string {
+	const normalized = id.replace(/\\/g, "/").replace(/\.(md|mdx)$/i, "");
+	const slash = normalized.lastIndexOf("/");
+	return slash < 0 ? "未分类" : normalized.slice(0, slash);
+}
+
+function getCategoryMeta(folder: string) {
+	const key = normalizeCatKey(folder);
+	for (const [k, v] of Object.entries(CATEGORY_META)) {
+		if (normalizeCatKey(k) === key) return v;
+	}
+	return { display: folder, order: 99, icon: "material-symbols:link" };
+}
+
+// 按分类分组
+const categoryMap = new Map<string, { items: typeof allEntries; display: string; order: number; icon: string }>();
+
+allEntries.forEach((entry) => {
+	const folder = getFolderCategory(entry.id);
+	const meta = getCategoryMeta(folder);
+	if (!categoryMap.has(folder)) {
+		categoryMap.set(folder, { items: [], display: meta.display, order: meta.order, icon: meta.icon });
+	}
+	categoryMap.get(folder)?.items.push(entry);
 });
+
+// 分类排序
+const sortedCategories = [...categoryMap.entries()]
+	.sort(([, a], [, b]) => a.order - b.order)
+	.map(([folder]) => folder);
 
 const sortedData = new Map(
 	[...categoryMap.entries()]
-		.sort(([a], [b]) => {
-			return (categoryOrder[a] ?? 99) - (categoryOrder[b] ?? 99);
-		})
-		.map(([cat, items]) => [
-			cat,
-			[...items].sort((a, b) => {
-				const orderA = a.data.order ?? 99;
-				const orderB = b.data.order ?? 99;
-				return orderA - orderB;
-			}),
+		.sort(([, a], [, b]) => a.order - b.order)
+		.map(([folder, { items }]) => [
+			folder,
+			[...items].sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)),
 		]),
 );
 
-// 分类图标
-const categoryIcons: Record<string, string> = {
-	我的网站: "material-symbols:person",
-	常用网站: "material-symbols:star",
-	资源网站: "material-symbols:folder",
-	工具网站: "material-symbols:handyman",
-	大佬博客: "material-symbols:menu-book",
-	学习网站: "material-symbols:school",
-	文档: "material-symbols:description",
-	其他网站: "material-symbols:link",
-};
-
-const getCategoryIcon = (cat: string) => {
-	return categoryIcons[cat] || "material-symbols:link";
-};
+const getCategoryIcon = (cat: string) => getCategoryMeta(cat).icon;
+const getCategoryDisplay = (cat: string) => getCategoryMeta(cat).display;
 
 // 计算每个分类的数量
 const categoryCounts: Record<string, number> = {};
@@ -212,7 +223,7 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
             </button>
             {sortedCategories.map((cat) => (
               <button data-tools-tab={cat} class="tools-tab-btn tools-tab-btn-inactive">
-                {cat}
+                {getCategoryDisplay(cat)}
                 <span class="tools-tab-badge">{categoryCounts[cat]}</span>
               </button>
             ))}
@@ -233,7 +244,7 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                   <div class="flex items-center gap-3 mb-5">
                     <div class="flex items-center gap-2">
                       <Icon name={getCategoryIcon(cat)} class="text-lg text-neutral-900 dark:text-neutral-100" />
-                      <span class="text-base font-bold text-neutral-900 dark:text-neutral-100">{cat}</span>
+                      <span class="text-base font-bold text-neutral-900 dark:text-neutral-100">{getCategoryDisplay(cat)}</span>
                     </div>
                     <span class="text-xs text-neutral-400 dark:text-neutral-500">{catSites.length}</span>
                     <div class="flex-1 h-px bg-neutral-300 dark:bg-neutral-700" />
