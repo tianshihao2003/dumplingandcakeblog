@@ -1,6 +1,6 @@
 ---
 version: "v1.40.4"
-date: "2026-09-21"
+date: 2026-09-21
 time: "16:45"
 type: removal
 description: 删除 GitHub Pages 遗留的部署工作流与 CNAME，不再随 push 触发无效构建
