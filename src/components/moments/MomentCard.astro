@@ -293,7 +293,7 @@ const formatTimeAgo = (date: Date): string => {
 		background: var(--card-bg);
 		border-radius: 0.75rem;
 		padding: 1.25rem 1.25rem 1.25rem 2.25rem;
-		border: 2px solid #000;
+		border: 1px solid oklch(0.25 0 0);
 		overflow: hidden;
 		transition:
 			box-shadow 0.25s ease,
@@ -302,7 +302,7 @@ const formatTimeAgo = (date: Date): string => {
 	}
 
 	:root.dark .moment-card {
-		border-color: #3f3f46;
+		border-color: oklch(0.85 0 0);
 	}
 
 	.card-accent-bar {
