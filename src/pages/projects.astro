@@ -262,24 +262,24 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                         <div class="flex items-center gap-2 mb-3">
                           {site.data.icon ? (
                             site.data.icon.startsWith('http') ? (
-                              <img src={site.data.icon} alt={site.data.name} class="w-5 h-5 rounded object-contain shrink-0" />
+                              <img src={site.data.icon} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                             ) : site.data.icon.startsWith('/') ? (
-                              <img src={site.data.icon} alt={site.data.name} class="w-5 h-5 rounded object-contain shrink-0" />
+                              <img src={site.data.icon} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                             ) : (
-                              <Icon name={site.data.icon} class="text-xl text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
+                              <Icon name={site.data.icon} class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                             )
                           ) : site.data.image ? (
-                            <img src={site.data.image} alt={site.data.name} class="w-5 h-5 rounded object-contain shrink-0" />
+                            <img src={site.data.image} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                           ) : (
-                            <Icon name="material-symbols:language" class="text-xl text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
+                            <Icon name="material-symbols:language" class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                           )}
-                          <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 group-hover:translate-x-0.5 transition-transform duration-300 truncate">
+                          <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100 group-hover:translate-x-0.5 transition-transform duration-300 truncate">
                             {site.data.name}
                           </h3>
                         </div>
                         <p class="tools-card-desc">{site.data.description}</p>
                         <div class="tools-card-footer">
-                          <span class="text-[0.6875rem] text-neutral-400 dark:text-neutral-500 truncate">
+                          <span class="text-[0.75rem] text-neutral-400 dark:text-neutral-500 truncate">
                             {(() => {
                               try { return new URL(site.data.url).hostname; } catch { return site.data.url; }
                             })()}
@@ -312,24 +312,24 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                       <div class="flex items-center gap-2 mb-3">
                         {site.data.icon ? (
                           site.data.icon.startsWith('http') ? (
-                            <img src={site.data.icon} alt={site.data.name} class="w-5 h-5 rounded object-contain shrink-0" />
+                            <img src={site.data.icon} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                           ) : site.data.icon.startsWith('/') ? (
-                            <img src={site.data.icon} alt={site.data.name} class="w-5 h-5 rounded object-contain shrink-0" />
+                            <img src={site.data.icon} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                           ) : (
-                            <Icon name={site.data.icon} class="text-xl text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
+                            <Icon name={site.data.icon} class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                           )
                         ) : site.data.image ? (
-                          <img src={site.data.image} alt={site.data.name} class="w-5 h-5 rounded object-contain shrink-0" />
+                          <img src={site.data.image} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                         ) : (
-                          <Icon name="material-symbols:language" class="text-xl text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
+                          <Icon name="material-symbols:language" class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                         )}
-                        <h3 class="text-sm font-bold text-neutral-900 dark:text-neutral-100 group-hover:translate-x-0.5 transition-transform duration-300 truncate">
+                        <h3 class="text-base font-bold text-neutral-900 dark:text-neutral-100 group-hover:translate-x-0.5 transition-transform duration-300 truncate">
                           {site.data.name}
                         </h3>
                       </div>
                       <p class="tools-card-desc">{site.data.description}</p>
                       <div class="tools-card-footer">
-                        <span class="text-[0.6875rem] text-neutral-400 dark:text-neutral-500 truncate">
+                        <span class="text-[0.75rem] text-neutral-400 dark:text-neutral-500 truncate">
                           {(() => {
                             try { return new URL(site.data.url).hostname; } catch { return site.data.url; }
                           })()}
@@ -490,7 +490,7 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
     flex-direction: column;
     padding: 1rem 1.125rem;
     border-radius: 0.75rem;
-    border: 2px solid #000;
+    border: 1.5px solid #000;
     background: transparent;
     text-decoration: none;
     overflow: hidden;
@@ -545,7 +545,7 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
   /* 描述文本：固定两行高度（短描述留白、长描述截断），保证同排卡片高度一致 */
   .tools-card-desc {
     margin: 0 0 0.625rem 0;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 400;
     color: oklch(0.45 0 0);
     line-height: 1.6;
