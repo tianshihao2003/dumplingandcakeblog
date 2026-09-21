@@ -83,8 +83,8 @@ EdgeOne Pages 托管（blog.tsh520.cn 直接绑定 Pages 项目）
 
 代码侧变更：
 
-- 删除 `.github/workflows/pages.yml`（GitHub Pages 部署）
-- 删除 `public/CNAME`
+- 删除 `.github/workflows/pages.yml`（GitHub Pages 部署）与 `public/CNAME`
+  - 注：这两项在 2026-09-04 迁移时**漏删了**，`pages.yml` 仍随每次 push 触发部署（部署的是没绑自定义域名的 github.io 站点，属无效构建）；已于 **2026-09-21** 补删
 - `build.yml` / `biome.yml` / `friend-status.yml` / `friend-screenshots.yml` 保留不动
 
 注意事项：

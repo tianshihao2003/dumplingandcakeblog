@@ -9,7 +9,7 @@
 ## 项目概览
 
 - Firefly v6.6.13 —— "团子和蛋糕的博客"，Fork 自 CuteLeaf/Firefly 并深度定制
-- 部署：**生产为 EdgeOne Pages**（GitHub 集成：push main 自动 `pnpm build` 并托管 blog.tsh520.cn，见 `docs/deploy-edgeone-pages.md`）；GitHub Actions 的 `build.yml` 仅作 CI 质量门（旧 `.github/workflows/pages.yml` + `public/CNAME` 是 GitHub Pages 迁移遗留，文档称应删但仍留在仓库）；后台 PagesCMS 自托管（cms.tsh520.cn，配置在根目录 `.pages.yml`，字段必须与 `src/content.config.ts` 的 zod 对齐，未声明字段保存时被丢弃）
+- 部署：**生产为 EdgeOne Pages**（GitHub 集成：push main 自动 `pnpm build` 并托管 blog.tsh520.cn，见 `docs/deploy-edgeone-pages.md`）；GitHub Actions 的 `build.yml` 仅作 CI 质量门（GitHub Pages 的遗留配置 `.github/workflows/pages.yml` + `public/CNAME` 已于 2026-09-21 删除，不再随 push 触发）；后台 PagesCMS 自托管（cms.tsh520.cn，配置在根目录 `.pages.yml`，字段必须与 `src/content.config.ts` 的 zod 对齐，未声明字段保存时被丢弃）
 - 15 个 Astro Content Collections（`src/content.config.ts` + `src/content/`：posts/spec/moments/bangumi/life/notebooks/album/daohang/ziyuan/friends/tombstones/apps/changelog/bills/schedules；notebooks 的物理目录在 `src/content/life/` 下）
 - **本地 Obsidian 插件**（`plug-in/Obsidian/obsidian-category-autofill/`，独立 git 仓库，`plug-in/` 被本仓库整体 gitignore）：category 写入已废弃（分类=文件夹路径），现只做新建文章的模板属性补全。**改它的规范见该目录的 AGENTS.md**——完成后必须 `pnpm build`（自动拷贝进 Obsidian 库）+ `pnpm test` + commit & push GitHub + 提醒用户在 Obsidian 里 Ctrl+P 重载
 - 主要目录：`src/components/`（按功能域 14 子目录：about/analytics/bills/comment/common/controls/features/layout/misc/moments/pages/schedules/seo/widget，禁止根目录平铺） / `src/pages/`（39 路由，admin 已删） / `src/styles/main.css`（唯一入口） / `src/config/`（27 配置 + index.ts barrel） / `src/utils/`（41 个工具与控制器，含 category-tree.ts、tts-text.ts） / `scripts/`（11 个中文命名脚本目录 + cli.js 与 5 个英文 .mjs 脚本，含 TTS服务/ 朗读服务）

@@ -36,7 +36,7 @@
 | 框架 | Astro 7.1.6 + Svelte 5 + Tailwind CSS v4 |
 | 包管理 | pnpm 9.14.4 (ESM, `preinstall` 强制) |
 | 运行时 | Node.js >= 22 |
-| 部署 | **EdgeOne Pages**（GitHub 集成自动构建并托管 blog.tsh520.cn，2026-09-04 从 GitHub Pages 迁移，见 `docs/deploy-edgeone-pages.md`；旧 `pages.yml`/`public/CNAME` 仍留在仓库，非生产链路） |
+| 部署 | **EdgeOne Pages**（GitHub 集成自动构建并托管 blog.tsh520.cn，2026-09-04 从 GitHub Pages 迁移，见 `docs/deploy-edgeone-pages.md`；GitHub Pages 的遗留配置 `pages.yml` 与 `public/CNAME` 已于 2026-09-21 删除，GitHub Pages 站点内容保留但不再更新） |
 | 线上 | https://blog.tsh520.cn/ |
 | 后台 | PagesCMS 自托管（Vercel + EdgeOne 加速）：https://cms.tsh520.cn/（配置见第 19 节） |
 | 来源 | Fork 自 CuteLeaf/Firefly ← saicaca/fuwari，已深度定制为独立演化 |
