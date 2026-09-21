@@ -686,8 +686,8 @@ content:
           field: create
         view:
           primary: name
-          fields: [name, url, featured]
-          sort: ["order asc"]
+          fields: [name, url]
+          sort: ["name asc"]
         fields:
           - name: name
             label: 名称
@@ -706,30 +706,6 @@ content:
           - name: description
             label: 描述
             type: string
-
-          - name: tags
-            label: 标签
-            type: string
-            list: true
-
-          - name: color
-            label: 颜色
-            type: string
-            description: 十六进制颜色，如 #3b82f6
-
-          - name: image
-            label: 图片
-            type: string
-
-          - name: featured
-            label: 推荐
-            type: boolean
-            default: false
-
-          - name: order
-            label: 排序
-            type: number
-            default: 0
 
           - name: body
             label: 备注

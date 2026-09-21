@@ -72,7 +72,10 @@ const sortedData = new Map(
 		.sort(([, a], [, b]) => a.order - b.order)
 		.map(([folder, { items }]) => [
 			folder,
-			[...items].sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99)),
+			// 导航条目已不再写 order 字段，分类内按名称排序（中文按拼音）
+			[...items].sort((a, b) =>
+				a.data.name.localeCompare(b.data.name, "zh-CN"),
+			),
 		]),
 );
 
@@ -268,8 +271,6 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                             ) : (
                               <Icon name={site.data.icon} class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                             )
-                          ) : site.data.image ? (
-                            <img src={site.data.image} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                           ) : (
                             <Icon name="material-symbols:language" class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                           )}
@@ -318,8 +319,6 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                           ) : (
                             <Icon name={site.data.icon} class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                           )
-                        ) : site.data.image ? (
-                          <img src={site.data.image} alt={site.data.name} class="w-[22px] h-[22px] rounded object-contain shrink-0" />
                         ) : (
                           <Icon name="material-symbols:language" class="text-[1.375rem] text-neutral-600 dark:text-neutral-300 group-hover:text-black dark:group-hover:text-white transition-colors duration-300 shrink-0" />
                         )}

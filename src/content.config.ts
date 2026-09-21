@@ -271,17 +271,12 @@ const tombstonesCollection = defineCollection({
 
 const daohangCollection = defineCollection({
 	loader: glob({ pattern: "**/*.md", base: "./src/content/daohang" }),
+	// 只保留展示必需的四项：分类由文件夹决定，顺序按名称排（见 src/pages/projects.astro）
 	schema: z.object({
 		name: z.string(),
 		url: z.string(),
 		icon: z.string().optional().default(""),
 		description: z.string().optional().default(""),
-		// 分类已废弃：改由文件夹路径自动推导（src/pages/projects.astro 的 getCategoryMeta），历史 frontmatter 中的 category 将被迁移脚本移除
-		tags: z.array(z.string()).optional().default([]),
-		color: z.string().optional().default(""),
-		image: z.string().optional().default(""),
-		featured: z.boolean().optional().default(false),
-		order: z.number().optional().default(0),
 	}),
 });
 
