@@ -71,14 +71,14 @@ const bioText = Array.isArray(profileConfig.bio)
 		overflow: hidden;
 		background: #fff;
 		border: 1px solid rgba(0, 0, 0, 0.08);
-		box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.06);
-		transition: box-shadow 0.3s ease, border-color 0.3s ease;
+		box-shadow: none;
+		transition: border-color 0.3s ease;
 	}
 
 	:root.dark .profile-card {
 		background: #181818;
 		border-color: rgba(255, 255, 255, 0.1);
-		box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.3);
+		box-shadow: none;
 	}
 
 	.profile-card:hover {

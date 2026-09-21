@@ -8,26 +8,67 @@ import {
 } from "@utils/category-tree";
 import { getCategoryUrl, getTagUrl } from "@utils/url-utils";
 
+type SortableEntry = {
+	id: string;
+	order?: number | undefined;
+};
+
+// 未写 order 的文章排在同目录末尾（order 降序，故用负无穷表示最小）
+function resolveOrder(order?: number): number {
+	return order ?? Number.NEGATIVE_INFINITY;
+}
+
+/**
+ * 同日期内两条文章的比较：先按目录（文件夹路径）分组，组内 order 降序，组间按目录名。
+ *
+ * order 与日期同向（都是大的在前），因此跨日期分组的系列序号能连续递减、不会跳号
+ * （如 68→51 接 50→42 接 41→27）。
+ * 组间不能用「组内最大 order」比较——那样不满足传递性，排序结果会依赖比较顺序。
+ * 供按目录聚合的列表（左侧全站文章目录）复用相同的组内规则。
+ */
+export function compareInSameDate(a: SortableEntry, b: SortableEntry): number {
+	const folderA = getCategoryFromId(a.id);
+	const folderB = getCategoryFromId(b.id);
+	if (folderA !== folderB) return folderA.localeCompare(folderB, "zh-CN");
+	return resolveOrder(b.order) - resolveOrder(a.order);
+}
+
+/**
+ * 文章统一排序规则（唯一真相源）：
+ * 置顶优先 → 发布日期降序 → 同日期内按目录分组，组内 order 降序（未写的排该组末尾）
+ *
+ * 分类页、文章列表页、左侧全站文章目录共用此函数，不要在调用处另写排序。
+ */
+export function comparePostsByOrderAndDate(
+	a: {
+		id: string;
+		data: { published: Date; order?: number | undefined; pinned?: boolean };
+	},
+	b: {
+		id: string;
+		data: { published: Date; order?: number | undefined; pinned?: boolean };
+	},
+): number {
+	if (a.data.pinned && !b.data.pinned) return -1;
+	if (!a.data.pinned && b.data.pinned) return 1;
+
+	const dateA = new Date(a.data.published).getTime();
+	const dateB = new Date(b.data.published).getTime();
+	if (dateA !== dateB) return dateB - dateA;
+
+	return compareInSameDate(
+		{ id: a.id, order: a.data.order },
+		{ id: b.id, order: b.data.order },
+	);
+}
+
 // // Retrieve posts and sort them by publication date
 async function getRawSortedPosts() {
 	const allBlogPosts = await getCollection("posts", ({ data }) => {
 		return import.meta.env.PROD ? data.draft !== true : true;
 	});
 
-	const sorted = allBlogPosts.sort((a, b) => {
-		// 首先按置顶状态排序，置顶文章在前
-		if (a.data.pinned && !b.data.pinned) return -1;
-		if (!a.data.pinned && b.data.pinned) return 1;
-
-		// 如果置顶状态相同，则按发布日期排序
-		const dateA = new Date(a.data.published);
-		const dateB = new Date(b.data.published);
-		// 日期相同，按 order 排序（越小越靠前）
-		if (dateA.getTime() === dateB.getTime()) {
-			return (a.data.order ?? 0) - (b.data.order ?? 0);
-		}
-		return dateA > dateB ? -1 : 1;
-	});
+	const sorted = allBlogPosts.sort(comparePostsByOrderAndDate);
 	return sorted;
 }
 
@@ -71,7 +112,7 @@ export type ArchiveItem = {
 		category?: string | null;
 		image?: string;
 		link?: string;
-		order?: number;
+		order?: number | undefined;
 	};
 };
 
@@ -187,10 +228,12 @@ export async function getArchiveList(): Promise<ArchiveItem[]> {
 		(a, b) => {
 			const timeA = a.data.published.getTime();
 			const timeB = b.data.published.getTime();
-			if (timeA === timeB) {
-				return (a.data.order ?? 0) - (b.data.order ?? 0);
-			}
-			return timeB - timeA;
+			if (timeA !== timeB) return timeB - timeA;
+			// 同一天发布的文章沿用统一排序（按目录分组、组内 order 降序）
+			return compareInSameDate(
+				{ id: a.id, order: a.data.order },
+				{ id: b.id, order: b.data.order },
+			);
 		},
 	);
 }

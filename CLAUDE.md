@@ -191,7 +191,27 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 
 > **分类系统（2026-08-20 文件夹即分类）**：`posts` 的 `category` 已从 `src/content.config.ts` 的 Zod schema 移除，分类 100% 由 `src/utils/category-tree.ts#getCategoryFromId(entry.id)` 的文件夹路径推导（`编程学习/Java学习` → `CategoryNode{fullPath, count, directCount, children}`），URL 分段编码 `src/utils/url-utils.ts#getCategoryUrl` + 路由 `src/pages/categories/[...category].astro`（catch-all，子树聚合 `startsWith(parent+"/")`），卡片 `src/components/widget/CategoryFolders.astro` 递归树（有子展开看子树/无子整卡跳转，已删右侧跳转按钮），`.pages.yml` 已删 `category` 字段，`scripts/新建文章/index.js` 不再写 `category`，Obsidian 插件 `plug-in/Obsidian/obsidian-category-autofill` 已废弃写入（`logic.ts#getTargetCategory` 恒返回 null，模板移除 `category`）。**禁止再写 `frontmatter.category`，分类只靠建文件夹**。
 
-### 3.6 文章朗读（TTS，2026-09-15 新增）
+### 3.6 文章排序规则（2026-09-21 统一）
+
+排序优先级：**置顶 → `published` 降序 → 同日期内按目录（文件夹路径）分组 → 组内 `order` 降序**。
+
+- **规则集中在 `src/utils/content-utils.ts`**：`comparePostsByOrderAndDate`（含置顶判断，供纯文章列表用）、`compareInSameDate`（同日期内的目录分组 + `order` 比较，供混排/已分组列表用）。三个消费点统一调用，**禁止在调用处另写排序**：`content-utils.ts#getRawSortedPosts`（→ 文章列表页 `/posts/`、RSS、上一篇/下一篇）、`src/pages/categories/[...category].astro`（分类页）、`src/components/widget/PostDirectoryList.astro`（左侧全站文章目录）。
+- `order` **与日期同向（数字越大越靠前）**：这样跨日期分组的系列序号能连续递减、不跳号（68→51 接 50→42 接 41→27）。系列笔记（Python 学习笔记、LangChain 学习笔记等）的 `order` 就是学习序号，无需为"越新越大"做额外换算。
+- `order` 只在**同一天发布**时才参与：日期不同就完全按日期倒序，`order` 不生效。`order` **未写（`undefined`）表示排在该目录最后**（不要再给它设 Zod `default(0)`，否则未写的文章会插到有编号的文章前面，表现为「order 又没生效」）。`.pages.yml` 的字段描述需与此同步。
+- 组间按目录名排序而非「组内极值 order」——后者不满足传递性，排序结果会依赖比较顺序，**改动此处务必保持比较函数传递**。
+- 首页「最新更新」（`home-guide-grid.js`，只取前 4 篇）与侧栏「最近更新」（`widget/RecentItems.astro`）不参与此规则，按日期取最新即可。
+- **侧栏小组件默认无阴影（2026-09-21 起）**：`.profile-card`、`.weather-widget`、`.douyin-hot-widget`、`.profile-widget-card` 以及所有走 `WidgetLayout`（`src/components/common/WidgetLayout.astro` 内的 `widget-layout` 选择器）的小组件，静态 `box-shadow: none`，只在 `:hover` 才浮起（`0 0 20px 4px`）。这五处是同一套视觉语言，**改一处必须同步其余**，否则侧栏会出现有的带阴影、有的干净。
+- **侧栏宽度全局默认 280px**，定义在四处且必须保持同步：`src/utils/responsive-utils.ts`（`17.5rem` 列宽 + `md:max-w-70`）、`src/utils/grid-layout-utils.ts`、`src/utils/swup-lifecycle-controller.ts`、`src/pages/guestbook.astro`（移除 grid 类的清单）。**改这几个值等于全站每页侧栏一起变宽、中间内容被挤窄**——2026-09-21 曾误改全局导致所有页面布局变化。只想让某类页面变宽时，写**页面级覆盖**：见 `src/styles/pages/article-list.css` 顶部的 `#main-grid:has(.article-list-page)`（文章列表页/分类页侧栏 320px）。
+- **左侧「全部文章」目录（`PostDirectoryList.astro`）每行不显示日期**，只留标题；标题过长会被省略号截断，侧栏宽度直接决定可读性。目录行的垂直排序仍用 `publishedAt` + `order`，与显示无关。
+
+### 3.7 文章列表卡片布局与浏览量（2026-09-21）
+
+`ArticleVirtualList.svelte` 的**网格视图**（`.article-list-card`，封面在上、多列排布）与**列表视图**（`.article-list-row-pinned`）卡片，元数据一律用**两行固定布局**：第一行 = 分类 + 浏览量（靠该行最右），第二行 = 日期、字数（列表视图另有标签）。
+
+- **两种视图的 meta 都必须保持 `flex-direction: column` + 两个 `__meta-row`**（样式在 `src/styles/pages/article-list.css`：`.article-list-card__meta`、`.article-list-pinned-item__meta`）。不要改回单行 `flex-wrap`——分类名长度随机，单行会随机折行，同屏卡片高度就会参差（2026-09-21 站长反馈的问题）。
+- **浏览量**走 Waline 轻量入口 `@waline/client/pageview`（不加载完整评论客户端）：卡片里每个 `.article-views > .waline-pageview-count` 带 `data-path="/posts/<entry.id>"`（格式必须与 `src/pages/posts/[...slug].astro` 的 `data-path` 一致，否则命不中同一份计数）；`pageviewCount()` 自动收集页面上所有该选择器元素**一次性批量查询**。`update: false` 是关键——列表页只读浏览量，不能把列表页访问记成文章浏览。脚本挂在组件 `onMount` 与 `swup:content:replaced`（视图切换/分页后重建 DOM 需重跑）。无评论服务、无 `PUBLIC_WALINE_SERVER` 或请求失败时，`.article-views:has(.waline-pageview-count:empty)` 让整块隐藏不占位。
+
+### 3.8 文章朗读（TTS，2026-09-15 新增）
 
 文章页提取正文（自动跳过代码块/表格/公式）→ `POST PUBLIC_TTS_SERVER/tts` 流式合成 mp3 → `<audio>` 播放（倍速 0.8x~2x + 7 种音色，选择记忆），服务不可用时降级浏览器 Web Speech 系统语音。服务端代码与部署见 `docs/deploy-edge-tts.md`（`scripts/TTS服务/`，CORS 白名单含 blog.tsh520.cn 与本地 4321）；开关在 `src/config/ttsConfig.ts`。
 

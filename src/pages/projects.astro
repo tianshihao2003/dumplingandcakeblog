@@ -190,38 +190,11 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
     <div class="card-base z-10 px-4 py-6 md:px-9 relative w-full">
       <!-- 页面标题 -->
       <div class="mb-6">
-        <div class="flex items-center justify-between gap-3 mb-3">
-          <div class="flex items-center gap-3">
-            <Icon name="material-symbols:bookmark" class="text-[1.875rem] text-neutral-900 dark:text-neutral-100" />
-            <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
-              网站导航
-            </div>
+        <div class="flex items-center gap-3 mb-3">
+          <Icon name="material-symbols:bookmark" class="text-[1.875rem] text-neutral-900 dark:text-neutral-100" />
+          <div class="text-3xl font-bold text-neutral-900 dark:text-neutral-100">
+            网站导航
           </div>
-          <!-- 迷你模式切换按钮 -->
-          <button
-            id="mini-mode-toggle"
-            class="mini-mode-btn"
-            aria-label="切换迷你模式"
-            title="切换迷你模式"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mini-mode-icon-normal">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mini-mode-icon-compact hidden">
-              <rect x="3" y="3" width="5" height="5" rx="1" />
-              <rect x="10" y="3" width="5" height="5" rx="1" />
-              <rect x="17" y="3" width="5" height="5" rx="1" />
-              <rect x="3" y="10" width="5" height="5" rx="1" />
-              <rect x="10" y="10" width="5" height="5" rx="1" />
-              <rect x="17" y="10" width="5" height="5" rx="1" />
-              <rect x="3" y="17" width="5" height="5" rx="1" />
-              <rect x="10" y="17" width="5" height="5" rx="1" />
-              <rect x="17" y="17" width="5" height="5" rx="1" />
-            </svg>
-          </button>
         </div>
         <p class="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
           收录个人网站、常用工具和收藏网站
@@ -263,7 +236,7 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                       <span class="text-base font-bold text-neutral-900 dark:text-neutral-100">{cat}</span>
                     </div>
                     <span class="text-xs text-neutral-400 dark:text-neutral-500">{catSites.length}</span>
-                    <div class="flex-1 h-[2px] bg-black dark:bg-white" />
+                    <div class="flex-1 h-px bg-neutral-300 dark:bg-neutral-700" />
                   </div>
                   <div class="tools-card-grid">
                     {catSites.map((site, index) => (
@@ -275,12 +248,6 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                         data-category={cat}
                         style={`animation-delay: ${index * 60}ms`}
                       >
-                        <div class="tools-card-jump-icon">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M7 17L17 7" />
-                            <path d="M7 7h10v10" />
-                          </svg>
-                        </div>
                         <div class="flex items-center gap-2 mb-3">
                           {site.data.icon ? (
                             site.data.icon.startsWith('http') ? (
@@ -331,12 +298,6 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
                       data-category={cat}
                       style={`animation-delay: ${index * 60}ms`}
                     >
-                      <div class="tools-card-jump-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M7 17L17 7" />
-                          <path d="M7 7h10v10" />
-                        </svg>
-                      </div>
                       <div class="flex items-center gap-2 mb-3">
                         {site.data.icon ? (
                           site.data.icon.startsWith('http') ? (
@@ -379,48 +340,6 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
     </div>
   </div>
 
-<script is:inline>
-  // 使用事件委托，不受 Swup DOM 替换影响
-  document.addEventListener('click', function(e) {
-    var toggleBtn = e.target.closest('#mini-mode-toggle');
-    if (!toggleBtn) return;
-
-    var isMini = document.body.classList.contains('tools-mini-mode');
-    if (isMini) {
-      document.body.classList.remove('tools-mini-mode');
-      var iconNormal = toggleBtn.querySelector('.mini-mode-icon-normal');
-      var iconCompact = toggleBtn.querySelector('.mini-mode-icon-compact');
-      if (iconNormal) iconNormal.classList.remove('hidden');
-      if (iconCompact) iconCompact.classList.add('hidden');
-      localStorage.setItem('tools-mini-mode', 'false');
-    } else {
-      document.body.classList.add('tools-mini-mode');
-      var iconNormal = toggleBtn.querySelector('.mini-mode-icon-normal');
-      var iconCompact = toggleBtn.querySelector('.mini-mode-icon-compact');
-      if (iconNormal) iconNormal.classList.add('hidden');
-      if (iconCompact) iconCompact.classList.remove('hidden');
-      localStorage.setItem('tools-mini-mode', 'true');
-    }
-  });
-
-  // 初始化状态
-  function initMiniMode() {
-    var toggleBtn = document.getElementById('mini-mode-toggle');
-    if (!toggleBtn) return;
-    var savedMode = localStorage.getItem('tools-mini-mode');
-    if (savedMode === 'true') {
-      document.body.classList.add('tools-mini-mode');
-      var iconNormal = toggleBtn.querySelector('.mini-mode-icon-normal');
-      var iconCompact = toggleBtn.querySelector('.mini-mode-icon-compact');
-      if (iconNormal) iconNormal.classList.add('hidden');
-      if (iconCompact) iconCompact.classList.remove('hidden');
-    }
-  }
-
-  initMiniMode();
-  document.addEventListener('astro:page-load', initMiniMode);
-</script>
-
 </MainGridLayout>
 
 <style>
@@ -437,10 +356,10 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
     gap: 0.375rem;
     padding: 0.375rem;
     border-radius: 1rem;
-    border: 2px solid #000;
+    border: 1px solid oklch(0.25 0 0);
   }
   :root.dark .tools-tab-pill {
-    border-color: #fff;
+    border-color: oklch(0.85 0 0);
   }
 
   /* 滑动指示条（填充胶囊背景） */
@@ -532,23 +451,24 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
   /* 卡片网格 */
   .tools-card-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
   }
   @media (max-width: 1024px) {
     .tools-card-grid {
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
     }
   }
   @media (max-width: 768px) {
     .tools-card-grid {
       grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
     }
   }
   @media (max-width: 480px) {
     .tools-card-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 0.75rem;
     }
   }
 
@@ -557,10 +477,10 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: 0.875rem;
+    padding: 1rem 1.125rem;
     border-radius: 0.75rem;
-    border: 2px solid #000;
-    background: #fff;
+    border: 1px solid oklch(0.25 0 0);
+    background: transparent;
     text-decoration: none;
     overflow: hidden;
     opacity: 0;
@@ -569,17 +489,17 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
     transition: border-color 300ms ease, box-shadow 300ms ease, transform 300ms ease, background-color 300ms ease;
   }
   :root.dark .tools-card {
-    border-color: #fff;
-    background: #000;
+    border-color: oklch(0.85 0 0);
+    background: transparent;
   }
   .tools-card:hover {
-    border-color: #000;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-color: oklch(0.45 0 0);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
   }
   :root.dark .tools-card:hover {
-    border-color: #fff;
-    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+    border-color: oklch(0.7 0 0);
+    box-shadow: 0 2px 12px rgba(255, 255, 255, 0.08);
     transform: translateY(-2px);
   }
 
@@ -611,22 +531,22 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
     transform: scale(1) translateY(0);
   }
 
-  /* 描述文本：单行省略 */
+  /* 描述文本：多行截断 */
   .tools-card-desc {
     margin: 0 0 0.75rem 0;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 400;
     color: oklch(0.45 0 0);
-    line-height: 1.5;
+    line-height: 1.6;
     display: -webkit-box;
-    -webkit-line-clamp: 1;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     flex: 1;
-    min-height: 1.3125rem;
   }
   :root.dark .tools-card-desc {
-    color: oklch(0.55 0 0);
+    color: oklch(0.6 0 0);
   }
 
   /* 底部域名 */
@@ -639,103 +559,6 @@ const allSites = sortedCategories.flatMap((cat) => sortedData.get(cat) ?? []);
   }
   :root.dark .tools-card-footer {
     border-color: oklch(0.2 0 0);
-  }
-
-  /* ===== 迷你模式切换按钮 ===== */
-  .mini-mode-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 0.75rem;
-    border: 2px solid #000;
-    background: #fff;
-    color: #000;
-    cursor: pointer;
-    transition: background-color 200ms ease, border-color 200ms ease, transform 150ms ease;
-    flex-shrink: 0;
-  }
-  :root.dark .mini-mode-btn {
-    border-color: #fff;
-    background: #000;
-    color: #fff;
-  }
-  .mini-mode-btn:hover {
-    background: oklch(0.95 0 0);
-    transform: scale(1.05);
-  }
-  :root.dark .mini-mode-btn:hover {
-    background: oklch(0.15 0 0);
-  }
-  .mini-mode-btn:active {
-    transform: scale(0.95);
-  }
-
-  /* ===== 迷你模式样式 ===== */
-  :global(.tools-mini-mode) .tools-card-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-  }
-  :global(.tools-mini-mode) .tools-card {
-    padding: 0.75rem;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  :global(.tools-mini-mode) .tools-card:hover {
-    transform: translateY(-1px);
-  }
-  :global(.tools-mini-mode) .tools-card .flex.items-center.gap-2.mb-3 {
-    margin-bottom: 0;
-    flex: 1;
-    min-width: 0;
-  }
-  :global(.tools-mini-mode) .tools-card h3 {
-    font-size: 0.9375rem;
-    line-height: 1.3;
-    margin: 0;
-  }
-  :global(.tools-mini-mode) .tools-card .tools-card-desc,
-  :global(.tools-mini-mode) .tools-card .tools-card-footer,
-  :global(.tools-mini-mode) .tools-card .tools-card-jump-icon {
-    display: none !important;
-  }
-  :global(.tools-mini-mode) .tools-card img {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-  :global(.tools-mini-mode) .tools-card .iconify {
-    width: 1.25rem;
-    height: 1.25rem;
-    font-size: 1.25rem;
-  }
-  :global(.tools-mini-mode) .tools-category-group {
-    margin-top: 1.5rem;
-  }
-  :global(.tools-mini-mode) .tools-category-group:first-child {
-    margin-top: 0;
-  }
-  :global(.tools-mini-mode) .tools-category-group > .flex.items-center.gap-3.mb-5 {
-    margin-bottom: 0.75rem;
-  }
-
-  /* 迷你模式响应式 */
-  @media (max-width: 1280px) {
-    :global(.tools-mini-mode) .tools-card-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  @media (max-width: 768px) {
-    :global(.tools-mini-mode) .tools-card-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (max-width: 480px) {
-    :global(.tools-mini-mode) .tools-card-grid {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 0.5rem;
-    }
   }
 
   @keyframes toolsCardSlideIn {

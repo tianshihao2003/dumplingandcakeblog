@@ -1,7 +1,13 @@
 ---
 import { Icon } from "astro-icon/components";
-import { getSortedPostsList } from "@/utils/content-utils";
-import { getPostUrlBySlug, removeFileExtension } from "@/utils/url-utils";
+import {
+	compareInSameDate,
+	getSortedPostsList,
+} from "@/utils/content-utils";
+import {
+	getPostUrlBySlug,
+	removeFileExtension,
+} from "@/utils/url-utils";
 
 // 文件夹图标映射（Iconify 图标名）
 // key 统一小写，因为 Astro 在 Windows 上会把 content collection ID 转为小写
@@ -36,7 +42,8 @@ type DirectoryArticle = {
 	slug: string;
 	title: string;
 	url: string;
-	date: string;
+	order?: number;
+	publishedAt: number;
 };
 
 type DirectoryFolder = {
@@ -63,10 +70,6 @@ function createNode(): DirectoryNode {
 	return { folders: new Map(), articles: [] };
 }
 
-function toDateString(date: Date): string {
-	return new Date(date).toISOString().slice(0, 10);
-}
-
 const root = createNode();
 
 for (const post of posts) {
@@ -90,7 +93,8 @@ for (const post of posts) {
 		slug,
 		title: post.data.title || fileName,
 		url: getPostUrlBySlug(post.id),
-		date: toDateString(post.data.published),
+		order: post.data.order,
+		publishedAt: new Date(post.data.published).getTime(),
 	});
 }
 
@@ -130,9 +134,14 @@ function walk(
 		rows.push(...result.rows);
 	}
 
-	const articles = [...node.articles].sort((a, b) =>
-		b.date.localeCompare(a.date),
-	);
+	// 同一文件夹内：日期降序，同一天则按 order 降序（与全局排序规则一致，见 content-utils.ts）
+	const articles = [...node.articles].sort((a, b) => {
+		if (a.publishedAt !== b.publishedAt) return b.publishedAt - a.publishedAt;
+		return compareInSameDate(
+			{ id: a.slug, order: a.order },
+			{ id: b.slug, order: b.order },
+		);
+	});
 	for (const a of articles) {
 		if (a.slug === normalizedCurrentSlug) subtreeHasCurrent = true;
 	}
@@ -182,11 +191,10 @@ const { rows } = walk(root);
 							]}
 							style={`--depth: ${row.depth}`}
 							data-post-slug={row.slug}
-							title={`${row.title} · ${row.date}`}
+							title={row.title}
 						>
 							<Icon name="material-symbols:description-outline" class="pd-icon pd-icon-article" aria-hidden="true" />
 							<span class="pd-title">{row.title}</span>
-							<span class="pd-date">{row.date}</span>
 						</a>
 					</li>
 				)
@@ -383,13 +391,6 @@ const { rows } = walk(root);
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		font-size: 0.82rem;
-	}
-
-	.pd-date {
-		flex: 0 0 auto;
-		font-size: 0.68rem;
-		color: currentColor;
-		opacity: 0.45;
 	}
 
 	@media (max-width: 768px) {

@@ -11,7 +11,10 @@ import ArticleVirtualList from "@/components/pages/ArticleVirtualList.svelte";
 import { siteConfig } from "@/config";
 import { coverImageConfig } from "@/config/coverImageConfig";
 import { getCategoryFromId } from "@/utils/category-tree";
-import { getCategoryList } from "@/utils/content-utils";
+import {
+	comparePostsByOrderAndDate,
+	getCategoryList,
+} from "@/utils/content-utils";
 import { getApiUrlList, processCoverImageSync } from "@/utils/image-utils";
 import {
 	getCategoryPageUrl,
@@ -53,15 +56,8 @@ export const getStaticPaths = (async () => {
 			);
 		});
 
-		// 按日期排序
-		categoryPosts.sort((a, b) => {
-			if (a.data.pinned && !b.data.pinned) return -1;
-			if (!a.data.pinned && b.data.pinned) return 1;
-			return (
-				new Date(b.data.published).getTime() -
-				new Date(a.data.published).getTime()
-			);
-		});
+		// 排序规则见 src/utils/content-utils.ts#comparePostsByOrderAndDate
+		categoryPosts.sort(comparePostsByOrderAndDate);
 
 		// 收集该分类下所有标签
 		const tagCountMap: Record<string, number> = {};

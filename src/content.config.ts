@@ -29,7 +29,8 @@ const postsCollection = defineCollection({
 		licenseName: z.string().optional().default(""),
 		licenseUrl: z.string().optional().default(""),
 		comment: z.boolean().optional().default(true),
-		order: z.number().optional().default(0),
+		// 同日期内排在该目录最后（order 降序，未写表示最小），见 src/utils/content-utils.ts#comparePostsByOrderAndDate
+		order: z.number().optional(),
 
 		/* For internal use */
 		prevTitle: z.string().default(""),

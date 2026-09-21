@@ -2,6 +2,25 @@
    文章列表与卡片样式 — 固定 3 列 + 摘要 + 参考博客置顶轮播
    ========================================================================== */
 
+/* 只有文章列表页/分类页加宽侧栏（2026-09-21）：让左侧「全部文章」目录能放下
+   完整标题。侧栏宽度默认写在 responsive-utils.ts / grid-layout-utils.ts
+   （17.5rem 列宽 + max-w-70），这里是页面级覆盖，不要改那两个全局值——
+   改了会让全站每页的侧栏都变宽。 */
+@media (min-width: 768px) {
+	#main-grid:has(.article-list-page) {
+		grid-template-columns: 20rem minmax(0, 1fr) !important;
+	}
+}
+
+@media (min-width: 1280px) {
+	#main-grid:has(.article-list-page) {
+		grid-template-columns: 20rem minmax(0, 1fr) 20rem !important;
+	}
+	#main-grid:has(.article-list-page) [class*="max-w-70"] {
+		max-width: 20rem !important;
+	}
+}
+
 .article-list-page {
 	width: 100%;
 	max-width: 760px;
@@ -409,12 +428,13 @@
 	line-height: 1.65;
 }
 
+/* 两行固定布局：第一行分类 + 浏览量，第二行日期、字数、标签。
+   这样各卡片的 meta 高度一致，不会因 flex-wrap 换行导致卡片高度参差。 */
 .article-list-pinned-item__meta {
 	display: flex;
+	flex-direction: column;
 	min-width: 0;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 0.45rem 0.65rem;
+	gap: 0.25rem;
 	color: var(--content-meta);
 	font-size: 0.75rem;
 	font-weight: 650;
@@ -422,11 +442,38 @@
 	margin-top: 0.5rem;
 }
 
+.article-list-pinned-item__meta-row {
+	display: flex;
+	min-width: 0;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.25rem 0.65rem;
+}
+
 .article-list-pinned-item__meta-item {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.25rem;
 	white-space: nowrap;
+}
+
+/* 浏览量：靠该行最右侧；数字未就绪或该行无其他内容时整体隐藏、不占位 */
+.article-views {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	margin-left: auto;
+	padding-left: 0.5rem;
+	white-space: nowrap;
+}
+
+.article-views:has(.waline-pageview-count:empty) {
+	display: none;
+}
+
+/* 列表视图：浏览量紧跟分类，不推到行尾（网格视图仍靠右） */
+.article-list-row-pinned .article-views {
+	margin-left: 0;
 }
 
 /* ==========================================================================
@@ -488,11 +535,11 @@
 	}
 	.article-list-row-pinned .article-list-pinned-item__description {
 		font-size: 0.8125rem;
-		height: 4.2em;
-		min-height: 4.2em;
-		max-height: 4.2em;
-		-webkit-line-clamp: 3;
-		line-clamp: 3;
+		height: 3.3em;
+		min-height: 3.3em;
+		max-height: 3.3em;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
 	}
 }
 
@@ -914,12 +961,13 @@
 	white-space: nowrap;
 }
 
+/* 与列表卡片一致的两行固定布局：分类 + 浏览量一行，日期 + 字数一行。
+   此前单行 flex-wrap 会随分类名长度随机折行，导致同屏卡片高度参差。 */
 .article-list-card__meta {
 	display: flex;
+	flex-direction: column;
 	min-width: 0;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 0.45rem 0.65rem;
+	gap: 0.25rem;
 	color: var(--content-meta);
 	font-size: 0.75rem;
 	font-weight: 650;
@@ -942,14 +990,14 @@
 
 .article-list-card__description {
 	display: -webkit-box;
-	height: 4.95em;
-	min-height: 4.95em;
-	max-height: 4.95em;
+	height: 3.3em;
+	min-height: 3.3em;
+	max-height: 3.3em;
 	margin: 0;
 	overflow: hidden;
 	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 3;
-	line-clamp: 3;
+	-webkit-line-clamp: 2;
+	line-clamp: 2;
 	color: var(--content-meta);
 	font-size: 0.8125rem;
 	font-weight: 500;

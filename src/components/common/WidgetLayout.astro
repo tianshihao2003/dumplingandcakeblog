@@ -57,14 +57,14 @@ const className = Astro.props.class;
         padding-left: 1rem;
         padding-right: 1rem;
         padding-bottom: 0.75rem;
-        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.06);
-        transition: box-shadow 0.3s ease, border-color 0.3s ease;
+        box-shadow: none;
+        transition: border-color 0.3s ease;
     }
 
     :root.dark widget-layout {
         border-color: rgba(255, 255, 255, 0.1);
         background: #181818;
-        box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.3);
+        box-shadow: none;
     }
 
     widget-layout:hover {
