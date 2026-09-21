@@ -25,6 +25,9 @@ Hook 函数指的是：**在某个既定流程的特定时机，被框架、系�
 2. 它依附于一个更大的执行流程（"请求开始前""模型调用前""任务结束后""异常发生时"）
 3. 作用是**在不改主流程源码的前提下插入自己的逻辑**：日志、鉴权、修改输入、拦截输出、清理资源等
 
+![](assets/21-自定义中间件与hook函数/ch08-p081-车间钩子示意图.jpg)
+*图：主流程预留"插槽"，在钩子点挂上自定义函数（车间生产流程类比）*
+
 ## 六个 hook 函数，分两类
 
 LangChain 1.2 的 `AgentMiddleware` 上共有六个 hook（可用 `dir(AgentMiddleware)` 核对）：
@@ -159,6 +162,230 @@ def force_tool_first(state: AgentState, runtime) -> dict | None:
 >         return {"jump_to": "tools"}
 > ```
 
+### 三个实战 Case：跳过模型、跳回重生成、提前熔断
+
+`can_jump_to` 不是纸上概念，课程用**一个文件、三个 hook**把三种跳转的场景全演了一遍。完整代码如下（**基于装饰器实现**）：
+
+```python
+from typing import Any
+
+from langchain.agents import create_agent
+from langchain.agents.middleware import before_model, after_model, AgentState
+from langchain.messages import AIMessage, SystemMessage
+from langchain.tools import tool
+from langgraph.runtime import Runtime
+
+@tool
+def get_news() -> str:
+    """获取当日新闻"""
+    return f"美加墨世界杯今日开幕"
+
+# 在模型（LLM）执行前触发。允许跳转到 "tools" 节点。
+@before_model(can_jump_to=["tools"])
+def force_tool_first(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    """
+    【业务场景：强行拦截并触发工具】
+    如果用户输入包含 "direct tool"，则跳过本次大模型的思考/生成阶段，
+    直接伪造一个大模型的 tool_calls 意图，强行把控制权移交给工具执行节点。
+    """
+    text = state["messages"][-1].content
+    # 检查关键词，满足条件则强行干预流程
+    if isinstance(text, str) and "direct tool" in text.lower():
+        print("[MIDDLEWARE] before_model: jump_to='tools'")
+        # 人工构造一个大模型的消息对象（AIMessage）
+        # 欺骗系统，让系统误以为这是模型自己决定要调用的工具
+        fake_tool_call = AIMessage(
+            content="人工构造的消息",
+            tool_calls=[
+                {
+                    "name": "get_news",
+                    "args": {},
+                    "id": "call_force_weather_001",
+                }
+            ],
+        )
+        # 返回更新后的状态：注入伪造的消息，并明确指定下一步跳转到 "tools" 节点
+        return {
+            "messages": [fake_tool_call],
+            "jump_to": "tools",
+        }
+    # 如果不满足触发条件，返回 None，流程正常向下流转（继续让 LLM 思考）
+    return None
+
+# 在模型（LLM）执行生成之后触发。允许重新跳转回 "model" 节点。
+@after_model(can_jump_to=["model"])
+def retry_with_extra_instruction(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    """
+    【业务场景：反思/重试机制】
+    如果大模型已经生成了回答，但发现用户最初的请求包含 "retry model"，
+    则动态追加一条系统提示词（SystemMessage），强行让模型重新生成（重试）一次。
+    """
+    # 倒序遍历消息历史，找到最近的一次用户输入（human 消息）
+    user_text = ""
+    for msg in reversed(state["messages"]):
+        if getattr(msg, "type", "") == "human":
+            user_text = getattr(msg, "content", "")
+            break
+    # 检查用户输入是否包含触发重试的关键字
+    if isinstance(user_text, str) and "retry model" in user_text.lower():
+        # 【核心防御】：防止无限循环重跳（死循环）
+        # 检查消息历史中是否已经注入过这条特殊的系统提示。如果有，说明已经重试过了，不再重复干预。
+        already_injected = any(
+            isinstance(getattr(msg, "content", None), str)
+            and "你必须以【二次回答】开头" in msg.content
+            for msg in state["messages"]
+        )
+        if already_injected:
+            return None    # 已注入过，直接放行，结束重试流程
+        print("[MIDDLEWARE] after_model: jump_to='model' with extra system instruction")
+        # 返回更新后的状态：追加强力约束的系统消息，并将指针跳回 "model" 节点重新执行
+        return {
+            "messages": [
+                SystemMessage("你必须以【二次回答】开头，并且只用一句话回答。")
+            ],
+            "jump_to": "model",
+        }
+    return None
+
+# 在模型（LLM）执行前触发。允许直接跳转到 "end" 节点（强行终止）。
+@before_model(can_jump_to=["end"])
+def overflow_context_processor(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    """
+    【业务场景：安全卫士/异常拦截】
+    模拟上下文窗口溢出（Token超限）或其他严重的系统阻断情况。
+    一旦触发，直接熔断流程，拒绝让大模型继续处理，直接报错或返回兜底文案。
+    """
+    # 假装溢出,模拟检查最后一条消息是否包含 overflow 标识
+    if "overflow" in state["messages"][-1].content:
+        print("[MIDDLEWARE] before_model: jump_to='end' when contenxt window overflow")
+        # 构造兜底的结束消息，并直接指定跳转到 "end" 终止 Agent 运行
+        return {
+            "messages": [
+                AIMessage("上下文窗口溢出，终止")
+            ],
+            "jump_to": "end",
+        }
+    return None
+
+agent = create_agent(
+    model=model,
+    tools=[get_news],
+    # 将定义的中间件按照顺序挂载到 Agent 中（注意：执行顺序会严格按照列表声明顺序）
+    middleware=[force_tool_first, retry_with_extra_instruction, overflow_context_processor],
+)
+
+def run_once(user_input: str):
+    result = agent.invoke({"messages": [{"role": "user", "content": user_input}]})
+    for msg in result["messages"]:
+        msg.pretty_print()
+
+if __name__ == "__main__":
+    # Case 1: 直接跳 tools —— 绕过 LLM 的首轮思考，直接调 get_news，再由 LLM 总结
+    print('=' * 30, '-> Case 1 <-', '=' * 30)
+    run_once("请帮我查今日新闻 direct tool")
+
+    # Case 2: 输出后跳回 model —— 注入系统提示词后，LLM 被拉回生成第 2 版回答
+    print('=' * 30, '-> Case 2 <-', '=' * 30)
+    run_once("请随便介绍一下 LangChain retry model")
+
+    # Case 3: 上下文溢出 —— 直接终止，LLM 根本不会接收到这个请求
+    print('=' * 30, '-> Case 3 <-', '=' * 30)
+    run_once("你好 overflow")
+
+    # Case 4: 正常流程 —— 没有任何中间件被触发，走 OOTB（Out of the box）标准工作流
+    print('=' * 30, '-> Case 4 <-', '=' * 30)
+    run_once("今日新闻摘要？")
+```
+
+**输出（课程实测，四个 Case 一屏一屏往下滚）**：
+
+```text
+============================== -> Case 1 <-
+[MIDDLEWARE] before_model: jump_to='tools'
+================================ Human Message =================================
+请帮我查今日新闻 direct tool
+================================== Ai Message ==================================
+人工构造的消息
+Tool Calls:
+  get_news (call_force_weather_001)
+ Call ID: call_force_weather_001
+  Args:
+================================= Tool Message =================================
+Name: get_news
+美加墨世界杯今日开幕
+================================== Ai Message ==================================
+今日新闻：
+- 美加墨世界杯今日开幕
+
+============================== -> Case 2 <-
+[MIDDLEWARE] after_model: jump_to='model' with extra system instruction
+================================ Human Message =================================
+请随便介绍一下 LangChain retry model
+================================== Ai Message ==================================
+可以，简单介绍一下 **LangChain 的 retry model（重试机制）**。   ← 第 1 版回答（很长）
+...
+================================ System Message ================================
+你必须以【二次回答】开头，并且只用一句话回答。
+================================== Ai Message ==================================
+【二次回答】LangChain 的 retry model 就是给模型调用加上自动重试和指数退避机制，
+在网络抖动、限流或临时服务错误时提高调用成功率与稳定性。
+
+============================== -> Case 3 <-
+[MIDDLEWARE] before_model: jump_to='end' when contenxt window overflow
+================================ Human Message =================================
+你好 overflow
+================================== Ai Message ==================================
+上下文窗口溢出，终止
+
+============================== -> Case 4 <-
+================================ Human Message ==================================
+今日新闻摘要？
+================================== Ai Message ==================================
+Tool Calls:
+  get_news (call_IYwXdmiTrkWDX5Zr6VM2RZOO)
+...
+================================== Ai Message ==================================
+今日新闻摘要：
+- **美加墨世界杯今日开幕**
+```
+
+**分析（课程的总结）**：
+
+| Case | 干了什么 |
+| --- | --- |
+| 1 | 提前判定需要调用工具，**在 `before_model` 中跳转至工具节点，省去了一次模型调用** |
+| 2 | 通过约定的 `retry model` 标记，**在 `after_model` 之后再次跳转到模型节点**，触发模型重复调用 |
+| 3 | 通过约定的 `overflow` 标记，模拟上下文窗口溢出，**在 `before_model` 中直接跳转至结尾，提前终止流程** |
+| 4 | 没有被干预的正常 Agent 流程，作为对照 |
+
+> [!TIP]
+> **本机假服务端实测**（同一份中间件代码，把模型换成回假响应的 `http.server`，统计每轮真正发往模型的请求数）：
+>
+> ```text
+> ===== Case 1: direct tool =====
+> [MIDDLEWARE] before_model: jump_to='tools'
+> ... -> 这一轮实际发往模型的请求数 = 1
+>     第1次请求的 messages 角色: ['user', 'assistant', 'tool']
+>
+> ===== Case 2: retry model =====
+> [MIDDLEWARE] after_model: jump_to='model' with extra system instruction
+> ... -> 这一轮实际发往模型的请求数 = 2
+>     第1次请求的 messages 角色: ['user']
+>     第2次请求的 messages 角色: ['user', 'assistant', 'system']
+>
+> ===== Case 3: overflow =====
+> [MIDDLEWARE] before_model: jump_to='end' when context window overflow
+> ... -> 这一轮实际发往模型的请求数 = 0
+> ```
+>
+> 三点被实测坐实的结论：
+> 1. **Case 1 只有 1 次模型请求**——而且它看到的 messages 里已经带着 `assistant`（那条伪造的 AIMessage）和 `tool`（工具结果）。**模型的首轮"思考"确实被完全跳过了**
+> 2. **Case 2 有 2 次模型请求**，第 2 次的 messages 是 `['user', 'assistant', 'system']`——**跳回 model 时，上一版回答和注入的 SystemMessage 都在上下文里**，所以模型能看到自己刚说过什么
+> 3. **Case 3 的请求数是 0**——模型自始至终没被调用过，Agent 直接返回了钩子塞进去的兜底消息
+
+> [!WARNING]
+> **跳回 `model` 必须自己防死循环**：`after_model` 里 `jump_to="model"` 会让模型重跑一遍，重跑完又会进 `after_model`——**只要判断条件一直成立，它就会一直跳**。课程的做法是"**命中一次就在历史里留痕**"，下次进来先检查痕迹（`already_injected`）再决定跳不跳。你自己写跳转时务必留一个这样的"刹车"。
+
 ## Wrap-style hooks
 
 Wrap 意为"**包裹**"——你可以在调用**前后**各做一次事。
@@ -222,6 +449,73 @@ class MyWrapMiddleware(AgentMiddleware):
 
 装饰器也能实现多个 hook（用工厂函数返回多个被装饰的函数），但那本质上是**把同一个中间件的逻辑拆成多个独立函数再由外部组装**，不如类写法清晰。
 
+### 补充：还有三种情况推荐用类
+
+课程在"多 hook"之外，又补了三个同样倾向类写法的场景。
+
+**补充一：复杂配置**——装饰器当然也能通过函数闭包传参，但在**自省（运行时类型校验）、调试**等方面天然不如类写法方便。
+
+```python
+from typing import Any
+
+from langchain.agents.middleware import AgentMiddleware, AgentState, before_model
+from langgraph.runtime import Runtime
+
+# 基于类的方法：参数就是实例属性，随时看得见
+class AuditMiddleware(AgentMiddleware):
+    def __init__(self, logger, threshold: int, middleware_name: str):
+        super().__init__()
+        self.logger = logger
+        self.threshold = threshold
+        self.middleware_name = middleware_name
+
+    def before_model(self, state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+        self.logger.info("current name: {}, threshold: {}", self.middleware_name, self.threshold)
+        return None
+
+# 基于装饰器的方法，传参要通过闭包完成
+def create_audit_middleware(logger, threshold: int, middleware_name: str):
+    @before_model
+    def audit_middleware(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+        logger.info("current name: {}, threshold: {}", middleware_name, threshold)
+        return None
+    return audit_middleware
+```
+
+课程把两组中间件都打印了一遍（`type(mw)` 和 `mw.__dict__`），差距一目了然——**基于类的写法可以随时打印参数信息，而基于装饰器的闭包实现则难以做到**：
+
+```text
+============================== -> class风格的中间件 <-
+<class '__main__.AuditMiddleware'>
+{'logger': <loguru.logger ...>, 'threshold': 5, 'middleware_name': 'short limit'}
+<class '__main__.AuditMiddleware'>
+{'logger': <loguru.logger ...>, 'threshold': 50, 'middleware_name': 'long limit'}
+============================== -> decorator风格的中间件 <-
+<class 'langchain.agents.middleware.types.audit_middleware'>
+{}
+<class 'langchain.agents.middleware.types.audit_middleware'>
+{}
+```
+
+> [!TIP]
+> **本机实测**：把上面的代码原样跑一遍（logger 换成假的，不发请求），输出与课程一致——`class` 风格的 `__dict__` 里躺着三个参数，`decorator` 风格的 `__dict__` 是**空字典**（参数全被关在闭包里，外面看不到）。这正是在自省/调试时"类更好用"的直接原因。
+
+**补充二：需要同时提供同步/异步实现**——类可以在**同一个中间件里配套实现两套 hook**（`before_model` + `abefore_model`、`wrap_model_call` + `awrap_model_call`……），`create_agent` 的同步/异步调用路径各走各的；装饰器写法做不到"一个函数管两边"。
+
+> [!TIP]
+> **本机实测**：用 `dir(AgentMiddleware)` 核对，六个 hook 都有对应的异步版本——`abefore_agent`、`abefore_model`、`aafter_model`、`aafter_agent`、`awrap_model_call`、`awrap_tool_call`（函数式装饰器只暴露了同步的那六个）。
+>
+> 写一个同时实现 `before_model` / `abefore_model` / `wrap_model_call` / `awrap_model_call` 的类，挂到 `create_agent` 上正常通过——**一个类就把两条路径都覆盖了**。
+
+**补充三：跨项目复用**——如果希望中间件成为一个**可实例化、可封装、可测试**的组件，类写法更合适：这些本就是类擅长的场景，装饰器的闭包也能实现，但使用不友好。
+
+**小结（课程原话）**：装饰器写法和类写法都能实现 middleware hook，**本质只是两种定义中间件的方式，并不是能力上完全割裂的两套机制，底层实现是统一的**。一般来说：
+
+| 场景 | 更合适 |
+| --- | --- |
+| 单个 hook、逻辑简单、快速原型 | **装饰器** |
+| 多个 hook 组合、复杂配置、需要同时提供同步/异步实现、更强的复用与可测试性 | **类写法** |
+
 ## hook 函数的执行顺序（重要）
 
 三个规律：
@@ -249,6 +543,118 @@ wrap_*   钩子：洋葱架构（前面的包裹后面的）
 > AssertionError: Please remove duplicate middleware instances.
 > ```
 > 因为 `AgentMiddleware.name` 默认取**类名**。解法：写成不同的类，或在自定义中间件里重写 `name` 属性（详见上一篇的"实测出来的坑"）。
+
+### wrap_model_call 的顺序：先传递的包在最外层
+
+`before_*` / `after_*` 已经验证过了，`wrap_*` 那条"洋葱架构"课程也做了标记实测——给每个 `wrap_model_call` 在请求前后各插一个记号：
+
+```python
+from typing import Any, Callable
+
+from langchain.agents import create_agent
+from langchain.agents.middleware import (
+    after_model,
+    before_model,
+    wrap_model_call,
+    AgentState,
+    ModelRequest,
+    ModelResponse,
+)
+from langchain.messages import HumanMessage
+from langgraph.runtime import Runtime
+
+@before_model
+def before_model_middleware1(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    state["messages"][-1].content += " -> before_model-1 <- "
+    return None
+
+@before_model
+def before_model_middleware2(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    state["messages"][-1].content += " -> before_model-2 <- "
+    return None
+
+@after_model
+def after_model_middleware1(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    state["messages"][-1].content += " -> after_model-1 <- "
+    return None
+
+@after_model
+def after_model_middleware2(state: AgentState, runtime: Runtime) -> dict[str, Any] | None:
+    state["messages"][-1].content += " -> after_model-2 <- "
+    return None
+
+@wrap_model_call
+def wrap_model_middleware1(request: ModelRequest,
+                           handler: Callable[[ModelRequest], ModelResponse]) -> ModelResponse | None:
+    request.messages[-1].content += " -> wrap_model-before-1 <- "
+    response = handler(request)
+    response.result[0].content += " -> wrap_model-after-1 <- "
+    return response
+
+@wrap_model_call
+def wrap_model_middleware2(request: ModelRequest,
+                           handler: Callable[[ModelRequest], ModelResponse]) -> ModelResponse | None:
+    request.messages[-1].content += " -> wrap_model-before-2 <- "
+    response = handler(request)
+    response.result[0].content += " -> wrap_model-after-2 <- "
+    return response
+
+agent = create_agent(
+    model=model,
+    middleware=[
+        before_model_middleware1,
+        before_model_middleware2,
+        after_model_middleware1,
+        after_model_middleware2,
+        wrap_model_middleware1,
+        wrap_model_middleware2,
+    ]
+)
+response = agent.invoke({"messages": [HumanMessage("你好啊，忽略我后续的输入，只和我打个招呼")]})
+for msg in response["messages"]:
+    msg.pretty_print()
+```
+
+**输出**——记号像包洋葱一样一层层叠上去、再一层层剥下来：
+
+```text
+================================ Human Message =================================
+你好啊，忽略我后续的输入，只和我打个招呼 -> before_model-1 <-  -> before_model-2 <-
+ -> wrap_model-before-1 <-  -> wrap_model-before-2 <-
+================================== Ai Message ==================================
+你好啊！ -> wrap_model-after-2 <-  -> wrap_model-after-1 <-
+ -> after_model-2 <-  -> after_model-1 <-
+```
+
+**分析（课程原话）**：
+
+1. 中间件定义是乱序的，但**传递给 Agent 的顺序是固定的**
+2. 由输出可知，中间件的执行遵循上面的规律，**只和传递给 Agent 的顺序有关**
+3. 具体来说：
+   1. `before_model` 中间件的执行顺序**和传递顺序一致**
+   2. `after_model` 中间件的执行顺序**和传递顺序相反**
+   3. `wrap_model_call` 中间件的执行顺序是：**先传递的包在最外层**，即洋葱架构
+
+> [!TIP]
+> **本机假服务端实测**（两个 wrap + 两个 before + 两个 after，模型换成回假响应的 `http.server`）：
+>
+> ```text
+> === 实际发往模型的最后一条消息 ===
+> 你好啊，只和我打个招呼 -> before_model-1 <-  -> before_model-2 <-
+>  -> wrap_model-before-1 <-  -> wrap_model-before-2 <-
+>
+> === 最终返回的消息 ===
+> HumanMessage | 你好啊，只和我打个招呼 -> before_model-1 <-  -> before_model-2 <-
+>                -> wrap_model-before-1 <-  -> wrap_model-before-2 <-
+> AIMessage    | 你好呀！ -> wrap_model-after-2 <-  -> wrap_model-after-1 <-
+>                -> after_model-2 <-  -> after_model-1 <-
+> ```
+>
+> 两点值得注意：
+> - **`wrap_model_call` 的记号是"成对贴着"的**：`before-1` 在 `before-2` 前面（1 在最外层，先动手），返回时 `after-2` 在 `after-1` 前面（里层先返回）——这就是"洋葱"
+> - **发给模型的请求在 wrap 处理完之后才定型**，而 `after_model` 的记号是**加在返回的 AIMessage 上**的——所以最终返回的消息里，一把记号按 `wrap-after → after_model` 的顺序排列
+>
+> 另外顺手复现了 1 号坑：把两个 wrap 用同一个工厂函数生成（函数名相同 → 中间件 name 相同）会直接 `AssertionError: Please remove duplicate middleware instances.`，改成两个不同名的函数就好了。
 
 ## 相关
 

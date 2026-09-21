@@ -12,6 +12,9 @@ order: 6
 
 当智能体系统逐渐复杂时，单靠 `print` 调试已经不够用了。**LangSmith 是 LangChain 官方推出的可视化监控与测试平台**，用于跟踪、记录和分析智能体运行过程中的**完整调用链路**，让内部运行过程变得透明、可评估。
 
+![](assets/06-LangSmith的使用/ch03-p001-主界面与功能菜单.jpg)
+*图：LangSmith 主界面——左侧菜单列全了 Tracing、Monitoring、Datasets、Playground、Studio 等功能*
+
 核心目标：
 
 | 目标 | 说明 |
@@ -46,14 +49,54 @@ order: 6
 > [!TIP]
 > 新手的学习顺序建议：**现阶段重点看 Tracing（观察调用细节）和 Playground（快速调优提示词）**；等应用结构复杂了（复杂的 RAG 检索、多 Agent 协同），再引入 Datasets 做量化评估、用 Studio 做可视化调试。
 
+## 功能板块细节
+
+每个板块再展开说一遍，照着官方文档的功能说明对照着看：
+
+**Tracing（追踪）**：LangSmith 最核心的功能，会完整记录大模型应用的**每一次调用链路（Trace）**。当 Agent 或 RAG 系统运行变慢或报错时，点进对应的项目（如 `langchain1.2_smith`），就能看到每一步的 **Prompt 是什么、模型返回了什么、消耗了多少 Token，以及每一个链条节点的耗时**，非常方便排查 Bug 和优化性能。
+
+**Monitoring（监控）**：生产环境的高级数据可视化看板，从宏观角度监控应用在一段时间内的运行状况——**Token 消耗趋势、QPS（每秒请求数）、错误率、平均延迟（Latency）、成本预估**，适合应用上线后观察系统的稳定性与开销。
+
+**Datasets & Experiments（数据集与实验）**：管理测试数据集并运行对比实验。可以把用户的真实输入、特定的边界情况（Edge Cases）存成数据集；当你改了 Prompt 或换了底层大模型，就在这里跑自动化对比测试，直观看到新旧版本在同一批测试集上的表现差异。
+
+**Evaluators（评估器）**：配置和自动化评估任务。大模型的输出往往难以用传统的断言（Assert）来测试，这里允许你配置**基于规则**（如关键词匹配）或**基于模型**（**LLM-as-a-judge**，用一个模型当裁判）的评估指标——比如**答案相关性**、**是否包含幻觉**——对追踪到的数据或实验结果自动打分。
+
+**Annotation Queues（标注队列）**：人工反馈与数据清洗工具。在应用开发或初上线阶段，可以把一部分痕迹（Traces）发送到标注队列，让团队中的核心成员、业务专家或人工客服**手动打分、纠正回答或贴标签**；这些高质量的人工标注数据后续**可以直接用于微调模型或充当测试集**。
+
+**Prompts（提示词管理）**：类似"提示词版的 GitHub"。把 Prompt 从代码中解耦出来、统一在云端管理，支持**版本控制（如 v1、v2）**，可以直接在代码中**通过 API 动态拉取最新的提示词**，还支持团队协作与 Prompt 分享。
+
+**Playground（演练场）**：一个网页端的模型交互界面。无需写任何代码，直接在这里选择不同的模型（如 OpenAI、Anthropic 或本地模型），快速微调并测试你的 Prompt 效果，还能**一键把调整好的 Prompt 保存到上方的 Prompts 仓库**中。
+
+**Studio（工作室）**：通常与 **LangGraph 深度集成**，提供可视化的图形交互界面。如果应用是基于图结构（Graph-based）的复杂 Agent 架构，可以用它可视化地看到**状态机（State）在各个节点之间的流转**，甚至支持在某个节点**"暂停"**、手动修改数据后再继续向下执行，是调试复杂智能体交互的利器。
+
+**Context Hub（上下文中心）**：管理全局上下文或通用组件配置，用于存放可在多个项目或 Prompt 中**复用的公共上下文模板、全局变量或系统预设提示**。
+
+**Deployments（部署）**：一键把 LangChain 应用或 LangGraph Agent 部署为线上可用的 API 服务（通常依托 **LangGraph Cloud**），提供开箱即用的生产端点，帮你处理高并发、队列管理和状态持久化，让你专注写业务逻辑。
+
+**Sandboxes（沙盒）**：提供轻量级的在线运行和测试环境，在**不污染生产环境**的前提下，供开发人员安全地试运行、测试新部署的 Agent 或执行自动化脚本。
+
 ## 准备账号与 API Key
 
 1. 访问官网 https://smith.langchain.com/ 注册或登录
+
+![](assets/06-LangSmith的使用/ch03-p003-注册登录页面.jpg)
+*图：注册 / 登录页面（注册时先选数据区域，之后不能改）*
+
 2. 进入设置 → 创建 API Key
+
+![](assets/06-LangSmith的使用/ch03-p004-设置入口与密钥页.jpg)
+*图：左侧菜单最下方的 Settings 入口，进去就是 API Keys 页面*
+
 3. **点 copy 保存好**：
+
+![](assets/06-LangSmith的使用/ch03-p005-创建后复制密钥弹窗.jpg)
+*图：创建成功后的复制弹窗——API Key 只在这里显示一次*
 
 > [!WARNING]
 > API Key **只在创建弹窗里出现一次**，关掉弹窗后官网就再也看不到内容了（只能删除重建）。务必先复制保存。
+
+![](assets/06-LangSmith的使用/ch03-p006-删除密钥确认弹窗.jpg)
+*图：需要作废密钥时，点列表右侧的图标删除（删除前会二次确认）*
 
 ## 配置四个环境变量
 
@@ -106,8 +149,116 @@ print(model.invoke("你好"))
 
 运行后到 LangSmith 官网，进入 `LANGSMITH_PROJECT` 指定的项目，就能看到这次调用的完整链路（输入提示词、模型返回、Token 消耗、耗时）。
 
+![](assets/06-LangSmith的使用/ch03-p008-追踪项目列表界面.jpg)
+*图：Tracing 界面里按 LANGSMITH_PROJECT 命名的项目，Trace Count / 延迟 / Token / 成本一目了然*
+
 > [!TIP]
 > 有了它，"模型为什么答错了"这类问题就不用靠猜了：点开那条 trace，能直接看到**实际发出去的完整提示词**——八成问题都出在你以为发了什么、实际发了什么不一样。
+
+![](assets/06-LangSmith的使用/ch03-p009-监控报表看板界面.jpg)
+*图：Monitoring 界面的运行报表——可切换项目，按标签查看一段时间内的调用趋势*
+
+### 继续往下看：详情页与运行报表
+
+- **步骤 3：查看运行指标**——在 Tracing 界面**点击条目的任意位置**即可进入详情页，这里列出了详细的运行指标；再点某一次运行记录，还能查看更详细的信息（自己探索即可）。
+- **步骤 4：查看运行报表**——Monitoring 页面（上图）提供了大量指标的报表，**点击标签或向下滑动页面**即可切换指标。
+
+## 上报姿势与 config 用法
+
+课程演示了三种调用姿势，都能被 LangSmith 自动记录——**代码里没有任何 LangSmith 相关调用，全靠 `.env` 里的四个变量**。
+
+**姿势 1：直接用专用类 `ChatDeepSeek`**
+
+```python
+import os
+from dotenv import load_dotenv
+from langchain_deepseek import ChatDeepSeek
+
+# 将env文件中的变量加载为环境变量
+# override=True：表示.env优先
+load_dotenv(override=True)
+
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL")
+
+model = ChatDeepSeek(
+    api_key=DEEPSEEK_API_KEY,
+    api_base=DEEPSEEK_BASE_URL,
+    model_name="deepseek-v4-flash"
+)
+print(model.invoke("你好"))
+```
+
+**姿势 2：`init_chat_model` + CloseAI 中转平台**
+
+```python
+from langchain.chat_models import init_chat_model
+from dotenv import load_dotenv
+import os
+
+load_dotenv(override=True)
+CLOSEAI_API_KEY = os.getenv("CLOSEAI_API_KEY")
+CLOSEAI_BASE_URL = os.getenv("CLOSEAI_BASE_URL")
+
+model = init_chat_model(model="deepseek-v4-flash",
+                        model_provider="openai",
+                        api_key=CLOSEAI_API_KEY,
+                        base_url=CLOSEAI_BASE_URL)
+print(model.invoke("你好，用一句话回答"))
+```
+
+**姿势 3：带 config 的完整姿势（推荐）**
+
+给这次运行起个名字、打上标签、带上业务元数据，在 LangSmith 里就好找多了：
+
+```python
+from langchain.chat_models import init_chat_model
+from dotenv import load_dotenv
+import os
+from rich import print as rprint
+
+# 从.env文件中加载环境变量
+load_dotenv(override=True)
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+DEEPSEEK_BASE_URL = os.getenv("DEEPSEEK_BASE_URL")
+
+# 1. 初始化模型
+model = init_chat_model(
+    model="deepseek-v4-flash",
+    model_provider="deepseek",
+    api_key=DEEPSEEK_API_KEY,
+    base_url=DEEPSEEK_BASE_URL,
+    temperature=0.2,
+    max_tokens=500,
+    # 指定可调整参数
+    configurable_fields=("model", "model_provider", "temperature", "max_tokens"),
+)
+
+# 2. 准备 config 字典
+config = {
+    "run_name": "joke_generation",     # 在LangSmith中这次运行会显示为 joke_generation
+    "tags": ["my_tag1", "my_tag2"],    # 打上标签便于分类查找
+    "metadata": {
+        "user_id": "shkstart",         # 记录用户ID
+        "session_id": "sess_123"       # 记录会话ID
+    },
+    "configurable": {
+        "model": "deepseek-v4-pro",    # 配置模型参数
+        "model_provider": "openai",    # 配置模型提供商参数
+        "temperature": 0.7,            # 配置温度参数
+        "max_tokens": 1000             # 配置最大令牌数
+    }
+}
+
+# 3. 调用模型并传入config
+response = model.invoke("1 + 2 = ？", config=config)
+rprint(response)
+```
+
+> [!TIP]
+> `run_name`、`tags`、`metadata` 这三个都是**给 LangSmith 看的**：`run_name` 让运行列表可读（默认显示的是方法名，看不出业务含义），`tags` 方便按标签过滤，`metadata` 里的 `user_id` / `session_id` 能把一次调用对应到具体用户和会话——线上排查"某个用户投诉的那次回答"时特别有用。
+>
+> 记得：`config["configurable"]` 里能覆盖哪些参数，取决于初始化时的 **`configurable_fields`**。config 各配置项的完整说明见「模型的调用」笔记。
 
 ## 相关
 

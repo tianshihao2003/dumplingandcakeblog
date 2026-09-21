@@ -75,6 +75,141 @@ agent = create_agent(model=model, tools=[get_weather],
 > [!NOTE]
 > 想在**某一次调用**里临时给指令，也可以不用 `system_prompt`，直接在 `invoke` 的 messages 列表开头塞一条 `{"role": "system", "content": ...}`（第 13 篇的 2-2 就是这么做的）。区别是：`system_prompt` 是**给整个 Agent** 的，写进 messages 的只影响这一次调用。
 
+### 两个完整例子：加法助手与"重试型"天气助手
+
+**例子 1：用 `SystemMessage` 当系统提示词，看一次完整的工具调用链路。**
+
+```python
+from langchain.agents import create_agent
+from langchain_core.messages import SystemMessage
+from langchain_core.tools import tool
+from rich import print as rprint
+
+# 工具：实现两数相加
+@tool
+def add_numbers(a: int, b: int) -> str:
+    """计算并返回两个数的和。"""
+    return f"和为：{a + b}"
+
+# 创建数学助手 Agent
+agent = create_agent(
+    model=model,
+    tools=[add_numbers],                                                          # 工具列表
+    # system_prompt="你是一个数学助手，解决日常的算术问题"                            # 写法一：字符串
+    system_prompt=SystemMessage(content="你是一个数学助手，解决日常的算术问题")     # 写法二：SystemMessage
+)
+
+response = agent.invoke(
+    {"messages": [
+        {"role": "user", "content": "10加上20再加上30是多少？"}
+    ]},
+)
+
+rprint(response)
+# print(response["messages"][-1].content)
+```
+
+`rprint(response)` 的输出（只留消息骨架和关键字段）：
+
+```text
+{
+ 'messages': [
+   HumanMessage(content='10加上20再加上30是多少？', ...),
+   AIMessage(                          # ← 第 1 次工具调用
+     content='',
+     response_metadata={..., 'finish_reason': 'tool_calls'},
+     tool_calls=[{'name': 'add_numbers', 'args': {'a': 10, 'b': 20},
+                  'id': 'call_PWuscHI7NFdVbAV9wsMzOWKy', 'type': 'tool_call'}]
+   ),
+   ToolMessage(content='和为：30', name='add_numbers',
+               tool_call_id='call_PWuscHI7NFdVbAV9wsMzOWKy'),      # ← id 对上了
+   AIMessage(                          # ← 第 2 次工具调用：把 30 再和 30 相加
+     content='',
+     tool_calls=[{'name': 'add_numbers', 'args': {'a': 30, 'b': 30},
+                  'id': 'call_dZDyMZS1BYRJHdW32uj4z8R8', 'type': 'tool_call'}]
+   ),
+   ToolMessage(content='和为：60', name='add_numbers',
+               tool_call_id='call_dZDyMZS1BYRJHdW32uj4z8R8'),
+   AIMessage(                          # ← 最终回答
+     content='10加上20再加上30等于 **60**。',
+     response_metadata={..., 'finish_reason': 'stop'},
+     tool_calls=[]                     # ← 空了，说明任务结束
+   )
+ ]
+}
+```
+
+> [!NOTE]
+> 这段输出里有几件事特别值得看：
+> 1. **工具只会算两个数，模型自己决定调两次**：先 `(10, 20)` 得 30，再 `(30, 30)` 得 60——"怎么拆解任务"是模型干的，不是我们写死的。
+> 2. **发起工具调用时 `AIMessage.content` 是空字符串**——所以取最终回答不能图省事拿中间那条（第 18 篇的助手就是靠 `msg.content` 判空来避开这个坑）。
+> 3. **`SystemMessage` 走 `system_prompt` 传进去时，不会出现在返回的消息列表里**——`response["messages"]` 的第一条就是 HumanMessage（对比第 14 篇的写法一：提示词写进 `messages` 列表时，它会作为第一条出现在返回值里）。本机实测也一致：用 `system_prompt` 建的 Agent，消息链是 `HumanMessage → AIMessage → ToolMessage → …`，全程没有 SystemMessage。
+> 4. 两次调用的 `tool_call_id` 分别对上各自的 `tool_calls[].id`——这是"哪条结果配哪次请求"的唯一依据（第 14 篇细讲过）。
+
+**例子 2：把"重试规则"写进 `system_prompt`，让天气助手自己重试。**
+
+```python
+from langchain.agents import create_agent
+from langchain.tools import tool
+from langchain.messages import SystemMessage, HumanMessage
+
+flag = 0
+
+@tool
+def get_weather(city: str):
+    """天气查询工具
+
+    Args:
+        city: 城市名称
+    """
+    global flag
+    flag += 1
+    if flag < 3:
+        return "TEMP_UNAVAILABLE: 天气服务暂时不可用，请稍后重试"
+    return f"{city}今天天气挺好"
+
+messages = [
+    HumanMessage("你好，杭州今天的天气如何？")     # ← 提示词这次不写在 messages 里
+]
+
+agent = create_agent(
+    model=model,
+    tools=[get_weather],
+    system_prompt=SystemMessage(                    # ← 规则挂在 Agent 上，每次调用都生效
+        "你是一个天气助手。"
+        "当工具返回以 'TEMP_UNAVAILABLE:' 开头的结果时，"
+        "说明是临时故障，不要立即放弃；"
+        "你应再次调用同一个工具，最多重试 3 次。"
+        "如果 3 次后仍失败，再向用户说明服务暂时不可用。"
+    )
+)
+
+response = agent.invoke({"messages": messages})
+for msg in response["messages"]:
+    msg.pretty_print()
+```
+
+输出以 `Human Message` 开头（**没有** System Message），之后是三次 `get_weather` 调用：
+
+```text
+================================ Human Message =================================
+你好，杭州今天的天气如何？
+================================== Ai Message ==================================
+Tool Calls:
+  get_weather (call_1NZMHHj1xByT0Zx7WhiK6AO1)
+================================= Tool Message =================================
+Name: get_weather
+
+TEMP_UNAVAILABLE: 天气服务暂时不可用，请稍后重试
+...（第 2 轮同样的调用与故障返回）
+================================== Ai Message ==================================
+杭州今天天气挺好。
+```
+
+> [!TIP]
+> 两个写法怎么选？**"只影响这一次"用 messages，"整个 Agent 都该遵守"用 `system_prompt`**。
+> 重试规则、人设、输出格式这类"规矩"都属于后者——写进 `system_prompt` 后，不管谁来 invoke 都带着它，不用每次自己拼 messages。
+
 ## Agent 名称：name 参数
 
 创建 Agent 时可以用 `name` 指定名称：

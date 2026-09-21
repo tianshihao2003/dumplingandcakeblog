@@ -19,6 +19,9 @@ LangChain 1.2 要求 **Python >= 3.10**，课程使用 **Python 3.13.12**。
 
 相较于**全局环境（系统环境）**，每个**虚拟环境**都有自己独立的一套：Python 解释器、pip 命令、第三方依赖包，**不和其它项目产生干扰**。做 AI 项目尤其需要——不同项目的依赖版本冲突是家常便饭。
 
+![](assets/03-开发环境搭建-conda/ch01-p013-全局环境与虚拟环境.jpg)
+*图：全局环境与虚拟环境的对比——全局环境共用一套 Lib、Scripts（pip.exe/python.exe），而每个工程目录下的 .venv 都有自己独立的一套，互不干扰*
+
 ### 三种方案对比
 
 | 维度 | conda | uv | venv |
@@ -37,6 +40,31 @@ LangChain 1.2 要求 **Python >= 3.10**，课程使用 **Python 3.13.12**。
 
 > [!IMPORTANT]
 > conda 环境里可以用 pip，但**建议先用 conda 装底层依赖，再用 pip 补充 Python 包**，不要随意反复交替使用。
+
+### uv 的完整适用清单
+
+课程给 uv 列出的适用项目一共六类：
+
+1. FastAPI 项目
+2. LangChain 项目
+3. 脚本工具
+4. **Web 后端**
+5. **普通 AI Agent 应用**
+6. RAG 应用层代码
+
+> [!TIP]
+> 判断标准其实只有一条：项目里**有没有需要 conda 才能装的东西**（CUDA、编译器、系统库、数据库驱动）。有就用 conda——更稳妥；没有就用 uv——更快、体验更好。上面对比表里 uv 那行的"适合场景"写的是"纯 Python 项目、Web、Agent、RAG 应用层"，和这 6 条正好对得上。
+
+### conda 能管哪些非 Python 依赖
+
+课程给 conda 划的范围是"**Python + 非 Python 依赖**"的复杂环境，具体能管的东西列得很细：
+
+- 除了 Python 包，它还能管理 **Python 解释器**本身（uv 也可以，venv 不可以）；
+- 以及很多**非 Python 依赖**：**CUDA、编译器、系统库、数据库驱动、科学计算底层库**等；
+- 因此在**数据科学、深度学习、AI 工程、科学计算**等场景中，conda 更稳妥、优先推荐。
+
+> [!NOTE]
+> 这也划出了 uv 的边界：uv 是"现代 Python 包管理工具"，**主要管理 Python 生态依赖**，不能像 conda 那样管理 CUDA、系统级数据库驱动、编译器这类通用非 Python 依赖。所以本课程落在"纯 Python"这一侧，uv 和 conda 都能用，只是课程选了 conda。
 
 ## conda 常用命令
 
@@ -62,6 +90,13 @@ conda deactivate
 # 删除环境
 conda remove --name langchain1.2 --all
 ```
+
+### 讲义里的一处笔误
+
+课程讲义演示 `python -V` 的输出时写的是 `Python 3.12.13`，和它自己创建环境时指定的 `python=3.13.12` 对不上——这是**数字顺序写反的笔误**。
+
+> [!WARNING]
+> 以创建命令为准：`conda create --name langchain1.2 python=3.13.12` 装出来的是 **Python 3.13.12**，验证时也应该看到 `Python 3.13.12`。
 
 ## 安装 langchain：conda 还是 pip
 
@@ -100,6 +135,21 @@ pip list                             # 查看已安装包
 建议：**优先 conda install，conda 没有的再用 pip install。**
 检查某个包是从哪来的：`conda list` 里 conda 装的显示频道名，pip 装的显示 `pypi`。
 
+![](assets/03-开发环境搭建-conda/ch01-p016-包的来源渠道对照.jpg)
+*图：用 conda list 看包来源——Channel 列写 pypi 的是 pip 装的，写上频道地址（如 conda-forge）的是 conda 装的*
+
+## PyCharm 简介与下载
+
+课程使用的 PyCharm 版本是 **2025.3**。PyCharm 作为**专业的 Python IDE，具有强大的代码编辑、调试和版本控制功能**。
+
+下载地址（课程给的是"其它版本"入口）：https://www.jetbrains.com/pycharm/download/other/#releases-2025
+
+![](assets/03-开发环境搭建-conda/ch01-p017-PyCharm下载页与版本.jpg)
+*图：PyCharm 下载页——Version 选 2025.3，再按系统挑安装包（课程用的是 2025.3.3）*
+
+> [!TIP]
+> 版本不必和课程一模一样，但记住一点：**PyCharm 只是写代码的地方，真正干活的是 conda 环境**——下面新建工程时，解释器一定要指向刚建好的 `langchain1.2`。
+
 ## PyCharm 配置
 
 创建新工程时把解释器设置为 **Anaconda 环境**（选刚创建的 `langchain1.2`）。验证是否装好：
@@ -111,6 +161,9 @@ print(langchain.__version__)
 ```
 
 能打印出版本号（如 `1.2.12`）就说明环境没问题。
+
+![](assets/03-开发环境搭建-conda/ch01-p017-PyCharm解释器设置.jpg)
+*图：PyCharm 新建工程时选择 Custom environment → Conda，并指定刚创建的 langchain1.2 环境*
 
 ## 相关
 

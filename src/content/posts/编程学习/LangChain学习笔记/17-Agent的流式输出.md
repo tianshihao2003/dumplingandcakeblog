@@ -80,6 +80,9 @@ for chunk in customer_service_agent.stream(QUESTION, stream_mode="values"):
     print("-" * 50)
 ```
 
+![](assets/17-Agent的流式输出/ch07-p070-values模式输出.jpg)
+*图：values 模式的输出——每一片都是"到目前为止的完整状态"，消息列表一片比一片长（`[HumanMessage]` → `[HumanMessage, AIMessage]` → … → 最后一条是最终回答）*
+
 适合**每一步都要完整状态**的场景（每片都是"到目前为止的全量状态"，消息列表会越来越长）。
 
 ### updates：只看变化（默认）
@@ -90,6 +93,9 @@ for chunk in customer_service_agent.stream(QUESTION, stream_mode="updates"):
     print("-" * 50)
 ```
 
+![](assets/17-Agent的流式输出/ch07-p070-updates模式输出.jpg)
+*图：updates 模式的输出——每一片只带 `model` 或 `tools` 这一个节点的增量（模型决定调工具 / 工具返回了什么），比 values 清爽得多*
+
 **不传 `stream_mode` 时就是它**。每片只包含这一步新增/变化的内容——想观察"Agent 决定调用哪个工具、工具返回了什么"，用这个最清爽。
 
 ### messages：打字机效果
@@ -99,6 +105,9 @@ for chunk in customer_service_agent.stream(QUESTION, stream_mode="messages"):
     # chunk 是元组：(消息片段, 元数据)
     print(chunk[0].content, end="", flush=True)
 ```
+
+![](assets/17-Agent的流式输出/ch07-p071-messages模式输出.jpg)
+*图：messages 模式的输出——一片片 `AIMessageChunk`，`content` 就是"我""来""帮""您""查""询"这样一个字一个字冒出来的 token*
 
 > [!TIP]
 > **实测 `messages` 模式的 chunk 结构**：它是一个**二元元组**。
@@ -118,7 +127,13 @@ for chunk in customer_service_agent.stream(QUESTION, stream_mode="tasks"):
     print("-" * 50)
 ```
 
+![](assets/17-Agent的流式输出/ch07-p071-tasks模式输出.jpg)
+*图：tasks 模式的输出——每个 task 都带 `id`、`name`（model / tools）、`input`、`error`、`result`，`model` 和 `tools` 交替出现，一眼看清任务生命周期*
+
 `tasks` 输出任务的开始/结束时间、结果与错误；`debug` 在它基础上多出任务步骤、时间戳、task 类型（`task` / `task_result`）。**排查"Agent 卡在哪一步"时很好用。**
+
+![](assets/17-Agent的流式输出/ch07-p072-debug模式输出.jpg)
+*图：debug 模式的输出——比 tasks 多出 `step`（第几步）、`timestamp`、`type`（`task` 开始 / `task_result` 结束），而且开始和结束是成对出现的*
 
 ### checkpoints：需要先开检查点
 
@@ -146,8 +161,15 @@ for chunk in customer_service_agent.stream(
     print(chunk)
 ```
 
+![](assets/17-Agent的流式输出/ch07-p073-checkpoints模式输出.jpg)
+*图：checkpoints 模式的输出——检查点 #1 到 #7 依次触发，每片都带 `checkpoint_id`、`parent_config`、`source`（input / loop）、`next`（下一个节点）、`tasks` 等状态信息*
+
 > [!NOTE]
 > 这个模式必须配合 **`checkpointer`（检查点存储）** 使用，而且调用时要传 `config={"configurable": {"thread_id": ...}}`——**检查点和"记忆"是第 9 章的主题**，这里先知道有这么个模式即可。
+
+> [!NOTE]
+> 课程对这个模式还有一句关键说明：**每次输出都会把相关的 MESSAGE 追加到 `values.messages` 中**。
+> 也就是说，每个检查点里的状态不仅有"图走到哪一步了"，还有"**到那一刻为止的完整对话**"——所以检查点才能用来做**会话恢复/记忆**（第 9 章的短期记忆就是靠它落地的）：从某个 `checkpoint_id` 把 `values.messages` 取回来，就能接着往下聊。
 
 ### custom：在工具内部自定义进度
 
@@ -182,6 +204,82 @@ for chunk in reporting_agent.stream(
 
 工具里 `writer(...)` 发出去的东西，就会从这个流里冒出来——**长耗时任务给用户实时进度条**就靠它。
 
+#### 完整例子：两个工具交替上报
+
+课程给了一个更真实的场景——**同时要两份报告**，于是两个工具各报各的进度，流里两条进度线交错出现：
+
+```python
+from langchain.agents import create_agent
+from langgraph.config import get_stream_writer
+from langchain.tools import tool
+import time
+
+@tool
+def generate_sales_report() -> str:
+    """生成销售报告"""
+    writer = get_stream_writer()
+
+    writer({"type": "生成销售报告", "message": "开始生成销售报告"})
+
+    # 模拟数据处理
+    for i in range(1, 4):
+        time.sleep(0.5)
+        writer({"type": "生成销售报告", "message": f"生成销售报告进度百分比：{i * 25}%"})
+
+    writer({"type": "生成销售报告", "message": "报告生成完成"})
+
+    return f"销售报告：总收入150万元，同比增长12%"
+
+
+@tool
+def generate_inventory_report() -> str:
+    """生成库存报告"""
+    writer = get_stream_writer()
+    writer("开始库存分析...")          # ← 这里直接发字符串，不一定是字典
+    time.sleep(0.5)
+    writer("检查当前库存量...")
+    time.sleep(0.5)
+    writer("生成库存报告...")
+
+    return "当前库存量为10000件，库存充足，无异常"
+
+# 创建报告生成 agent
+reporting_agent = create_agent(model=model, tools=[generate_sales_report, generate_inventory_report])
+
+for chunk in reporting_agent.stream(
+    {"messages": [{"role": "user", "content": "生成销售报告和库存报告"}]},
+    stream_mode="custom",
+):
+    print(chunk)
+    print("-" * 50)
+```
+
+输出（片子的顺序就是**真实的实时顺序**）：
+
+```text
+{'type': '生成销售报告', 'message': '开始生成销售报告'}
+--------------------------------------------------
+开始库存分析...
+--------------------------------------------------
+{'type': '生成销售报告', 'message': '生成销售报告进度百分比：25%'}
+--------------------------------------------------
+检查当前库存量...
+--------------------------------------------------
+{'type': '生成销售报告', 'message': '生成销售报告进度百分比：50%'}
+--------------------------------------------------
+生成库存报告...
+--------------------------------------------------
+{'type': '生成销售报告', 'message': '生成销售报告进度百分比：75%'}
+--------------------------------------------------
+{'type': '生成销售报告', 'message': '报告生成完成'}
+--------------------------------------------------
+```
+
+> [!TIP]
+> 看这段输出有两个收获：
+> - **`writer(...)` 的入参想发什么就发什么**：字典（带 `type` 字段，方便前端按任务分组）或纯字符串都行，流里冒出来的就是原样——两种在这一份案例里都出现了。
+> - **两条进度线是交错的**：模型一次就派发了两个工具，所以销售报告的 25% 和库存报告的"检查当前库存量"交替出现。前端做进度条时**按 `type` 或内容分组**，别假设"一个工具的进度会连续跑完"。
+
 ## 怎么选：四条经验
 
 | 目标 | 选哪个模式 |
@@ -200,6 +298,9 @@ for stream_mode, chunk in customer_service_agent.stream(
 ):
     print(f"当前流模式: {stream_mode}, 当前数据: {chunk}")
 ```
+
+![](assets/17-Agent的流式输出/ch07-p076-多模式组合输出.jpg)
+*图：同时指定 `["tasks", "updates"]` 时的输出——每一片前面都会标出"当前流模式: tasks"或"当前流模式: updates"，两类信息交错出现*
 
 > [!TIP]
 > 组合模式下**每片多了一个"模式名"**：`for stream_mode, chunk in ...` 就能知道这一片是哪来的（单个模式时不需要这样解包）。

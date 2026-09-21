@@ -118,6 +118,38 @@ print(result["structured_response"])
 > 课程提到：**LangChain 1.0 及以上版本不再支持直接传类型**，必须显式写 `ToolStrategy` 或 `ProviderStrategy`（但经测试 **1.2 版本还能用**）。
 > **建议**：新代码一律显式写策略，别依赖这种"自动"——将来版本收紧时会直接报错。
 
+#### 源码里才看得到的 AutoStrategy
+
+课程强调了一句：**这种策略官方没在参数列表或文档里列出来，是读源码才看到的**。LangChain 源码里的类型别名长这样：
+
+```python
+ResponseFormat = ToolStrategy[SchemaT] | ProviderStrategy[SchemaT] | AutoStrategy[SchemaT]
+"""Union type for all supported response format strategies."""
+```
+
+也就是说三种策略在源码里是**平级**的，`create_agent` 的参数表只是把"直接传类型"（会自动包装成 `AutoStrategy`）单独写了一种形态。
+
+既然它存在，也可以**显式写出来**（更明确地表达"我就是要让框架自己挑"）：
+
+```python
+from langchain.agents.structured_output import AutoStrategy
+
+agent = create_agent(
+    model=model,
+    response_format=AutoStrategy(ContactInfo),
+)
+
+result = agent.invoke({
+    "messages": [{"role": "user", "content": "联系人信息: John Doe, john@atguigu.com, (010) 56253825"}]
+})
+print(result["structured_response"])
+# name='John Doe' email='john@atguigu.com' phone='(010) 56253825'
+```
+
+> [!NOTE]
+> `AutoStrategy(ContactInfo)` 与 `response_format=ContactInfo` **等价**：支持原生结构化输出的模型走 ProviderStrategy，否则走 ToolStrategy。
+> 换句话说，`response_format` 一共是**三种显式写法 + 一个 None**：`ToolStrategy(...)`、`ProviderStrategy(...)`、`AutoStrategy(...)`（或直接给类型），以及 `None`。
+
 ### ④ None（默认）
 
 `response_format=None` 是默认配置，表示**不做结构化输出**，Agent 用自然语言回答。
@@ -196,6 +228,9 @@ agent = create_agent(
 )
 ```
 
+![](assets/16-Agent的结构化输出/ch07-p059-错误模板与重试.jpg)
+*图：`handle_errors=True` 时的真实消息流——模型一次发了两个结构化结果，系统回给它两条带内置错误模板的 ToolMessage（"Error: Model incorrectly returned multiple structured responses … Please fix your mistakes."），模型据此重试*
+
 这种情况下：
 
 1. 用 `Union[ContactInfo, EventDetails]` 指定多个类型时，**最终只会转换成一种**结构化类型输出
@@ -206,8 +241,302 @@ agent = create_agent(
 
 常见的两个异常类型：`MultipleStructuredOutputsError`（输出多个结构化结果）、`StructuredOutputValidationError`（结果不符合 Schema）。
 
+![](assets/16-Agent的结构化输出/ch07-p066-指定异常类型重试.jpg)
+*图：`handle_errors=(MultipleStructuredOutputsError, StructuredOutputValidationError)` 时——异常被捕获（程序没中断），回给模型的仍是内置错误模板，模型重新推理*
+
+![](assets/16-Agent的结构化输出/ch07-p066-重试成功结果.jpg)
+*图：重试成功后——ToolMessage 的 content 变成了自定义的"提取完成！"，`structured_response` 里正常拿到 `ContactInfo(name='张三', …)`*
+
 > [!WARNING]
 > 格式化输出出错时，Agent 内部会**反复重试**直到输出符合要求——可能要重试多次。这意味着**错误处理是有成本的**（额外的模型调用）。
+
+![](assets/16-Agent的结构化输出/ch07-p067-自定义错误打印.jpg)
+*图：`handle_errors=custom_error_handler` 时，自定义处理函数里打印出的异常类型与详情（这里捕获到的是 `MultipleStructuredOutputsError`）*
+
+![](assets/16-Agent的结构化输出/ch07-p068-自定义错误提示回传.jpg)
+*图：自定义处理函数的返回值被直接当作 ToolMessage 的内容回给模型——"检测到多个响应，请选择最相关的一个进行返回。"*
+
+## 四种 Schema 的完整案例
+
+课程在 `schema` 参数这一节走了**四种写法**，并统一用一个综合案例（客户分析报告）演示。先看准备工作，再逐个写法。
+
+### 准备：两个模型供应商（因为支持力度不同）
+
+> 课程原话：**不同的 Schema 在不同模型供应商下表现的支持力度不同**（上一章有说明），所以提供了两套模型，大家自己选。
+
+```python
+# 供应商一：CloseAI 平台（OpenAI 兼容，课程默认用这套）
+from langchain.chat_models import init_chat_model
+from dotenv import load_dotenv
+import os
+
+load_dotenv(override=True)
+
+model = init_chat_model(
+    model="gpt-5.4-mini",
+    model_provider="openai",
+    api_key=os.getenv("CLOSEAI_API_KEY"),
+    base_url=os.getenv("CLOSEAI_BASE_URL"),
+)
+```
+
+```python
+# 供应商二：OpenRouter 平台（需要梯子）
+from langchain_openrouter import ChatOpenRouter
+from dotenv import load_dotenv
+import os
+
+load_dotenv(override=True)
+
+model = ChatOpenRouter(
+    model="openai/gpt-5.4-mini",          # ← 用「供应商/模型名」的写法
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    base_url=os.getenv("OPENROUTER_API_BASE"),
+)
+```
+
+> [!NOTE]
+> `ChatOpenRouter` 来自第三方包 **`langchain-openrouter`**（本机环境里已装 `0.1.0`），用法与别的 Chat 模型一致：一样能塞进 `create_agent(model=...)`、一样能配 `ToolStrategy`。
+> **实测**（把自己的假服务端当 OpenRouter 端点）：`ChatOpenRouter(model="openai/gpt-5.4-mini", api_key="sk-fake", base_url="http://127.0.0.1:8774")` 能正常发出请求（请求体里的 `model` 字段就是 `openai/gpt-5.4-mini`），配 `ToolStrategy(ContactInfo)` 也能拿到 `name='小明' email='a@b.com' phone='123'`。
+> 只是本机没有 OpenRouter 的真密钥，所以下面的例子依旧沿用本机的 DeepSeek 模型——**代码结构完全一样，只换 `model` 那一段**。
+
+### 写法1：Pydantic —— 客户分析报告（完整综合案例）
+
+这是本节的"主案例"：Agent 不只输出结构化结果，还要**先查数据库、VIP 才发邮件**，最后交一份报告。它把"工具调用"和"结构化输出"放在了同一次任务里。
+
+```python
+from langchain_core.messages import SystemMessage
+from pydantic import BaseModel, Field
+from typing import Literal
+from langchain.agents import create_agent
+from langchain.agents.structured_output import ToolStrategy
+from langchain.tools import tool
+
+# ---------- 1. 两个"真"工具 ----------
+@tool(parse_docstring=True)
+def search_customer_database(query: str) -> str:
+    """在客户数据库中搜索信息
+
+    Args:
+        query (str): 客户查询字符串，例如 "张三" 或 "李四"
+
+    Returns:
+        str: 客户记录字符串，包含客户姓名、等级、最近购买日期和累计消费
+    """
+    # 模拟数据库查询结果
+    if "张三" in query.lower():
+        return "客户记录：张三，VIP客户，最近购买日期：2026-01-15，累计消费：$15,000"
+    elif "李四" in query.lower():
+        return "客户记录：李四，普通客户，最近购买日期：2025-12-20，累计消费：$3,200"
+    else:
+        return f"关于客户{query}，无记录"
+
+
+@tool(parse_docstring=True)
+def send_email(customer: str) -> str:
+    """发送感谢邮件
+
+    Args:
+        customer (str): 客户名称，例如 "张三" 或 "李四"
+
+    Returns:
+        str: 确认消息，包含已发送的客户名称
+    """
+    return f"已向 {customer} 发送感谢邮件"
+
+
+# ---------- 2. 定义 Pydantic Schema ----------
+class CustomerAnalysis(BaseModel):
+    """客户分析报告"""
+    customer_name: str = Field(None, description="客户姓名")
+    customer_tier: Literal["潜在客户", "普通客户", "VIP客户", "流失风险"] = Field(
+        "潜在客户", description="客户等级,只能是潜在客户、普通客户、VIP客户或流失风险"
+    )
+    recent_activity: str = Field(None, description="最近活动")
+    spending_level: Literal["低", "中", "高"] = Field(None, description="消费水平")
+    send_email: bool = Field(False, description="是否已发送感谢邮件")
+
+
+# ---------- 3. 创建智能体 ----------
+agent = create_agent(
+    model=model,
+    system_prompt=SystemMessage(content=""
+        "请分析指定客户的情况："
+        "1. 先搜索客户数据库了解最新情况 "
+        "2. 如果是VIP客户，则发送感谢邮件 "
+        "3. 基于搜索结果生成结构化分析报告 "
+        "4. 如果用户提问与客户记录无关或找不到客户信息，则返回空对象，不发送感谢邮件"
+    ),
+    tools=[search_customer_database, send_email],     # 工具 + 结构化输出同时用
+    response_format=ToolStrategy(CustomerAnalysis),
+)
+
+# ---------- 4. 执行分析 ----------
+result = agent.invoke({
+    "messages": [{"role": "user", "content": "请分析客户张三"}]
+    # "messages": [{"role": "user", "content": "请分析客户李四"}]
+    # "messages": [{"role": "user", "content": "请分析客户王五"}]
+    # "messages": [{"role": "user", "content": "今天天气如何"}]
+})
+
+# ---------- 5. 处理结果 ----------
+if "structured_response" in result:
+    analysis = result["structured_response"]
+    print(analysis)
+```
+
+输出：
+
+```text
+customer_name='张三' customer_tier='VIP客户' recent_activity='最近购买日期：2026-01-15' spending_level='高' send_email=True
+```
+
+| 写法 | 为什么这么写 |
+| --- | --- |
+| 枚举字段用 **`Literal["潜在客户", "普通客户", "VIP客户", "流失风险"]`** | 把取值**锁死在几个选项里**，模型不会自创"金牌客户""白金会员"这类值 |
+| 字段都给**默认值**（`Field("潜在客户", ...)` / `Field(False, ...)`） | 信息缺失时有兜底，不至于因为一个空字段整份报告校验失败 |
+| `send_email: bool` 字段 | 它是一个**状态标记**："这封感谢邮件到底发没发"，和同名工具配合使用 |
+| 系统提示词的**四条指令** | 把"先查库 → VIP 才发邮件 → 再出报告 → 查不到就返回空对象"的顺序讲清楚，第 4 条尤其关键——**没有它，模型会反反复复地查一个不存在的客户** |
+| 最后用 `if "structured_response" in result` 取值 | 不是每次调用都一定有结构化结果，先判断再取，避免 `KeyError` |
+
+> [!NOTE]
+> **实测这个案例能跑通**（用假服务端扮演模型，按"查库 → 发邮件 → 出报告"三步返回工具调用）：
+> ```text
+> 消息类型链: HumanMessage → AIMessage → ToolMessage → AIMessage → ToolMessage → AIMessage → ToolMessage
+> structured_response: customer_name='张三' customer_tier='VIP客户' recent_activity='最近购买日期：2026-01-15' spending_level='高' send_email=True
+> 类型: CustomerAnalysis
+> ```
+> 两个观察：
+> - 消息链里**两个真工具先跑**（各一对 AI/Tool），**结构化输出排在最后**——整条链的第 7 条（最后那条 `ToolMessage`）就是伪消息，它的 `name='CustomerAnalysis'`。这正是"任务结束才解析结构化输出"的直观体现。
+> - `structured_response` 是 **`CustomerAnalysis` 对象**（不是 dict），可以直接 `analysis.customer_tier` 这样取值。
+
+### 写法2：TypedDict
+
+字段的写法是 `Annotated[类型, 默认值, "描述"]`，可选字段用 `Optional` 包装——三条要点在本篇「参数1」里已经列过，这里只补一句：**同样的客户分析案例，把 `class CustomerAnalysis(BaseModel)` 换成 `class CustomerAnalysis(TypedDict)` 就能跑**，但因为它不做运行时校验，字段写错只会悄悄出错。
+
+### 写法3：手写 JSON Schema 字典
+
+不定义类，直接给一个符合 **JSON Schema 规范**的字典——适合需要与多种编程语言/系统交换结构定义的场景。
+
+```python
+# 把所有字段定义成一个标准 JSON Schema 字典（替代上面的 Pydantic 模型）
+customer_analysis_schema = {
+    "title": "CustomerAnalysis",           # 结构名（会当"虚拟工具"的名字用）
+    "type": "object",                      # 表示"这是一个对象"
+    "description": "客户分析报告",
+    "properties": {                        # 每个字段的定义
+        "customer_name": {
+            "type": "string",
+            "default": "",
+            "description": "客户姓名",
+        },
+        "customer_tier": {
+            "type": "string",
+            "enum": ["潜在客户", "普通客户", "VIP客户", "流失风险"],   # ← 枚举写在这里
+            "default": "潜在客户",
+            "description": "客户等级",
+        },
+        "recent_activity": {
+            "type": "string",
+            "default": "",
+            "description": "最近活动",
+        },
+        "spending_level": {
+            "type": "string",
+            "enum": ["低", "中", "高"],
+            "default": "低",
+            "description": "消费水平",
+        },
+        "send_email": {
+            "type": "boolean",             # ← 布尔类型（注意 JSON 里写 false）
+            "default": False,
+            "description": "是否已发送感谢邮件",
+        },
+    },
+    # 所有字段都是必须输出的
+    "required": ["customer_name", "customer_tier", "recent_activity", "spending_level"],
+}
+
+agent = create_agent(
+    model=model,
+    system_prompt=SystemMessage(content="...同写法1的四条指令..."),
+    tools=[search_customer_database, send_email],
+    response_format=ToolStrategy(customer_analysis_schema),   # ← 直接把字典交给 ToolStrategy
+)
+```
+
+| 关键字 | 作用 |
+| --- | --- |
+| `title` | 结构名，会作为"虚拟工具"名 |
+| `type` | 结构类型，对象写 `"object"` |
+| `description` | 结构/字段的说明文字（模型读它） |
+| `properties` | 字段字典：每个字段写 `type`、`description`，可选 `enum`、`default` |
+| `enum` | **枚举**可选值（如客户等级、消费水平） |
+| `default` | 默认值 |
+| `required` | **必须输出**的字段名列表 |
+
+> [!TIP]
+> 课程原话：`title, description, type, properties, required` 都是**遵循 JSON Schema 规范的标准关键字，是固定写法**（细节在第 06 章 2.3 节，也就是本笔记讲模型结构化输出的 11/12 篇）。
+> **实测补充**：用手写字典做 Schema 时，`result["structured_response"]` 拿到的是**普通 `dict`**（`{'name': '小明', 'email': ..., 'phone': ...}`），**不是** Pydantic 对象——想要对象属性和自动校验，还是用 Pydantic 类。
+
+### 写法4：@dataclass
+
+`@dataclass` 是 Python 3.7 引入的装饰器，用来简化"只存数据"的类定义：
+
+```python
+from dataclasses import dataclass
+from langchain.agents import create_agent
+from langchain.agents.structured_output import ToolStrategy
+from langchain.messages import HumanMessage
+from pydantic import Field              # ← 课程举例1 的片段里没写这一行，得自己补
+
+@dataclass
+class ContactInfo:
+    """用户的联系方式"""
+    name: str = Field(description="用户姓名")
+    email: str = Field(description="用户邮箱地址")
+    phone: str = Field(description="用户手机号")
+
+agent = create_agent(
+    model=model,
+    response_format=ToolStrategy(ContactInfo),
+)
+
+response = agent.invoke({
+    "messages": [
+        HumanMessage("从这段话中抽取结构化信息：小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912")
+    ]
+})
+
+for msg in response["messages"]:
+    msg.pretty_print()
+```
+
+输出里那条伪 ToolMessage 的正文是**数据类的表示形式**（注意和 Pydantic 的 `name='小明'` 写法不同）：
+
+```text
+================================== Ai Message ==================================
+Tool Calls:
+  ContactInfo (call_3MRoBpJHDaoYB6jK7plgW1YF)
+ Call ID: call_3MRoBpJHDaoYB6jK7plgW1YF
+  Args:
+    name: 小明
+    email: songhk@atguigu.com
+    phone: 12345678912
+================================= Tool Message =================================
+Name: ContactInfo
+
+Returning structured response: ContactInfo(name='小明', email='songhk@atguigu.com', phone='12345678912')
+```
+
+> [!WARNING]
+> `@dataclass` 这个写法有坑，**实测（langchain 1.2.12）**如下：
+> 1. 字段写的 `Field(description=...)` 是 **Pydantic 的 `Field`**，必须 `from pydantic import Field`；课程举例1 的代码片段里没有这行 import，单独复制会直接 `NameError`。
+> 2. 用 `Field(...)` 当默认值时，`dataclasses.fields(ContactInfo)` 里每个字段的 `default` 是一个 **`FieldInfo` 对象**（不是"无默认值"）——所以 `ContactInfo()` 直接构造出来的字段值会是一堆 `FieldInfo`。
+> 3. 好消息是**走 Agent 时没问题**：实测发给模型的工具定义里 description 正常带上、`result["structured_response"]` 也正确返回了 `ContactInfo(...)` 实例。
+> 4. **不写 `Field`、纯 `@dataclass`（`name: str` 这样）也能跑通**，只是字段**没有 description**（模型少了一部分信息）。
+>
+> **结论**：想要描述信息 + 强校验，用 Pydantic `BaseModel`；只是想少写点样板代码，`@dataclass` 也能用，但别指望它做校验。
 
 ## 写 Agent 结构化输出时的四个注意点
 
