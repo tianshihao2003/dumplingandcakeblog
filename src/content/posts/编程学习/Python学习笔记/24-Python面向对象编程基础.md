@@ -483,3 +483,221 @@ if __name__ == '__main__':
     shopping_cart = ShoppingCart()
     shopping_cart.run()
 ```
+
+---
+
+## 练习题
+
+### 一、回忆填空（写完再展开对答案）
+
+1. 面向过程编程关注 ____ 和 ____，适合 ____、____ 的任务；面向对象编程关注 ____，把对象的 ____ 和 ____ 打包到一起。
+2. 对象的"特征"在程序里叫 ____，"功能"叫 ____；类是描述一组相同属性和方法的 ____，对象是类的 ____，创建对象的过程也叫对象的 ____。
+3. 定义类的关键字是 ____，类名的命名规范是 ____（如 `UserInfo`）；定义在类外面的叫 ____，定义在类里面的叫 ____。
+4. 初始化方法的名字是 ____，它在对象创建后 ____（自动 / 手动）调用，作用是设置对象的 ____；实例方法的第一个参数是 ____，它表示当前创建的 ____；调用实例方法时 ____（需要 / 不需要）手动传这个参数，在方法里定义实例属性写 `self.____ = 值`。
+5. 魔法方法的名字以 ____ 开头和结尾；____ 定义对象的字符串表示；____ 判断两个对象是否相等；____、____、____、____ 分别支持小于、小于等于、大于、大于等于的比较。
+6. 魔法方法 ____（需要 / 不需要）手动调用，Python 会在 ____ 的时机自动调用：比如打印对象时自动用上 ____ 方法、两个对象比大小时自动用上 ____ 方法。
+7. ____ 属性属于每个具体对象、各自独立；____ 属性属于类本身、所有实例共享；类属性通过 ____ 访问，实例属性通过 ____ 访问；通过实例查属性时先找 ____ 属性，找不到再找 ____ 属性。
+8. 购物车案例：商品类用 ____ 方法初始化名称、价格、数量；修改商品信息的 `update_info` 用了默认参数 ____ 和 ____；购物车类用类属性存 ____ 和 ____，用实例属性存 ____ 列表；遍历打印商品时会自动调用 ____ 方法。
+
+> [!TIP]- 填空答案（做完再点开）
+> 1. 流程、步骤；简单、线性；谁来帮我做这件事；特征（属性）、功能（方法）
+> 2. 属性、方法；模板；实例（实例对象）；实例化
+> 3. class、大驼峰命名法；函数、方法
+> 4. `__init__`、自动、初始状态（属性）；self、实例对象；不需要、属性名
+> 5. 双下划线（`__`）、`__str__`、`__eq__`、`__lt__`、`__le__`、`__gt__`、`__ge__`
+> 6. 不需要、合适；`__str__`、`__lt__`
+> 7. 实例、类、类名、实例对象；实例、类
+> 8. `__init__`、price、num、system_version、system_name、goods_list、`__str__`
+
+### 二、裸写题
+
+- [ ] **2-1 定义第一个类**
+  定义一个表示"学生"的类（类名用大驼峰，例如 `Student`）：
+  - 创建对象时传入姓名和成绩，自动保存成这个对象自己的属性
+  - 写一个方法，按成绩打印等级：90 分及以上"优秀"，60 分及以上"及格"，其余"不及格"
+  - 创建两个成绩落在不同区间的学生对象，分别调用这个方法
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：类 = 属性（姓名、成绩）+ 方法（打印等级），属性要在创建对象时就写好
+  > **二级 · 方法**：`class` 定义类、`__init__` 在创建对象时初始化属性、`self.属性名 = 参数值`、普通方法第一个参数也写 `self`
+  > **三级 · 骨架**：`class Student:` / `def __init__(self, name, score):` / `def show_level(self):` 里用 if-elif-else
+
+- [ ] **2-2 大家共享的类属性**
+  还是"学生"类，加两样东西：
+  - 一个所有学生共享的学校名（改一次，所有学生看到的一样）
+  - 一个共享计数器：每创建一个学生对象就加 1，最后用类名读出"一共创建了多少个学生"
+
+  创建 3 个学生对象，分别打印每个学生的姓名，以及共享的学校名和计数器。
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：姓名每个学生各不相同（实例属性），学校名和计数器大家共用（类属性）
+  > **二级 · 方法**：类属性直接写在类里、方法外；创建对象时在初始化方法里给计数器加 1；通过类名读类属性
+  > **三级 · 骨架**：`Student.count += 1`（写在初始化方法里）/ `print(Student.count)`
+
+- [ ] **2-3 让对象"会说话"、能比较**
+  定义一个"商品"类（名称、价格），然后：
+  - 直接打印对象时，显示成"商品名 价格"，而不是一串内存地址
+  - 两件名称和价格都相同的商品，互相比较时结果为 True
+
+  创建两个内容相同的商品和一个内容不同的商品，打印它们并两两比较。
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：打印对象时的表现、对象之间怎么算"相等"，都可以自己定义
+  > **二级 · 方法**：`__str__` 定义打印时的字符串、`__eq__` 定义相等的规则
+  > **三级 · 骨架**：`def __str__(self): return f"{self.name} {self.price}"` / `def __eq__(self, other): return self.price == other.price and ...`
+
+- [ ] **2-4 一群对象放在一起**
+  定义一个"商品"类（名称、价格），创建 3 个商品对象放进一个列表：
+  - 遍历列表，打印每个商品
+  - 找出价格最高的那件商品（先让 Python 知道两个商品之间怎么比大小，再借用内置的"取最大值"）
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：对象放进列表和普通数据一样，能遍历、能打印；比大小要先定义"谁更小"的规则
+  > **二级 · 方法**：`__lt__` 定义小于规则、内置函数 `max()` 取最大值、`for` 遍历
+  > **三级 · 骨架**：`def __lt__(self, other): return self.price < other.price` / `print(max(goods_list))`
+
+### 三、综合题
+
+- [ ] **3-1 班级成绩管理器**
+  用类把"学生成绩"封装起来，做一个能跑的小工具：
+  1. 定义学生类：创建对象时传入姓名和语文、数学、英语三科成绩，保存为对象自己的属性；再用类属性记录学校名
+  2. 给这个类加方法：算总分、算平均分；直接打印对象时显示"姓名 总分 平均分"
+  3. 创建 4 个学生对象，放进一个列表
+  4. 遍历列表打印全部学生，并找出总分最高的学生
+  5. （可选）加一个菜单循环：1 查看全部学生 / 2 查看总分最高 / 3 退出，用 `match...case` 分发
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：先把类和它的属性/方法写全，再准备数据、遍历、找最高分，最后才加菜单
+  > **二级 · 方法**：`class` / `__init__` / `self` / 类属性 / `__str__` / `__lt__`（或手写循环比较）/ `max()` / `match...case`
+  > **三级 · 骨架**：`def total_score(self): return self.chinese + self.math + self.english` / `def average(self): return self.total_score() / 3`
+
+  > [!NOTE]
+  > 笔记正文"综合练习：购物车管理系统"的骨架文件是练习库里的 `test_01_shopping.py`（旧格式，里面带答案注释），想再练一遍那套综合题可以直接用它。
+
+> [!TIP]- 参考答案（做完再点开）
+> ```python
+> # 2-1 定义第一个类
+> class Student:
+>     def __init__(self, name, score):
+>         self.name = name
+>         self.score = score
+>
+>     def show_level(self):
+>         if self.score >= 90:
+>             print(f"{self.name}：优秀")
+>         elif self.score >= 60:
+>             print(f"{self.name}：及格")
+>         else:
+>             print(f"{self.name}：不及格")
+>
+> s1 = Student("小王", 92)
+> s2 = Student("小李", 58)
+> s1.show_level()   # 小王：优秀
+> s2.show_level()   # 小李：不及格
+>
+>
+> # 2-2 类属性（共享的学校名 + 计数器）
+> class Student2:
+>     school = "希望小学"   # 类属性：所有学生共享
+>     count = 0             # 类属性：共享计数器
+>
+>     def __init__(self, name, score):
+>         self.name = name      # 实例属性：每个对象独有
+>         self.score = score
+>         Student2.count += 1   # 通过类名给类属性加 1
+>
+> students = [Student2("小王", 92), Student2("小李", 78), Student2("小张", 85)]
+> for stu in students:
+>     print(f"{stu.name} 来自 {Student2.school}")
+> print("一共创建了", Student2.count, "个学生")   # 3
+>
+>
+> # 2-3 魔法方法：__str__ 与 __eq__
+> class Goods:
+>     def __init__(self, name, price):
+>         self.name = name
+>         self.price = price
+>
+>     def __str__(self):
+>         return f"{self.name} {self.price}"
+>
+>     def __eq__(self, other):
+>         return self.name == other.name and self.price == other.price
+>
+> g1 = Goods("键盘", 199)
+> g2 = Goods("键盘", 199)
+> g3 = Goods("鼠标", 99)
+> print(g1)          # 键盘 199
+> print(g1 == g2)    # True
+> print(g1 == g3)    # False
+>
+>
+> # 2-4 对象放进列表 + 找最贵的
+> class Goods2:
+>     def __init__(self, name, price):
+>         self.name = name
+>         self.price = price
+>
+>     def __str__(self):
+>         return f"{self.name} {self.price}"
+>
+>     def __lt__(self, other):
+>         return self.price < other.price
+>
+> goods_list = [Goods2("键盘", 199), Goods2("显示器", 899), Goods2("鼠标", 99)]
+> for goods in goods_list:
+>     print(goods)
+> most_expensive = max(goods_list)      # 有了 __lt__ 才能直接比大小
+> print(f"最贵的商品：{most_expensive.name}（{most_expensive.price} 元）")
+>
+>
+> # 3-1 班级成绩管理器
+> class Student3:
+>     school = "希望小学"      # 类属性
+>
+>     def __init__(self, name, chinese, math, english):
+>         self.name = name
+>         self.chinese = chinese
+>         self.math = math
+>         self.english = english
+>
+>     def total_score(self):
+>         return self.chinese + self.math + self.english
+>
+>     def average(self):
+>         return self.total_score() / 3
+>
+>     def __str__(self):
+>         return f"{self.name} 总分{self.total_score()} 平均分{self.average():.1f}"
+>
+>     def __lt__(self, other):
+>         return self.total_score() < other.total_score()
+>
+> students = [
+>     Student3("小王", 92, 88, 95),
+>     Student3("小李", 78, 82, 80),
+>     Student3("小张", 99, 91, 96),
+>     Student3("小赵", 60, 72, 65),
+> ]
+>
+> print(f"学校：{Student3.school}")
+> for stu in students:
+>     print(stu)
+> top = max(students)
+> print(f"总分最高：{top.name}（{top.total_score()} 分）")
+>
+> # 第 5 步（可选）：菜单循环
+> while True:
+>     choice = input("1 查看全部学生  2 查看总分最高  3 退出：")
+>     match choice:
+>         case "1":
+>             for stu in students:
+>                 print(stu)
+>         case "2":
+>             print(max(students))
+>         case "3":
+>             print("Bye ~")
+>             break
+>         case _:
+>             print("请输入 1-3")
+> ```

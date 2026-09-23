@@ -139,12 +139,10 @@ curl https://api.deepseek.com/chat/completions \
   > }
   > ```
 
-- [ ] **2-2** 在上面基础上，补一条 assistant 的历史回复，说明"滚雪球"是怎么实现会话记忆的
+- [ ] **2-2** 在 2-1 的请求体上继续这段对话：先补一条 assistant 的历史回复（上一轮 AI 的回答），再补一轮新的 user 提问，让 messages 一共 **4 条**；并说明"滚雪球"是怎么实现会话记忆的
 
   > [!TIP]- 参考答案（做完再点开）
-  > 在 messages 里再加一条 assistant 的历史回复，模型就能"看到"自己说过什么：
-
-  > [!TIP]- 参考答案（做完再点开）
+  > 在 messages 里再加一条 assistant 的历史回复，**再补一轮新的 user 提问**，一共 **4 条消息（1 条 system + 2 条 user + 1 条 assistant）**，模型就能"看到"自己前面说过什么：
   > ```json
   > {
   >   "model": "deepseek-chat",
@@ -157,6 +155,7 @@ curl https://api.deepseek.com/chat/completions \
   >   "stream": false
   > }
   > ```
+  > 条数对一下（2-1 是 2 条，本题 4 条）：`system` 1 条、`user` 2 条（老问题 + 新问题）、`assistant` 1 条。只用"那2个人呢?"单独发一次，模型不知道该接什么；把"12个苹果分给3个人"和 AI 的回答一起带上，它才能接着算出"每人 6 个"。
 
 - [ ] **2-3** 如果 Apifox 里返回 401，你会先检查请求头里的哪一项？为什么？
 
