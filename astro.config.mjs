@@ -125,6 +125,13 @@ export default defineConfig({
 					},
 				},
 			},
+			// Shiki 没有 mysql 语法（只有 sql），把 ```mysql 映射到 sql 语法高亮，
+			// 否则构建会刷 "language could not be found" 警告并降级成纯文本
+			shiki: {
+				langAlias: {
+					mysql: "sql",
+				},
+			},
 			styleOverrides: {
 				borderRadius: "0.75rem",
 				codeFontSize: "0.875rem",

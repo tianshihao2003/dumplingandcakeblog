@@ -361,6 +361,8 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 
 `adConfig`, `announcementConfig`, `circleConfig`, `coverImageConfig`, `expressiveCodeConfig`, `fontConfig`, `footerConfig`, `friendsConfig`, `guestbookConfig`, `licenseConfig`, `momentConfig`(动态评论配置), `pioConfig`(Live2D/Spine), `relationshipConfig`, `sakuraConfig`, `skillsConfig`, `sponsorConfig`, `ttsConfig`(文章朗读)
 
+> **代码块语言别名（在 `astro.config.mjs`，不在 src/config）**：Shiki 没有 `mysql` 语法（只有 `sql`），所以 `expressiveCode({ shiki: { langAlias: { mysql: "sql" } } })` 把 ` ```mysql ` 映射到 SQL 高亮。没有这条映射时，构建会刷 `astro-expressive-code` 的 "language could not be found" 警告并把代码块降级成纯文本。新增其它别名（如 `vue3` → `vue`）同样加在这里。
+
 ### 外部配置（直接导入，不经 barrel）
 
 仅剩 `externalBangumiConfig`（供 bangumi / movies-games 页面使用）。其余 `externalFriendsConfig` 等 4 个已随 fc8599f 删除。
