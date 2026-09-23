@@ -227,7 +227,7 @@ model = init_chat_model(
     model="deepseek-v4-flash",
     model_provider="deepseek",
     api_key=DEEPSEEK_API_KEY,
-    base_url=DEEPSEEK_BASE_URL,
+    api_base=DEEPSEEK_BASE_URL,          # ← provider="deepseek" 时用 api_base，不是 base_url！
     temperature=0.2,
     max_tokens=500,
     # 指定可调整参数
@@ -260,6 +260,10 @@ rprint(response)
 >
 > 记得：`config["configurable"]` 里能覆盖哪些参数，取决于初始化时的 **`configurable_fields`**。config 各配置项的完整说明见「模型的调用」笔记。
 
+> [!WARNING]
+> **`model_provider="deepseek"` 时不要用 `base_url`**。课程讲义这一处写的是 `base_url=...`，**本机实测这个参数会被静默忽略**——`init_chat_model(model_provider="deepseek", base_url="...")` 拿到的 `ChatDeepSeek` 里 `api_base` 仍是官方地址 `https://api.deepseek.com/v1`，请求会打到 DeepSeek 官方接口（而不是你的中转/本地服务）。正确参数名是 **`api_base`**（和「模型的创建」笔记里"别把变量名当参数名写"是同一类坑）。
+> 用 `model_provider="openai"` 走 OpenAI 兼容协议时，才用 `base_url`。
+
 ## 相关
 
 - [模型的创建](/posts/编程学习/langchain学习笔记/04-模型的创建/)
@@ -269,69 +273,137 @@ rprint(response)
 
 ### 一、回忆填空（写完再展开对答案）
 
-1. LangSmith 是 LangChain 官方的可视化 ____ 与 ____ 平台，用于跟踪分析智能体的完整 ____
-2. 最核心的功能是 ____：能看到每一步的 ____ 是什么、模型返回了什么、消耗多少 ____、每个节点 ____
-3. Monitoring 是生产环境看板，能看 ____ 消耗趋势、____、错误率、平均延迟和成本
-4. 四个环境变量：____（总开关）、____（上报地址）、____（凭证）、____（项目名）
-5. 这四个变量配在 ____ 文件里，代码 ____（需要/不需要）改动
-6. 创建 API Key 后要注意：Key 只在弹窗里出现 ____ 次，必须立即保存
-7. 新手阶段建议重点用 ____ 和 ____；应用复杂后再上 Datasets 和 Studio
+1. LangSmith 是 LangChain 官方的可视化 ____ 与 ____ 平台；它的核心目标是：全链路 ____、____ 与优化、评测与 ____、团队 ____
+2. 最核心的板块是 ____：完整记录每一次调用的链路，能看到每一步的 ____ 是什么、模型返回了什么、消耗多少 ____、每个节点 ____
+3. Monitoring 是生产环境看板，能看 ____ 消耗趋势、____（每秒请求数）、____、平均 ____、____ 预估
+4. Datasets & Experiments 用来管 ____ 并跑对比实验；Evaluators 支持 ____（如关键词匹配）和 ____（用一个模型当裁判）两种评估；Annotation Queues 是 ____ 工具，人工标注的数据还能拿去 ____ 或当测试集
+5. 提示词工程四件套：____（"提示词版的 GitHub"，支持 ____ 控制，可被代码动态拉取）、____（网页端调提示词，能一键存回仓库）、____（与 LangGraph 深度集成，能看状态机流转、还能中途 ____）、____（存放可复用的公共上下文/全局变量）
+6. 部署运维两块：____ 一键把应用部署成线上 API 服务（依托 ____）；____ 提供不污染生产的轻量测试环境
+7. 新手学习顺序：现阶段重点看 ____ 和 ____；等应用结构复杂了（RAG、多 Agent），再引入 Datasets 做量化评估、用 Studio 做可视化调试
+8. 注册时要选数据 ____（之后不能改）；API Key 只在创建弹窗里显示 ____ 次，必须当场复制
+9. 四个环境变量：____（总开关，`true` 才上报）、____（上报地址）、____（身份凭证）、____（项目名，相当于"文件夹"）；它们只写在 ____ 里，代码 ____（需要 / 不需要）改动
+10. 三种上报姿势：直接用 ____、用 ____（中转/换平台场景）、以及带上 ____ 的完整姿势；给 Trace 打标的三件套是 ____（运行名，默认只显示方法名、看不出业务含义）、____（便于按标签过滤）、____（业务上下文，如用户 ID / 会话 ID）；想让 config 里的覆盖生效，初始化时必须用 ____ 声明
 
 > [!TIP]- 填空答案（做完再点开）
-> 1. 监控 / 测试 / 调用链路（Trace）　2. Tracing / Prompt（提示词）/ Token / 耗时　3. Token / QPS　4. `LANGSMITH_TRACING` / `LANGSMITH_ENDPOINT` / `LANGSMITH_API_KEY` / `LANGSMITH_PROJECT`　5. `.env` / 不需要　6. 一　7. Tracing / Playground
+> 1. 监控 / 测试；追踪 / 调试 / 质量控制 / 协作　2. Tracing（追踪）/ Prompt（提示词）/ Token / 耗时　3. Token / QPS / 错误率 / 延迟（Latency）/ 成本　4. 测试数据集 / 基于规则 / 基于模型（LLM-as-a-judge）/ 人工标注与复核 / 微调模型　5. Prompts / 版本（v1、v2）/ Playground / Studio / 暂停（改完数据再继续）/ Context Hub　6. Deployments / LangGraph Cloud / Sandboxes　7. Tracing / Playground　8. 区域 / 一　9. `LANGSMITH_TRACING` / `LANGSMITH_ENDPOINT` / `LANGSMITH_API_KEY` / `LANGSMITH_PROJECT` / `.env` / 不需要　10. 专用类 / `init_chat_model` / `config`；`run_name` / `tags` / `metadata` / `configurable_fields`
 
-### 二、动手题
+### 二、裸写题
 
-- [ ] **2-1 接通 LangSmith**
-  注册 LangSmith 账号并创建 API Key，在项目 `.env` 里补齐四个 `LANGSMITH_*` 变量。
+- [ ] **2-1 接通 LangSmith（配置自检 + 一次最小调用）**
+  在项目 `.env` 里补齐 LangSmith 需要的四个环境变量（开关、上报地址、密钥、项目名）；然后写一段代码：① 检查这四个变量是否都齐全，缺哪个就打印哪个；② 创建一个模型并调用一句"你好"，打印回复和 token 用量；③ 代码里不允许出现任何 LangSmith 相关的调用；④ 跑完到官网对应项目里找到这次 Trace。
 
   > [!TIP]- 提示（先自己想，实在想不出再点开）
-  > **一级 · 思路**：开关 + 地址 + 钥匙 + 项目名，四样齐活
-  > **二级 · 方法**：`LANGSMITH_TRACING=true` / `LANGSMITH_ENDPOINT=https://api.smith.langchain.com` / `LANGSMITH_API_KEY=...` / `LANGSMITH_PROJECT="你的项目名"`
-  > **三级 · 骨架**：`LANGSMITH_PROJECT` 里的值就是官网看到的"项目文件夹名"
+  > **一级 · 思路**：四样东西——总开关、上报地址、钥匙、项目名；代码侧只负责「加载 .env + 正常调用」
+  > **二级 · 方法**：`LANGSMITH_TRACING` / `LANGSMITH_ENDPOINT` / `LANGSMITH_API_KEY` / `LANGSMITH_PROJECT`；`load_dotenv(override=True)`
+  > **三级 · 骨架**：`missing = [k for k in REQUIRED if not os.getenv(k)]`；官网按 `LANGSMITH_PROJECT` 的名字找项目
 
-- [ ] **2-2 跑一次并去官网看记录**
-  运行一次模型调用（如 `model.invoke("你好")`），然后到 LangSmith 官网对应项目里查看这次 Trace。
-
-  > [!TIP]- 提示
-  > **一级 · 思路**：代码不用改，靠 `.env` 自动上报
-  > **二级 · 方法**：`load_dotenv(override=True)` 必须先执行
-  > **三级 · 骨架**：看不清记录时先确认 `LANGSMITH_TRACING=true` 与项目名拼写
-
-- [ ] **2-3 关掉再试一次**
-  把 `LANGSMITH_TRACING` 改成 `false` 再跑一次，观察官网是否还有新记录，理解"开关"的作用。
+- [ ] **2-2 给 Trace 打标（让记录"能找得到"）**
+  在同一次调用上做三件事：① 给这次运行起一个可读的名字；② 打上两个便于分类的标签；③ 带上业务元数据（用户 ID + 会话 ID）。运行后说明：在官网里分别怎么按名称找、按标签筛、在哪里看元数据。
 
   > [!TIP]- 提示
-  > **一级 · 思路**：这个变量就是总开关
-  > **二级 · 方法**：改 `.env` 后重新运行即可（记得改回来）
-  > **三级 · 骨架**：对比两次运行在官网的记录数量
+  > **一级 · 思路**：这三样都是"给 LangSmith 看的"，通过调用时的运行时配置传进去
+  > **二级 · 方法**：`model.invoke("...", config={"run_name": ..., "tags": [...], "metadata": {...}})`
+  > **三级 · 骨架**：`config = {"run_name": "joke_generation", "tags": ["my_tag1"], "metadata": {"user_id": "..."}}`
+
+- [ ] **2-3 开关实验（理解"零侵入"）**
+  写一段代码：先判断并打印"这次运行会不会被上报"，再照常调用一次模型。然后把 `.env` 里的总开关分别设为开和关各跑一次，对比官网的记录数量，说明代码本身有没有变化。
+
+  > [!TIP]- 提示
+  > **一级 · 思路**：总开关就是一个环境变量，它只影响"是否上报"，不影响本地功能
+  > **二级 · 方法**：读 `os.getenv("LANGSMITH_TRACING")`，用 `in ("true", "1", "yes")` 判断
+  > **三级 · 骨架**：`tracing_on = (os.getenv("LANGSMITH_TRACING") or "").lower() in ("true", "1", "yes")`，其余代码一个字都不用改
+
+- [ ] **2-4 运行时覆盖模型参数**
+  初始化模型时用低温度、小 token 上限创建，并声明"哪些参数允许在运行时替换"；调用时用运行时配置把模型换掉、温度调高、token 上限调大；最后从返回值的元数据里确认"实际生效的是哪个模型"，并说明如果初始化时没做那步声明会怎样。
+
+  > [!TIP]- 提示
+  > **一级 · 思路**：初始化参数是"默认值"，运行时配置优先级更高，但覆盖范围要先声明
+  > **二级 · 方法**：`init_chat_model(..., configurable_fields=("model", "model_provider", "temperature", "max_tokens"))` + `config={"configurable": {...}}`
+  > **三级 · 骨架**：调用后看 `response.response_metadata["model_name"]` 验证；没声明 `configurable_fields` 时覆盖不会生效
 
 > [!TIP]- 参考答案（做完再点开）
-> ```text
-> # 2-1 .env 里补上这四行
-> LANGSMITH_TRACING=true
-> LANGSMITH_ENDPOINT=https://api.smith.langchain.com
-> LANGSMITH_API_KEY=<你复制的 API Key>
-> LANGSMITH_PROJECT="langchain-study"
-> ```
->
 > ```python
-> # 2-2 运行这段，然后去官网看 Trace（代码不用管 LangSmith）
+> # ========== 2-1 接通 LangSmith（配置自检 + 一次最小调用） ==========
 > import os
 > from dotenv import load_dotenv
 > from langchain.chat_models import init_chat_model
 >
 > load_dotenv(override=True)
 >
+> # ① 配置自检：LangSmith 只看这四个环境变量，缺哪个就报哪个
+> REQUIRED = ["LANGSMITH_TRACING", "LANGSMITH_ENDPOINT", "LANGSMITH_API_KEY", "LANGSMITH_PROJECT"]
+> missing = [name for name in REQUIRED if not os.getenv(name)]
+> if missing:
+>     print("还缺这些变量，先去 .env 里补齐：", missing)
+> else:
+>     print("四个变量都齐了：TRACING=%s，PROJECT=%s，ENDPOINT=%s" % (
+>         os.getenv("LANGSMITH_TRACING"), os.getenv("LANGSMITH_PROJECT"),
+>         os.getenv("LANGSMITH_ENDPOINT")))
+>
+> # ② 最小调用：代码里一行 LangSmith 相关调用都不写
 > model = init_chat_model(
 >     model="deepseek-v4-flash",
 >     model_provider="openai",
 >     base_url=os.getenv("DEEPSEEK_BASE_URL"),
 >     api_key=os.getenv("DEEPSEEK_API_KEY"),
 > )
+> response = model.invoke("你好")
+> print("回复:", response.content)
+> print("token 用量:", response.usage_metadata)
+> # ③ 到 https://smith.langchain.com/ 进入 LANGSMITH_PROJECT 指定的项目，就能看到这次调用
 >
-> print(model.invoke("你好，用一句话回答").content)
-> # 打开 https://smith.langchain.com/ → 进入 LANGSMITH_PROJECT 指定的项目 → 能看到本次调用
 >
-> # 2-3 把 LANGSMITH_TRACING 改成 false 再跑，官网不会新增记录
+> # ========== 2-2 给 Trace 打标 ==========
+> config = {
+>     "run_name": "joke_generation",          # 运行列表里显示的名字（默认只显示方法名）
+>     "tags": ["my_tag1", "my_tag2"],         # 便于按标签过滤
+>     "metadata": {                           # 业务上下文：能定位到具体用户/会话
+>         "user_id": "shkstart",
+>         "session_id": "sess_123",
+>     },
+> }
+> response = model.invoke("1 + 2 = ？", config=config)
+> print("回复:", response.content)
+> # 官网怎么看：Tracing 列表里按名称找 joke_generation；用 tag = my_tag1 筛；
+> # 点进条目详情，Metadata 里能看到 user_id / session_id
+>
+>
+> # ========== 2-3 开关实验 ==========
+> tracing_on = (os.getenv("LANGSMITH_TRACING") or "").strip().lower() in ("true", "1", "yes")
+> print("LANGSMITH_TRACING =", os.getenv("LANGSMITH_TRACING"))
+> print("→ 这次运行", "会" if tracing_on else "不会", "被上报到 LangSmith")
+>
+> response = model.invoke("你好，用一句话回答")
+> print("回复:", response.content)
+> # 实验：开关设 true 跑一次（官网新增一条 Trace）→ 改成 false 再跑一次（官网不新增，
+> # 但本地功能一切正常）→ 记得改回 true。两次运行，代码一个字都没改。
+>
+>
+> # ========== 2-4 运行时覆盖模型参数 ==========
+> model = init_chat_model(
+>     model="deepseek-v4-flash",
+>     model_provider="openai",
+>     base_url=os.getenv("DEEPSEEK_BASE_URL"),
+>     api_key=os.getenv("DEEPSEEK_API_KEY"),
+>     temperature=0.2,
+>     max_tokens=500,
+>     # 声明哪些参数允许在运行时替换（不声明的话，config 里的覆盖不会生效）
+>     configurable_fields=("model", "model_provider", "temperature", "max_tokens"),
+> )
+>
+> config = {
+>     "run_name": "joke_generation",
+>     "tags": ["my_tag1", "my_tag2"],
+>     "metadata": {"user_id": "shkstart", "session_id": "sess_123"},
+>     "configurable": {
+>         "model": "deepseek-v4-pro",     # 覆盖初始化时的模型
+>         "temperature": 0.7,             # 覆盖初始化时的温度
+>         "max_tokens": 1000,
+>     },
+> }
+>
+> response = model.invoke("1 + 2 = ？", config=config)
+> rm = response.response_metadata
+> print("实际生效的模型:", rm.get("model_name"), "｜提供商:", rm.get("model_provider"))
+> # 结论：初始化参数只是默认值，config 里的覆盖会赢（前提是 configurable_fields 声明过）
 > ```

@@ -557,65 +557,88 @@ Returning structured response: ContactInfo(name='小明', email='songhk@atguigu.
 
 ### 一、回忆填空（写完再展开对答案）
 
-1. 模型的结构化输出绑在____上（用 `with_structured_output`），Agent 的结构化输出绑在 Agent 上（用 `____` 参数）
-2. 模型的结构化输出**每次**模型调用都会解析；Agent 的**仅在**它决定"____"并输出最终答案时解析
-3. 四种策略：____用模型厂商的原生结构化输出；____用工具调用实现（推荐，兼容性最好）；直接传类型会包装成 ____ 自动选择；____（默认）表示不做结构化输出
-4. 结构化结果存放在 Agent 状态的 `____` 键里；判断方式：`if "____" in result`
-5. ToolStrategy 会在消息列表末尾追加一条____的 ToolMessage，实际并没有执行工具
-6. ToolStrategy 的三个参数：`schema`（必需）、`____`（自定义伪消息内容）、`____`（校验失败的重试策略，默认 True）
-7. `handle_errors=False` 表示____重试，异常直接____；传字符串则用这个____作为错误消息回给模型
-8. 最典型的错误是____错误：模型本该输出一个结构化结果，却发起了____个工具调用
-9. 注意点：结构化输出的要求写在系统提示词的____，否则可能导致部分工具____
+1. 模型的结构化输出绑在____上（方法名 `with_structured_output`），Agent 的结构化输出写在 `create_agent` 的 `____` 参数里；解析时机也不同——模型是____都解析，Agent 只在它决定"____"、输出最终答案时才解析，所以结构化结果总是排在消息链的____；适用场景也不同：模型适合____的任务（提取字段、翻译、分类），Agent 适合____的任务（查文档后汇总报表）
+2. 四种策略：____只走模型厂商的原生能力（请求体里多出一个 `response_format` 字段、内容是 `json_schema`，而且 `tools` 是空的），所以**只适用于支持原生结构化输出的模型**（OpenAI / Claude / Grok 等）；____把 Schema 当成一个"工具"传给模型（官方推荐、兼容性最好，适用于任何支持工具调用的模型）；直接传类型会被自动包装成 ____；`None`（默认）表示____。**建议**：新代码一律____写策略
+3. 结构化结果存在 Agent 状态的 `____` 键里，取之前先写 `if "____" in result`，避免____；ToolStrategy 还会在消息列表末尾追加一条____的 ToolMessage（实际**没有执行任何工具**），它的 `name` 就是____，返回字典的两个键是 `messages` 和 `structured_response`
+4. ToolStrategy 三个参数：`____`（必需，支持 Pydantic、TypedDict、JSON Schema 字典、`@dataclass` 四类，还支持____——此时最终只会转换成一种结构）、`____`（自定义伪消息内容，让对话更自然 / 少占 token，但**不影响**结构化结果）、`____`（校验失败怎么办，默认 `True`）
+5. `handle_errors` 的五种取值：`True` 用____模板提示模型重试；`False` 关闭重试、异常直接____；字符串则把这句话当____回给模型；传异常类型只重试____的异常；传 callable 用自定义函数处理。最典型的错误是"____"错误，两个常见异常是 `MultipleStructuredOutputsError` 和____
+6. TypedDict 当 Schema 的三条要点：字段写成 `____` 格式；可选字段用____包装；**不支持____校验**（写错只会悄悄出错）
+7. 手写 JSON Schema 字典的标准关键字：`title`（结构名，会当作____的名字）、`type`、`description`、`properties`（字段字典）、____（枚举可选值）、`default`、____（必须输出的字段名列表）；用这种写法拿到的 `structured_response` 是普通____，不是 Pydantic 对象
+8. `@dataclass` 写法：字段描述用的是____的 `Field`（课程代码片段里缺这行 import，单独复制会 `NameError`）；`Field(...)` 当默认值时，字段的 `default` 是____对象；不写 `Field` 也能跑通，只是字段____
+9. 客户分析案例的三个技巧：枚举字段用____把取值锁死、所有字段都给____兜底、`send_email: bool` 充当"邮件发没发"的____；系统提示词的最后一条必须写"____"，否则模型会反复查一个不存在的客户。另外，结构化输出的要求要写在系统提示词的____，写在前面可能让部分工具____
+10. 两个模型供应商：供应商一用 `init_chat_model(..., model_provider="____")` 走 OpenAI 兼容；供应商二用第三方包 `____` 的 `ChatOpenRouter`，模型名要写成"____"的格式。源码里 `ResponseFormat` 把三种策略写成____关系，`AutoStrategy(Schema)` 与"____"等价
 
 > [!TIP]- 填空答案（做完再点开）
-> 1. 大模型（模型对象） / `response_format`　2. 任务结束　3. ProviderStrategy / ToolStrategy / AutoStrategy / None　4. `structured_response` / `structured_response`　5. 伪（假的）　6. `tool_message_content` / `handle_errors`　7. 关闭 / 抛出　8. 多结构化输出 / 多（几个）　9. 最后 / 不被调用
+> 1. 大模型（模型对象） / `response_format` / 每次模型调用 / 任务结束 / 最后 / 单次、确定性的任务（提取字段、翻译、分类） / 多步、复杂推理的任务（查文档后汇总报表）　2. ProviderStrategy / ToolStrategy / AutoStrategy / 不做结构化输出（自然语言回答） / 显式　3. `structured_response` / `structured_response` / KeyError / 伪（假的） / Schema 类名（如 `ContactInfo`）　4. `schema` / 联合类型 `Union[...]` / `tool_message_content` / `handle_errors`　5. 内置错误消息 / 抛出（中断程序） / 错误消息 / 指定类型 / 多结构化输出 / `StructuredOutputValidationError`
+> 6. `Annotated[类型, 默认值, "描述"]` / `Optional` / 运行时　7. "虚拟工具" / `enum` / `required` / 字典（`dict`）　8. pydantic / `FieldInfo` / 没有 description（模型少了一部分信息）　9. `Literal[...]` / 默认值 / 状态标记 / 查不到客户就返回空对象（不发送感谢邮件） / 最后 / 不再被调用　10. openai / `langchain-openrouter` / 供应商/模型名 / 平级（`|` 联合） / 直接传类型（`response_format=Schema`）
 
 ### 二、裸写题
 
-- [ ] **2-1 用 ToolStrategy 抽取联系人信息**
-  定义 `ContactInfo`（name / email / phone 三个字段，都带中文描述），用 `response_format=ToolStrategy(ContactInfo)` 创建 Agent，从"小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912"里抽取，打印 `structured_response`。
+- [ ] **2-1 用"工具调用式"策略抽取联系人信息**
+  定义一个"个人联系信息"数据模型（姓名 / 邮箱 / 手机号三个字段，每个字段都带中文说明），创建一个 Agent 并把这份模型声明成它的**交付格式**；然后从"小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912"里抽取信息，打印最终的结构化结果（打印前先判断有没有拿到）。
 
   > [!TIP]- 提示（先自己想，实在想不出再点开）
-  > **一级 · 思路**：Schema 写在 Pydantic 类里，策略写在 response_format 里
-  > **二级 · 方法**：`from langchain.agents.structured_output import ToolStrategy`
-  > **三级 · 骨架**：打印时先判断 `if "structured_response" in response:`，否则可能 KeyError
+  > **一级 · 思路**：Schema 写在数据模型类里；"什么时候解析"由 Agent 的交付格式参数决定——用官方推荐的那种（靠工具调用实现的）
+  > **二级 · 方法**：`from langchain.agents.structured_output import ToolStrategy`；`create_agent(model=..., response_format=ToolStrategy(ContactInfo))`
+  > **三级 · 骨架**：先 `if "structured_response" in response:` 再打印，否则可能 `KeyError`；顺便 `print(type(...))`，确认拿到的是对象还是字典
 
-- [ ] **2-2 观察那条"伪 ToolMessage"**
-  在 2-1 的基础上遍历 `response["messages"]`，打印每条消息的类型、`name`、`content`，找出哪一条是伪消息、它的 `name` 是什么。
+- [ ] **2-2 观察那条"伪消息"，再把它换成自己的话**
+  在 2-1 的基础上遍历返回的消息列表，打印每条消息的类型、`name`、`content`：找出哪一条是"伪消息"（模型发出工具调用之后、系统补上的那条响应），它的 `name` 是什么、"模型调用的工具名"和它是不是同一个？然后给交付格式再加一个参数，把这条伪消息的内容改成"提取完成！"重跑一次，确认伪消息内容变了、而结构化结果没受影响。
 
-  > [!TIP]- 提示
-  > **一级 · 思路**：伪消息用来"补链路"，不代表真调用了工具
-  > **二级 · 方法**：`type(msg).__name__` + `getattr(msg, "name", None)`
-  > **三级 · 骨架**：对比一下：请求里模型"调用"的工具名，和这条 ToolMessage 的 name 一样吗？
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：那条消息是为了"补链路"（模型发了工具调用，总得有个响应），实际没执行任何工具；它的内容可以自定义，但只影响对话历史里的那一条记录
+  > **二级 · 方法**：`type(msg).__name__` + `getattr(msg, "name", None)`；`ToolStrategy(ContactInfo, tool_message_content="提取完成！")`（`ToolMessage` 就是那条伪消息的类型）
+  > **三级 · 骨架**：改完再打印 `response2["messages"][-1].content` 对比；顺便想想自定义伪消息的两个用途（用户看到的对话更自然、少占 token）
 
-- [ ] **2-3 自定义伪消息内容**
-  用 `tool_message_content="提取完成！"` 再跑一次 2-1，对比消息列表里那条 ToolMessage 的 content 变化，同时确认 `structured_response` 没受影响。
+- [ ] **2-3 客户分析报告：查库 → 发邮件 → 出报告**
+  把"工具调用"和"结构化输出"放进同一次任务：
+  ① 定义两个工具：一个查客户数据库（命中"张三"返回 `客户记录：张三，VIP客户，最近购买日期：2026-01-15，累计消费：$15,000`，命中"李四"返回普通客户记录，其他返回"无记录"）；一个给客户发感谢邮件（返回"已向 xx 发送感谢邮件"）。两个工具的 docstring 都按 `Args` / `Returns` 规范写。
+  ② 定义一份"客户分析报告"数据模型：客户姓名、客户等级（只能是 潜在客户 / 普通客户 / VIP客户 / 流失风险 之一）、最近活动、消费水平（只能是 低 / 中 / 高 之一）、是否已发送感谢邮件（布尔）。每个字段都给默认值兜底。
+  ③ 系统提示词按四步写清顺序：先查库 → 是 VIP 才发邮件 → 基于搜索结果生成报告 → 查不到客户就返回空对象、不发邮件。
+  ④ 用"请分析客户张三"调用，打印结构化结果，并打印整条消息链的类型序列：数一数一共几条消息、最后那条 ToolMessage 的 `name` 是什么。
 
-  > [!TIP]- 提示
-  > **一级 · 思路**：自定义消息只影响"对话历史里的一条记录"
-  > **二级 · 方法**：`ToolStrategy(ContactInfo, tool_message_content="提取完成！")`
-  > **三级 · 骨架**：顺便想想这有什么实用价值（让用户看到的对话更自然、少占 token）
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：枚举字段要"锁死"取值（不然模型会自创"金牌客户"这种值）；`send_email` 是"邮件发没发"的状态标记、和同名工具配合；取值前先判断有没有结构化结果
+  > **二级 · 方法**：`Literal["潜在客户", "普通客户", "VIP客户", "流失风险"]`、`Field(默认值, description=...)`；`create_agent(model=..., system_prompt=SystemMessage(content=...), tools=[...], response_format=ToolStrategy(CustomerAnalysis))`
+  > **三级 · 骨架**：预期消息链是 人 → AI → 工具 → AI → 工具 → AI → 工具（第 7 条就是伪消息）；想验证"VIP 才发邮件"，把输入换成"请分析客户李四"再跑一次，看还会不会调发邮件工具
+
+- [ ] **2-4 同一份 Schema 换三种写法**
+  把 2-1 的"个人联系信息"再写三遍，每次都从同一段文本里抽取：
+  ① 不写类，直接给一个符合 JSON Schema 规范的结构字典（写清结构名、对象类型、字段说明、"手机号"可省略、必填字段列表）；
+  ② 用"带类型的字典"声明（字段写成 类型标注 + 描述，"手机号"可选）；
+  ③ 用数据类声明（字段描述沿用 Pydantic 的字段函数，注意补 import）。
+  每跑完一种就打印结果的类型，然后回答三个问题：拿到的是对象还是普通字典？字段说明有没有真的传给模型？哪种写法会做运行时校验？
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：三种写法在"校验"和"结果类型"上差别很大——课程反复强调"想要强校验就用 Pydantic"
+  > **二级 · 方法**：`ToolStrategy(字典)`；`TypedDict` + `Annotated[类型, "描述"]`；`@dataclass` + `from pydantic import Field`
+  > **三级 · 骨架**：① 工具名就是字典的 `title`（或类名）——想看清"工具名从哪来"，可以把三种写法的结构名取得不一样；想确认"说明有没有传给模型"，去翻请求体里 `tools[0].function.parameters`；③ 记得 `from pydantic import Field`，否则 `NameError`，另外打印一下 `dataclasses.fields(类)` 的 `default`，会看到意外的东西
 
 ### 三、综合题
 
-- [ ] **3-1 Union 多类型 + handle_errors 三种取值**
-  定义 `ContactInfo` 和 `EventDetails` 两个模型，用 `ToolStrategy(Union[ContactInfo, EventDetails])` 创建 Agent，分别用两段不同的文本调用（一段是联系人信息、一段是活动信息），看它选出哪个 Schema。然后把 `handle_errors` 依次设为 `True`、`False`、`"请检查输入数据"`，观察失败时的不同表现。
+- [ ] **3-1 联合类型 + 出错重试策略的三种取值**
+  ① 定义两个数据模型：联系人（姓名 / 邮箱 / 手机号）和活动详情（活动名称 / 日期）。
+  ② 创建一个 Agent，把"两种结构二选一"声明成交付格式（提示：联合类型），分别用"小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912"和"2026年高考报名人数突破1200万"调用，看它每次选中哪个结构。
+  ③ 把出错重试策略依次设成三种：默认打开、关闭、给一个固定字符串（如"请检查输入数据"），比较三次调用的表现；想看细节就去翻消息列表里的 ToolMessage 内容。
 
   > [!TIP]- 提示（先自己想，实在想不出再点开）
-  > **一级 · 思路**：Union 让模型"选一个"，handle_errors 决定"选错/选多"时怎么办
-  > **二级 · 方法**：`response_format=ToolStrategy(Union[ContactInfo, EventDetails], handle_errors=True)`
-  > **三级 · 骨架**：想看错误信息就去翻消息列表里的 ToolMessage 内容——`handle_errors=True` 时里面是 LangChain 内置的错误模板
+  > **一级 · 思路**：联合类型让模型"选一个"；出错重试策略决定"选错 / 一次选了多个"时怎么办
+  > **二级 · 方法**：`ToolStrategy(Union[ContactInfo, EventDetails], tool_message_content="提取完成！", handle_errors=True)`
+  > **三级 · 骨架**：最典型的错误是"多结构化输出"——模型一次发了两个工具调用；默认重试时消息里会出现 LangChain 内置模板 `Error: Model incorrectly returned multiple structured responses (ContactInfo, EventDetails) when only one is expected.`，关闭重试时直接抛 `MultipleStructuredOutputsError`；想知道自定义处理函数收到哪个异常，在函数里 `print(type(e).__name__)`
 
 > [!TIP]- 参考答案（做完再点开）
 > ```python
 > import os
-> from typing import Union
+> from dataclasses import dataclass, fields as dataclass_fields
+> from typing import Annotated, Literal, Optional, TypedDict, Union
 >
 > from dotenv import load_dotenv
 > from langchain.agents import create_agent
 > from langchain.agents.structured_output import ToolStrategy
 > from langchain.chat_models import init_chat_model
 > from langchain.messages import HumanMessage
+> from langchain.tools import tool
+> from langchain_core.messages import SystemMessage
 > from pydantic import BaseModel, Field
 >
 > load_dotenv(override=True)
@@ -627,38 +650,132 @@ Returning structured response: ContactInfo(name='小明', email='songhk@atguigu.
 >     base_url=os.getenv("DEEPSEEK_BASE_URL"),
 > )
 >
+> # ---------- 2-1 最简 ToolStrategy ----------
 > class ContactInfo(BaseModel):
 >     """个人联系信息"""
 >     name: str = Field(description="姓名")
 >     email: str = Field(description="电子邮箱")
 >     phone: str = Field(description="手机号")
 >
-> # ---------- 2-1 最简 ToolStrategy ----------
 > agent = create_agent(model=model, response_format=ToolStrategy(ContactInfo))
-> response = agent.invoke({
->     "messages": [HumanMessage("从这段话中抽取结构化信息：小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912")]
-> })
+> question = HumanMessage("从这段话中抽取结构化信息：小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912")
+> response = agent.invoke({"messages": [question]})
 > if "structured_response" in response:
->     print(response["structured_response"])      # name='小明' email='songhk@atguigu.com' phone='12345678912'
->     print(type(response["structured_response"]))  # <class '__main__.ContactInfo'>
+>     print(response["structured_response"])          # name='小明' email='songhk@atguigu.com' phone='12345678912'
+>     print(type(response["structured_response"]))    # <class '__main__.ContactInfo'>
 >
-> # ---------- 2-2 观察伪 ToolMessage ----------
+> # ---------- 2-2 伪 ToolMessage + 自定义内容 ----------
 > for msg in response["messages"]:
 >     print(type(msg).__name__, "| name =", getattr(msg, "name", None), "| content =", str(msg.content)[:60])
-> # HumanMessage | name = None
-> # AIMessage    | name = None                 ← 发起工具调用，工具名 = Schema 类名
-> # ToolMessage  | name = 'ContactInfo'       ← 伪消息
+> # HumanMessage | name = None | content = 从这段话中抽取结构化信息：…
+> # AIMessage    | name = None | content =                     ← 发起工具调用，工具名就是 Schema 类名
+> # ToolMessage  | name = 'ContactInfo' | content = Returning structured response: name='小明' …
 >
-> # ---------- 2-3 自定义伪消息 ----------
-> agent2 = create_agent(
+> agent2 = create_agent(model=model, response_format=ToolStrategy(ContactInfo, tool_message_content="提取完成！"))
+> response2 = agent2.invoke({"messages": [question]})
+> print(response2["messages"][-1].content)      # 提取完成！
+> print(response2["structured_response"])       # 结构化结果照样正确
+>
+> # ---------- 2-3 客户分析报告（工具 + 结构化） ----------
+> @tool(parse_docstring=True)
+> def search_customer_database(query: str) -> str:
+>     """在客户数据库中搜索信息
+>
+>     Args:
+>         query (str): 客户查询字符串，例如 "张三" 或 "李四"
+>
+>     Returns:
+>         str: 客户记录字符串，包含客户姓名、等级、最近购买日期和累计消费
+>     """
+>     if "张三" in query.lower():
+>         return "客户记录：张三，VIP客户，最近购买日期：2026-01-15，累计消费：$15,000"
+>     elif "李四" in query.lower():
+>         return "客户记录：李四，普通客户，最近购买日期：2025-12-20，累计消费：$3,200"
+>     return f"关于客户{query}，无记录"
+>
+> @tool(parse_docstring=True)
+> def send_email(customer: str) -> str:
+>     """发送感谢邮件
+>
+>     Args:
+>         customer (str): 客户名称，例如 "张三" 或 "李四"
+>
+>     Returns:
+>         str: 确认消息，包含已发送的客户名称
+>     """
+>     return f"已向 {customer} 发送感谢邮件"
+>
+> class CustomerAnalysis(BaseModel):
+>     """客户分析报告"""
+>     customer_name: str = Field(None, description="客户姓名")
+>     customer_tier: Literal["潜在客户", "普通客户", "VIP客户", "流失风险"] = Field(
+>         "潜在客户", description="客户等级,只能是潜在客户、普通客户、VIP客户或流失风险"
+>     )
+>     recent_activity: str = Field(None, description="最近活动")
+>     spending_level: Literal["低", "中", "高"] = Field(None, description="消费水平")
+>     send_email: bool = Field(False, description="是否已发送感谢邮件")
+>
+> agent3 = create_agent(
 >     model=model,
->     response_format=ToolStrategy(ContactInfo, tool_message_content="提取完成！"),
+>     system_prompt=SystemMessage(content=""
+>         "请分析指定客户的情况："
+>         "1. 先搜索客户数据库了解最新情况 "
+>         "2. 如果是VIP客户，则发送感谢邮件 "
+>         "3. 基于搜索结果生成结构化分析报告 "
+>         "4. 如果用户提问与客户记录无关或找不到客户信息，则返回空对象，不发送感谢邮件"),
+>     tools=[search_customer_database, send_email],
+>     response_format=ToolStrategy(CustomerAnalysis),
 > )
-> response2 = agent2.invoke({
->     "messages": [HumanMessage("从这段话中抽取结构化信息：小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912")]
-> })
-> print(response2["messages"][-1].content)     # 提取完成！
-> print(response2["structured_response"])      # 结构化结果不受影响
+> result = agent3.invoke({"messages": [{"role": "user", "content": "请分析客户张三"}]})
+> print("消息类型链:", " → ".join(type(m).__name__ for m in result["messages"]))
+> # HumanMessage → AIMessage → ToolMessage → AIMessage → ToolMessage → AIMessage → ToolMessage
+> print([m.name for m in result["messages"] if type(m).__name__ == "ToolMessage"][-1])   # CustomerAnalysis
+> if "structured_response" in result:
+>     print(result["structured_response"])
+>     # customer_name='张三' customer_tier='VIP客户' recent_activity='最近购买日期：2026-01-15' spending_level='高' send_email=True
+>     print(result["structured_response"].customer_tier)                                  # 对象属性取值：VIP客户
+>
+> # ---------- 2-4 同一份 Schema 的三种写法 ----------
+> # ① 手写 JSON Schema 字典
+> contact_schema = {
+>     "title": "ContactInfo",              # 结构名 = 虚拟工具名
+>     "type": "object",
+>     "description": "个人联系信息",
+>     "properties": {
+>         "name": {"type": "string", "default": "", "description": "姓名"},
+>         "email": {"type": "string", "default": "", "description": "电子邮箱"},
+>         "phone": {"type": "string", "default": "", "description": "手机号（可省略）"},
+>     },
+>     "required": ["name", "email"],       # 只要求前两个
+> }
+> agent4 = create_agent(model=model, response_format=ToolStrategy(contact_schema))
+> r4 = agent4.invoke({"messages": [question]})
+> print(type(r4["structured_response"]).__name__)        # dict ← 普通字典，没有属性访问
+>
+> # ② TypedDict（Annotated[类型, 描述]；可选字段用 Optional）
+> class ContactInfoTD(TypedDict):
+>     """个人联系信息"""
+>     name: Annotated[str, "姓名"]
+>     email: Annotated[str, "电子邮箱"]
+>     phone: Annotated[Optional[str], "手机号"]
+>
+> agent5 = create_agent(model=model, response_format=ToolStrategy(ContactInfoTD))
+> r5 = agent5.invoke({"messages": [question]})
+> print(type(r5["structured_response"]).__name__)        # dict ← 同样不做运行时校验
+>
+> # ③ @dataclass（注意 Field 来自 pydantic）
+> @dataclass
+> class ContactInfoDC:
+>     """用户的联系方式"""
+>     name: str = Field(description="用户姓名")
+>     email: str = Field(description="用户邮箱地址")
+>     phone: str = Field(description="用户手机号")
+>
+> agent6 = create_agent(model=model, response_format=ToolStrategy(ContactInfoDC))
+> r6 = agent6.invoke({"messages": [question]})
+> print(type(r6["structured_response"]))                 # <class '__main__.ContactInfoDC'> ← 是对象
+> print([f.default for f in dataclass_fields(ContactInfoDC)][0])
+> # FieldInfo(annotation=NoneType, required=True, description='用户姓名') ← 坑：default 被 Field 占了
 >
 > # ---------- 3-1 Union 多类型 + handle_errors ----------
 > class EventDetails(BaseModel):
@@ -666,22 +783,35 @@ Returning structured response: ContactInfo(name='小明', email='songhk@atguigu.
 >     event_name: str = Field(description="活动名称")
 >     date: str = Field(description="活动日期")
 >
-> agent3 = create_agent(
+> agent7 = create_agent(
 >     model=model,
->     response_format=ToolStrategy(
->         Union[ContactInfo, EventDetails],
->         tool_message_content="提取完成！",
->         handle_errors=True,          # 可改成 False 或 "请检查输入数据" 对比
->     ),
+>     response_format=ToolStrategy(Union[ContactInfo, EventDetails], tool_message_content="提取完成！"),
 > )
->
 > for text in [
 >     "从这段话中抽取结构化信息：小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912",
 >     "从这段话中抽取结构化信息：2026年高考报名人数突破1200万",
 > ]:
->     r = agent3.invoke({"messages": [HumanMessage(text)]})
+>     r = agent7.invoke({"messages": [HumanMessage(text)]})
 >     if "structured_response" in r:
 >         print(type(r["structured_response"]).__name__, r["structured_response"])
->     else:
->         print("没有拿到结构化结果")
+> # ContactInfo name='小明' email='songhk@atguigu.com' phone='12345678912'
+> # EventDetails event_name='2026年高考报名人数突破1200万' date='…'
+>
+> # 把 handle_errors 换成 False / "请检查输入数据" 再跑一次，对比失败时的表现：
+> agent8 = create_agent(
+>     model=model,
+>     response_format=ToolStrategy(
+>         Union[ContactInfo, EventDetails],
+>         tool_message_content="提取完成！",
+>         handle_errors=True,        # 改 False：直接抛 MultipleStructuredOutputsError；改字符串：当作错误提示回传
+>     ),
+> )
+> r8 = agent8.invoke({"messages": [HumanMessage("从这段话中抽取结构化信息：小明的邮箱地址为：songhk@atguigu.com，手机号：12345678912")]})
+> for m in r8["messages"]:
+>     if type(m).__name__ == "ToolMessage":
+>         print(m.name, "->", str(m.content)[:110])
+> # 触发"多结构化输出"错误时（模型一次返回两个结构化结果）：
+> #   ContactInfo  -> Error: Model incorrectly returned multiple structured responses (ContactInfo, EventDetails) …
+> #   EventDetails -> Error: Model incorrectly returned multiple structured responses (ContactInfo, EventDetails) …
+> #   ContactInfo  -> 提取完成！        ← 重试成功，用的还是自定义的伪消息内容
 > ```

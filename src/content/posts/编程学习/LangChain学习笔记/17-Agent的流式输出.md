@@ -315,43 +315,67 @@ for stream_mode, chunk in customer_service_agent.stream(
 
 ### 一、回忆填空（写完再展开对答案）
 
-1. 流式调用能解决 `invoke` 的____体验问题；设置方式是 `agent.____(stream_mode=...)`
-2. `values` 模式每个步骤输出____状态；`updates` 模式只输出____的内容，它也是____模式
-3. `messages` 模式输出流式 Token，用于实现____效果；它的 chunk 是____元组，`chunk[____]` 是消息片段
-4. `messages` 模式元数据里的 `____` 字段能告诉你这段输出来自哪个节点（model / tools）
-5. `tasks` 模式输出任务的____时间、结果与错误；`____` 模式比它多输出任务步骤、时间戳、task 类型
-6. `checkpoints` 模式需要配合 `____` 参数使用，调用时还要传 `config={"configurable": {"thread_id": ...}}`
-7. `custom` 模式里，在工具内部用 `____()` 拿到 writer，把自定义数据发到流里，适合输出____进度
-8. 模式可以组合：传____即可，此时循环要写成 `for ____, chunk in ...`
+1. `invoke` 的痛点是：Agent 内部可能经历____次模型和工具调用，用户敲完问题后界面上____；流式调用（`agent.____(stream_mode=...)`）能实时显示运行过程中的更新——大模型完整响应通常要几秒、长输出可能____秒，流式能____
+2. `values` 模式每个步骤执行后输出____（消息列表一片比一片____），适合"每一步都要完整状态"或____的场景
+3. `updates` 是____模式（不传 `stream_mode` 时就是它），每个步骤只输出____的内容——想看"Agent 决定调用哪个工具、工具返回了什么"，用它最清爽
+4. `messages` 模式流式返回____及相关元数据，用来实现____效果；它的 chunk 是____元组——`chunk[0]` 是____对象（`.content` 就是这一小段文字），`chunk[1]` 是元数据字典，其中 `____` 告诉你这段来自 model 还是 tools 节点，另外还有 `langgraph_step`、`ls_model_name` 等
+5. `tasks` 模式每个 task 带 `id`、`name`（model / tools）、____、`error`、`result`，输出任务的____时间、结果与错误；`debug` 模式在它基础上多输出任务的____、时间戳、task 类型（`task` / `task_result`，成对出现）
+6. `checkpoints` 模式必须配合____（检查点存储）使用，调用时还要传 `config={"configurable": {"____": ...}}`；课程对它的关键说明是"每次输出都会把相关的消息追加到 `values.messages` 里"，所以检查点里带着"到那一刻为止的____"，可以用来做会话____
+7. `custom` 模式：在工具或节点内部用____拿到 writer，把自定义数据发到流里；`writer(...)` 的入参____（字典带一个任务类型字段方便前端分组，纯字符串也行）
+8. 两个工具被"一次派发"时，两条进度线是____的——前端做进度条应该按任务类型字段或____分组，别假设"一个工具的进度会连续跑完"
+9. 四条选型经验：实现实时对话交互选____；观察 Agent 的思考与执行步骤选____；需要查看每一步状态选____ / `tasks` / `debug`；工具执行时输出自定义业务日志选____
+10. 模式可以组合：传____即可（比如 `["tasks", "updates"]`），此时循环要写成 `for ____, chunk in ...`——每片多了一个"模式名"
 
 > [!TIP]- 填空答案（做完再点开）
-> 1. 等待（用户体验） / `stream`　2. 完整（全量） / 增量变化 / 默认　3. 打字机 / 二元 / `0`　4. `langgraph_node`　5. 开始和结束 / `debug`　6. `checkpointer`　7. `get_stream_writer` / 业务（任务）　8. 列表 / `stream_mode`
+> 1. 多（若干） / 长时间没有任何反应（干等） / `stream` / 10-20 / 降低等待焦虑　2. 完整状态（全量状态） / 长 / 状态持久化　3. 默认 / 增量（新增或变化）　4. Token / 打字机 / 二元 / `AIMessageChunk` / `langgraph_node`　5. `input` / 开始和结束 / 步骤（`step`）
+> 6. `checkpointer` / `thread_id` / 完整对话 / 恢复（记忆）　7. `get_stream_writer` / 想发什么就发什么（随意）　8. 交错（交替） / 内容　9. `messages` / `updates` / `values` / `custom`　10. 列表 / `stream_mode`
 
 ### 二、裸写题
 
 - [ ] **2-1 用 updates 模式看 Agent 的每一步**
-  定义两个工具（查库存、查价格），创建 Agent，用 `stream_mode="updates"` 问一个需要两个工具的问题，把每一步的 chunk 打印出来，观察哪一步是"模型决定调工具"、哪一步是"工具返回结果"。
+  定义两个工具（查库存、查价格），创建一个 Agent，用"只看变化"的那种流式模式问一个**同时需要两个工具**的问题，把每一步的 chunk 打印出来，观察哪一步是"模型决定调工具"、哪一步是"工具返回结果"。
 
   > [!TIP]- 提示（先自己想，实在想不出再点开）
-  > **一级 · 思路**：updates 是"只报变化"，所以每片很轻
+  > **一级 · 思路**：updates 是"只报变化"，所以每片很轻；片子的键就是节点名（`model` / `tools`）
   > **二级 · 方法**：`for chunk in agent.stream({...}, stream_mode="updates")`
-  > **三级 · 骨架**：打印时能看到 chunk 里的键（节点名），据此判断是哪一步
+  > **三级 · 骨架**：两个工具可能被**一次派发**，所以你会先看到一片 `model`（带两个 tool_calls），再连着看到两片 `tools`
 
-- [ ] **2-2 实现打字机效果**
-  用 `stream_mode="messages"` 重跑 2-1 的问题，用 `print(chunk[0].content, end="", flush=True)` 把回答"一个字一个字"打出来；再顺便打印 `chunk[1]["langgraph_node"]`，看看 ToolMessage 是从哪个节点来的。
+- [ ] **2-2 实现打字机效果并认出"片子从哪来"**
+  用"Token 流"模式重跑 2-1 的问题，把回答**一个字一个字**打出来；同时打印每片的来源节点，看看工具的输出是从哪个节点来的。
 
-  > [!TIP]- 提示
-  > **一级 · 思路**：messages 模式的每片是一小段 token，不是完整消息
-  > **二级 · 方法**：`chunk[0].content` + `chunk[1]` 元数据
-  > **三级 · 骨架**：`end=""` 和 `flush=True` 两个参数别丢，否则看不清"渐进"效果
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：这个模式的每片是一小段 token（不是完整消息），而且是一个"二元组"
+  > **二级 · 方法**：`chunk[0].content` + `chunk[1]["langgraph_node"]`（元数据里还有 `langgraph_step`、`ls_model_name`）
+  > **三级 · 骨架**：`print(chunk[0].content, end="", flush=True)`——`end=""` 和 `flush=True` 别丢，否则看不清"渐进"效果
 
-- [ ] **2-3 给工具加进度上报**
-  写一个"生成报表"工具，内部用 `get_stream_writer()` 每隔一段时间发一条进度（如 25% / 50% / 75%），用 `stream_mode="custom"` 消费这个流，把进度打印出来。
+- [ ] **2-3 给两个工具都加上进度上报**
+  写两个"生成报告"的工具（一个销售报告、一个库存报告），在两个工具**内部**各自往流里发进度（如 25% / 50% / 75%，用 `time.sleep` 模拟耗时），用"自定义数据"模式消费这个流；其中**一个工具发字典**（带任务类型字段）、**另一个工具发纯字符串**，观察流里冒出来的顺序。
 
-  > [!TIP]- 提示
-  > **一级 · 思路**：进度是"工具自己发的"，不是模型发的
-  > **二级 · 方法**：`from langgraph.config import get_stream_writer`，在工具里 `writer({"message": ...})`
-  > **三级 · 骨架**：配合 `time.sleep(0.5)` 模拟耗时，才能看出"实时"的效果
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：进度是"工具自己发出去的"，不是模型发的；这个模式只透出工具/节点主动发的数据
+  > **二级 · 方法**：`from langgraph.config import get_stream_writer`，工具里 `writer({"type": "生成销售报告", "message": "…"})` / `writer("开始库存分析...")`
+  > **三级 · 骨架**：问一个"两份报告都要"的问题，模型会一次派发两个工具，于是两条进度线**交错**出现；`time.sleep(0.5)` 才能看出"实时"
+
+- [ ] **2-4 打开检查点，用 checkpoints 模式数一遍**
+  给 Agent 配一个内存里的检查点存储、并指定一个会话 ID，然后用"检查点"模式流式调用同一个问题：数一数一共触发了多少次检查点，并打印每个检查点里"到那一刻为止的完整对话"有多少条消息；最后回答：为什么检查点能用来做会话恢复？
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：这个模式必须先有检查点存储才会触发；每个检查点是一份"图走到哪一步 + 到那一刻的完整对话"
+  > **二级 · 方法**：`from langgraph.checkpoint.memory import InMemorySaver` + `checkpointer=InMemorySaver()`；调用时 `config={"configurable": {"thread_id": "session01"}}`、`stream_mode="checkpoints"`
+  > **三级 · 骨架**：每片取 `chunk["values"]["messages"]` 数条数（会看到 0 → 1 → 2 → 4 → 5 这样涨）；片子里还有 `metadata["source"]`（`input` / `loop`）、`next`、`tasks`、`config["configurable"]["checkpoint_id"]`、`parent_config`
+
+### 三、综合题
+
+- [ ] **3-1 带进度的"打字机"助手**
+  把两个模式组合起来，做一个"边打进度、边打字"的输出：
+  ① 写一个"生成报表"工具，内部发三四条进度（用 `time.sleep` 模拟耗时）；
+  ② 用**组合模式**（Token 流 + 自定义数据）消费这个流：进度和文字分别打印；
+  ③ 回答：怎么判断这一片是"进度"还是"文字"？
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：组合模式就是把两个模式名放进一个列表，再按"模式名"分流处理
+  > **二级 · 方法**：`stream_mode=["messages", "custom"]` + `for mode, chunk in agent.stream(...)`
+  > **三级 · 骨架**：`mode == "custom"` 时把进度单独打出来（加个 `[进度]` 前缀），`mode == "messages"` 时 `print(chunk[0].content, end="", flush=True)`；进度片可能夹在文字片中间——两条线本来就是交错的
 
 > [!TIP]- 参考答案（做完再点开）
 > ```python
@@ -362,6 +386,7 @@ for stream_mode, chunk in customer_service_agent.stream(
 > from langchain.agents import create_agent
 > from langchain.chat_models import init_chat_model
 > from langchain.tools import tool
+> from langgraph.checkpoint.memory import InMemorySaver
 > from langgraph.config import get_stream_writer
 >
 > load_dotenv(override=True)
@@ -373,7 +398,7 @@ for stream_mode, chunk in customer_service_agent.stream(
 >     base_url=os.getenv("DEEPSEEK_BASE_URL"),
 > )
 >
-> # ---------- 2-1 / 2-2 的工具 ----------
+> # ---------- 2-1 / 2-2 的两个工具 ----------
 > @tool
 > def check_stock(product: str) -> str:
 >     """查询库存
@@ -395,34 +420,108 @@ for stream_mode, chunk in customer_service_agent.stream(
 > agent = create_agent(model=model, tools=[check_stock, check_price])
 > question = {"messages": [{"role": "user", "content": "蓝牙耳机的库存和价格分别是多少？"}]}
 >
-> # 2-1 updates 模式
+> # ---------- 2-1 updates 模式 ----------
 > for chunk in agent.stream(question, stream_mode="updates"):
 >     print(chunk)
 >     print("-" * 50)
+> # {'model': {'messages': [AIMessage(content='', tool_calls=[check_stock, check_price])]}}  ← 模型一次派发两个工具
+> # {'tools': {'messages': [ToolMessage(content='蓝牙耳机 当前库存 120 件', name='check_stock')]}}
+> # {'tools': {'messages': [ToolMessage(content='蓝牙耳机 售价 2999 元', name='check_price')]}}
+> # {'model': {'messages': [AIMessage(content='…最终回答…')]}}
 >
-> # 2-2 messages 模式（打字机）
+> # ---------- 2-2 messages 模式（打字机 + 来源节点）----------
 > for chunk in agent.stream(question, stream_mode="messages"):
 >     print(chunk[0].content, end="", flush=True)
 >     # 想看来源节点：
 >     # print(chunk[1].get("langgraph_node"), end=" ")
+> # 模型回答的 langgraph_node = 'model'，工具输出的 langgraph_node = 'tools'
 >
-> # ---------- 2-3 custom 模式 ----------
+> # ---------- 2-3 custom 模式：两个工具交替上报 ----------
 > @tool
-> def generate_report() -> str:
->     """生成销售报表"""
+> def generate_sales_report() -> str:
+>     """生成销售报告"""
 >     writer = get_stream_writer()
->     writer("开始生成报表……")
+>     writer({"type": "生成销售报告", "message": "开始生成销售报告"})
 >     for i in range(1, 4):
 >         time.sleep(0.5)
->         writer(f"进度：{i * 25}%")
->     writer("报表生成完成")
->     return "报表：本月销售额 150 万元，同比 +12%"
+>         writer({"type": "生成销售报告", "message": f"生成销售报告进度百分比：{i * 25}%"})
+>     writer({"type": "生成销售报告", "message": "报告生成完成"})
+>     return "销售报告：总收入150万元，同比增长12%"
 >
-> report_agent = create_agent(model=model, tools=[generate_report])
-> for chunk in report_agent.stream(
->     {"messages": [{"role": "user", "content": "生成一份销售报表"}]},
+> @tool
+> def generate_inventory_report() -> str:
+>     """生成库存报告"""
+>     writer = get_stream_writer()
+>     writer("开始库存分析...")            # ← 这里直接发字符串，不一定是字典
+>     time.sleep(0.5)
+>     writer("检查当前库存量...")
+>     time.sleep(0.5)
+>     writer("生成库存报告...")
+>     return "当前库存量为10000件，库存充足，无异常"
+>
+> reporting_agent = create_agent(model=model, tools=[generate_sales_report, generate_inventory_report])
+> for chunk in reporting_agent.stream(
+>     {"messages": [{"role": "user", "content": "生成销售报告和库存报告"}]},
 >     stream_mode="custom",
 > ):
 >     print(chunk)
 >     print("-" * 50)
+> # {'type': '生成销售报告', 'message': '开始生成销售报告'}
+> # 开始库存分析...                     ← 两条进度线交错（模型一次派发了两个工具）
+> # 检查当前库存量...
+> # {'type': '生成销售报告', 'message': '生成销售报告进度百分比：25%'}
+> # 生成库存报告...
+> # {'type': '生成销售报告', 'message': '生成销售报告进度百分比：50%'}
+> # {'type': '生成销售报告', 'message': '生成销售报告进度百分比：75%'}
+> # {'type': '生成销售报告', 'message': '报告生成完成'}
+>
+> # ---------- 2-4 checkpoints 模式 ----------
+> checkpointer = InMemorySaver()
+> checkpoint_agent = create_agent(
+>     model=model,
+>     tools=[check_stock, check_price],
+>     checkpointer=checkpointer,                      # ← 启用检查点
+> )
+> config = {"configurable": {"thread_id": "session01"}}     # ← 唯一会话 ID
+>
+> count = 0
+> for chunk in checkpoint_agent.stream(
+>     {"messages": [{"role": "user", "content": "蓝牙耳机的库存和价格分别是多少？"}]},
+>     config=config,
+>     stream_mode="checkpoints",
+> ):
+>     count += 1
+>     messages = (chunk["values"] or {}).get("messages") or []
+>     print(f"检查点 #{count} | source={chunk['metadata'].get('source')} | 到这一刻已有 {len(messages)} 条消息")
+> print("一共触发", count, "次检查点")
+> # 检查点 #1 | source=input | 到这一刻已有 0 条消息      ← 图刚收到输入
+> # 检查点 #2 | source=loop  | 到这一刻已有 1 条消息      ← 模型回了工具调用
+> # 检查点 #3 | source=loop  | 到这一刻已有 2 条消息
+> # 检查点 #4 | source=loop  | 到这一刻已有 4 条消息
+> # 检查点 #5 | source=loop  | 到这一刻已有 5 条消息
+> # 检查点里带着"到那一刻为止的完整对话"——从某个 checkpoint_id 把 values.messages 取回来就能接着聊
+>
+> # ---------- 3-1 组合模式：带进度的“打字机” ----------
+> @tool
+> def generate_report() -> str:
+>     """生成销售报表"""
+>     writer = get_stream_writer()
+>     writer({"type": "报表", "message": "开始生成报表"})
+>     for i in range(1, 4):
+>         time.sleep(0.5)
+>         writer({"type": "报表", "message": f"进度：{i * 25}%"})
+>     writer({"type": "报表", "message": "报表生成完成"})
+>     return "报表：本月销售额 150 万元，同比 +12%"
+>
+> report_agent = create_agent(model=model, tools=[generate_report])
+>
+> for stream_mode, chunk in report_agent.stream(
+>     {"messages": [{"role": "user", "content": "生成一份销售报表"}]},
+>     stream_mode=["messages", "custom"],
+> ):
+>     if stream_mode == "custom":
+>         print(f"\n[进度] {chunk}")                    # 工具自己发的进度
+>     else:
+>         print(chunk[0].content, end="", flush=True)   # 模型输出的 token
+> # 组合模式下每片多了一个"模式名"，据此分流：custom 是进度、messages 是文字
 > ```

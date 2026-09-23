@@ -779,50 +779,74 @@ model = ChatDeepSeek(
 
 ### 一、回忆填空（写完再展开对答案）
 
-1. 绑定多个工具后，模型会自己判断该用____（甚至一次调用____）
-2. 多工具场景要注意：工具名要能____、description 要写清____、可能要循环直到模型不再要求____
-3. 循环处理工具调用的退出条件是：`if not response.____:` 就说明已给出最终答案
-4. `tool_choice` 三个取值：____ 不调用、____ 默认自主决定、____ 必须调用（`any` 等价于它）
-5. DeepSeek 思考模式 + 工具调用会报 ____ 错误，提示必须把 ____ 传回 API
-6. 该问题的触发条件是____ 与 ____ 同时存在；根因是 LangChain 序列化时不会自动回传 ____ 里的思考内容
-7. 两种规避方案：给 `ChatDeepSeek` 传 `extra_body={"thinking": {"type": "____"}}`，或换用 ____ 模型 ID
+1. 绑定多个工具后，模型会自己挑——判断依据是工具的 ____ 与 ____；工具名要能彼此 ____，描述里要写清"____"；一次响应里可能同时要____个工具；反过来"一个工具做太多事"也不行——参数会退化成 action + ____ 这种"万能口袋"，所以**功能要 ____**
+2. 多工具循环三步走：调用模型 → 有工具请求就 ____ 并回传结果 → 直到 ____ 为空时打印最终回复，退出条件写作 `if not response.____:`；大模型调用工具是"____ 推理"（每次运行只决定"现在要调哪些工具"），所以需要多次调用时要自己管理 ____；问一个用不到工具的问题（如"海水为什么是咸的"）时，循环会直接 ____、一次工具都不调
+3. DeepSeek 的"思考模式 + 工具调用"会报 ____ 错误，提示必须把 ____ 传回 API；触发条件是 ____ 与 ____ 同时出现（非思考模式、或思考模式下普通问答都正常）；根因是框架的序列化组件不会自动回传 ____ 里的思考内容；两种规避方案：给模型传 `extra_body={"thinking": {"type": "____"}}` 或换用 ____ 模型 ID；排查时用 LangSmith 看"实际发出去的 ____"
+4. 工具名、____（写在装饰器参数里）、参数模式三样可以一起给；跑完一轮后可以用 ____() 把整条消息链按角色铺开查看
+5. 把整个工具调用字典（而不是只传参数）交给工具的调用入口，框架会自己取 ____，并返回一条带 ____ 的工具消息——不用手工拼消息、也不用序列化参数，更不容易写错 ID
+6. docstring 里的参数说明只有在装饰器里加上 ____ 时才会被解析（否则整段塞进 description，参数反而没有描述）；而参数的默认值和类型必须通过 ____ 传递
+7. 工具名兜底：遍历工具请求时，给不认识的工具名加一个 ____ 分支；它只在模型编出不存在的工具名时才触发，作用是把"____"变成"立刻报警"
+8. 是否使用工具由绑定时的 ____ 控制：____ 表示不调用、____ 是默认的"模型自主决定"、____ 表示必须调用（any 与它等价）；它还能直接传 ____ 来锁定某个工具（框架会翻译成带函数名的对象再发出去，而三个字符串值是原样透传）
+9. 工具失败的三层防护：① 工具内部 ____ 住异常并 ____ 一句人话——关键在于"返回"而不是"____"，这样模型才有机会换个思路；② Agent 级：在 ____ 里写清失败了怎么办；③ 调用级：用 ____ 库的重试装饰器兜住网络抖动这类崩溃（最多尝试 3 次）
+10. 工具应返回 ____ 类型（用 `json.dumps(..., ensure_ascii=____)` 显式序列化，把"返回什么格式"攥在自己手里）；同步工具适合 ____ 密集型任务，IO 密集型（网络 / 数据库 / 文件）该用 ____ 定义、用 ____() 调用
 
 > [!TIP]- 填空答案（做完再点开）
-> 1. 哪个 / 多个　2. 区分 / 什么时候用 / 调用工具　3. `tool_calls`　4. `"none"` / `"auto"` / `"required"`　5. 400 / `reasoning_content`　6. 思考模式 / 工具调用 / `additional_kwargs`　7. `disabled` / `deepseek-reasoner`
+> 1. name / description / 区分 / 什么时候用 / 多；data / 单一　2. 执行 / 工具请求（tool_calls）/ tool_calls；单次 / 调用循环 / 退出（直接给答案）　3. 400 / `reasoning_content` / 思考模式 / 工具调用 / `additional_kwargs` / "disabled" / `deepseek-reasoner` / 请求体　4. description / pretty_print　5. args / tool_call_id　6. parse_docstring=True / 函数签名　7. else（`raise`）/ 静默失败　8. tool_choice / "none" / "auto" / "required" / 工具名　9. try/except（捕获）/ 返回 / 抛出 / 系统提示词 / tenacity　10. 字符串（str）/ False / CPU / 异步（async def）/ ainvoke
 
 ### 二、裸写题
 
 - [ ] **2-1 两个工具让模型自己选**
-  定义"查天气"和"查时间"两个工具并一起绑定，分别问"北京天气"和"北京现在几点"，观察 `tool_calls` 里选了哪个工具。
+  定义"查天气"和"查时间"两个工具（描述写清用途和参数），一起绑定到模型上。分别问"北京今天天气怎么样？"和"北京现在几点了？"，打印每次响应里模型要求调用的工具名与参数，并说明模型凭什么做出这个选择。
+  再把两个工具的描述故意写成一样的，看看会发生什么——体会"描述是模型唯一的判断依据"。
 
   > [!TIP]- 提示（先自己想，实在想不出再点开）
-  > **一级 · 思路**：模型凭什么选？凭工具的 name 和 description
-  > **二级 · 方法**：`model.bind_tools([get_weather, get_time])`
-  > **三级 · 骨架**：分别打印两次响应的 `tool_calls`
+  > **一级 · 思路**：模型选工具只看两样东西——工具名和描述
+  > **二级 · 方法**：`model.bind_tools([get_weather, get_time])`；`response.tool_calls` 里每项有 name / args / id
+  > **三级 · 骨架**：分别打印两次响应，比较 `[c["name"] for c in r.tool_calls]`
 
-- [ ] **2-2 用循环处理多轮工具调用**
-  写一个循环：调用模型 → 若有 `tool_calls` 就执行并回传 → 直到没有 `tool_calls` 时打印最终回复。
+- [ ] **2-2 用循环处理多个工具调用**
+  写一个循环：调用模型 → 如果它要求调用工具，就按工具名分发执行、把结果回传 → 直到它不再要求调用工具时打印最终回复。
+  用一句"既问天气又问时间"的问题测试（一次可能要两个工具），再问一个完全不相关的问题（如"海水为什么是咸的"）看循环怎么走完。顺便把整条消息链按角色铺开看一眼。
 
-  > [!TIP]- 提示
-  > **一级 · 思路**：这就是智能体的最小骨架
-  > **二级 · 方法**：`while True` + `if not response.tool_calls: break`
-  > **三级 · 骨架**：用字典 `{"工具名": 工具对象}` 做分发
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：循环的退出条件只看"还有没有工具请求"，不关心模型一次要了几个工具
+  > **二级 · 方法**：`while True` + `if not response.tool_calls: break`；用 `{"工具名": 工具对象}` 的字典做分发
+  > **三级 · 骨架**：执行工具时可以只传参数、也可以把整个工具请求字典丢进去（框架自己会取参数）；`pretty_print()` 看完整链
 
-- [ ] **2-3 强制使用工具**
-  用 `tool_choice="required"` 绑定工具，问一个明显不需要工具的问题，观察模型仍然会调用工具。
+- [ ] **2-3 三种"是否使用工具"的控制方式**
+  ① 默认方式问一个不需要工具的问题，观察会不会调工具；
+  ② 强制必须使用工具，再问同一个问题，观察是否被强制调用；
+  ③ 明确禁止使用工具，问一个**需要**工具的问题，观察模型怎么直接回答；
+  ④ 再准备两个同名同描述、只有名字差个数字的工具，把要用的那一个锁死，连续问两次，确认每次调用的都是它。
 
-  > [!TIP]- 提示
-  > **一级 · 思路**：对比 `auto` 与 `required` 的表现差异
-  > **二级 · 方法**：`model.bind_tools([...], tool_choice="required")`
-  > **三级 · 骨架**：再试 `tool_choice="none"` 看看模型如何直接回答
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：三种控制分别是"随它""必须调""不许调"，第四问是"必须调、而且只能调指定的那个"
+  > **二级 · 方法**：`tool_choice="required"` / `"none"` / `"auto"`，以及直接传工具名
+  > **三级 · 骨架**：传工具名时框架会把它翻译成 `{'type': 'function', 'function': {'name': '...'}}` 再发出去——打印绑定结果的 `kwargs["tool_choice"]` 就能验证
+
+- [ ] **2-4 让工具"失败得体面"**
+  ① 写一个除法工具：除数为 0 时**不要让程序崩**，而是返回一句给模型看的错误说明；分别调用"正常"和"失败"两种情况，并说明为什么"返回"比"抛出"好；
+  ② 写一句系统提示词，明确告诉模型"工具失败时该怎么办"；
+  ③ 给一个调用加一层重试：最多尝试 3 次，成功就不重试、连续失败才把错误抛出来（打印实际尝试了几次）；
+  ④ 写一个返回字典的工具，改成显式序列化成 JSON 字符串，说明为什么要这么做；
+  ⑤ 再写一个异步版本的搜索工具，并验证它该用哪个入口调用。
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：三层防护从内到外——工具内部兜住 → 系统提示词给行为准则 → 调用级重试
+  > **二级 · 方法**：`try/except` 里 `return`；`from tenacity import retry, stop_after_attempt`；`json.dumps(..., ensure_ascii=False)`；`async def` + `await`
+  > **三级 · 骨架**：`@retry(stop=stop_after_attempt(3))` 包住函数；异步工具用 `ainvoke`（脚本里用 `asyncio.run(...)` 跑）
 
 > [!TIP]- 参考答案（做完再点开）
 > ```python
 > import os
+> import json
+> import asyncio
+>
 > from dotenv import load_dotenv
 > from langchain.chat_models import init_chat_model
 > from langchain.tools import tool
-> from langchain_core.messages import HumanMessage, ToolMessage
+> from langchain_core.messages import HumanMessage
+> from tenacity import retry, stop_after_attempt
 >
 > load_dotenv(override=True)
 >
@@ -833,51 +857,194 @@ model = ChatDeepSeek(
 >     api_key=os.getenv("DEEPSEEK_API_KEY"),
 > )
 >
-> @tool
+> # ========== 2-1 两个工具让模型自己选 ==========
+> @tool(parse_docstring=True)
 > def get_weather(city: str) -> str:
 >     """获取指定城市的天气信息
 >
->     参数:
+>     Args:
 >         city: 城市名称，如"北京"
 >     """
 >     return f"{city}天气晴朗，25℃"
 >
-> @tool
+> @tool(parse_docstring=True)
 > def get_time(city: str) -> str:
 >     """获取指定城市的当前时间
 >
->     参数:
+>     Args:
 >         city: 城市名称
 >     """
 >     return f"{city}当前时间 14:30"
 >
 > tools = [get_weather, get_time]
 > tool_map = {t.name: t for t in tools}
->
-> # 2-1 两个工具让模型自己选
 > model_with_tools = model.bind_tools(tools)
+>
 > for q in ["北京今天天气怎么样？", "北京现在几点了？"]:
 >     r = model_with_tools.invoke(q)
->     print(q, "→", [c["name"] for c in r.tool_calls])
+>     print(q, "->", [(c["name"], c["args"]) for c in r.tool_calls])
 >
-> # 2-2 循环处理（智能体最小骨架）
-> messages = [HumanMessage("北京今天天气怎么样，现在几点？")]
-> while True:
->     response = model_with_tools.invoke(messages)
->     messages.append(response)
->     if not response.tool_calls:
->         print("最终回复:", response.content)
->         break
->     for call in response.tool_calls:
->         result = tool_map[call["name"]].invoke(call["args"])
->         messages.append(ToolMessage(content=result, tool_call_id=call["id"]))
+> # ========== 2-2 用循环处理多个工具调用 ==========
+> def run_agent(question, bound_model):
+>     """调用模型 -> 有工具请求就执行并回传 -> 直到不再要求调用工具"""
+>     messages = [HumanMessage(question)]
+>     while True:
+>         response = bound_model.invoke(messages)
+>         messages.append(response)
 >
-> # 2-3 强制使用工具
+>         if not response.tool_calls:                 # 退出条件：不再要求调用工具
+>             return response.content, messages
+>
+>         for call in response.tool_calls:
+>             if call["name"] not in tool_map:
+>                 raise Exception("不存在的工具")
+>             messages.append(tool_map[call["name"]].invoke(call))   # 整个 tool_call 直接丢进去
+>
+> for q in ["北京今天天气怎么样，现在几点？", "海水为什么是咸的？"]:
+>     content, msgs = run_agent(q, model_with_tools)
+>     calls = sum(len(m.tool_calls) for m in msgs if getattr(m, "tool_calls", None))
+>     print(f"{q} -> {content} | 调用工具 {calls} 次 | 消息 {len(msgs)} 条")
+>
+> for msg in msgs:
+>     msg.pretty_print()          # 按角色铺开：Human / Ai(Tool Calls) / Tool / Ai
+>
+> # ========== 2-3 三种"是否使用工具"的控制方式 ==========
+> auto_model = model.bind_tools(tools)                       # 默认就是 auto
+> r = auto_model.invoke("海水为什么是咸的？")
+> print("auto     ->", r.content, "| tool_calls:", r.tool_calls)
+>
 > forced = model.bind_tools(tools, tool_choice="required")
-> r = forced.invoke("你好呀")      # 明明不需要工具，也会被强制调用
-> print("required →", [c["name"] for c in r.tool_calls])
+> r = forced.invoke("你好呀")                                 # 明明不需要工具，也会被强制调用
+> print("required ->", [(c["name"], c["args"]) for c in r.tool_calls])
 >
 > no_tool = model.bind_tools(tools, tool_choice="none")
 > r = no_tool.invoke("北京今天天气怎么样？")
-> print("none →", r.content[:40], "| tool_calls:", r.tool_calls)
+> print("none     ->", r.content, "| tool_calls:", r.tool_calls)
+>
+> # 直接传工具名：只调指定的那个
+> locked = model.bind_tools(tools, tool_choice="get_time")
+> print("传工具名翻译成 ->", locked.kwargs["tool_choice"])
+> print("锁定后提问 ->", run_agent("北京今天天气怎么样？", locked)[0])
+>
+> # ========== 2-4 让工具"失败得体面" ==========
+> # 第1层：工具内部兜住异常，返回"人话"
+> @tool(parse_docstring=True)
+> def divide(a: float, b: float) -> str:
+>     """
+>     除法计算
+>
+>     Args:
+>         a: 被除数
+>         b: 除数
+>     """
+>     try:
+>         if b == 0:
+>             return "错误：除数不能为零"          # 返回而不是抛出
+>         return f"{a} / {b} = {a / b}"
+>     except Exception as e:
+>         return f"计算错误：{e}"
+>
+> print("失败时：", divide.invoke({"a": 10, "b": 0}))
+> print("正常时：", divide.invoke({"a": 10, "b": 2}))
+> # 返回的内容会作为 ToolMessage 回到模型手里，它就有机会换个思路再试；抛出异常则直接中断流程
+>
+> # 第2层：系统提示词里写好"失败了怎么办"
+> AGENT_PROMPT = "如果工具失败，尝试使用其他方法解决问题。"
+>
+> # 第3层：调用级重试
+> attempts = {"n": 0}
+>
+> @retry(stop=stop_after_attempt(3))
+> def flaky_call():
+>     attempts["n"] += 1
+>     raise RuntimeError(f"第 {attempts['n']} 次失败")
+>
+> try:
+>     flaky_call()
+> except Exception as e:
+>     print("连续失败才抛出来：", type(e).__name__, "| 实际尝试次数:", attempts["n"])
+>
+> # ④ 工具应该返回字符串
+> @tool
+> def get_user_info(user_id: str) -> str:
+>     """获取用户信息
+>
+>     Args:
+>         user_id: 用户 ID
+>     """
+>     return json.dumps({"id": user_id, "name": "张三"}, ensure_ascii=False)
+>
+> print("显式序列化：", get_user_info.invoke({"user_id": "1"}))
+>
+> # ⑤ 同步 vs 异步
+> @tool
+> async def async_search(query: str) -> str:
+>     """异步搜索（IO 密集型场景）
+>
+>     Args:
+>         query: 搜索关键词
+>     """
+>     await asyncio.sleep(0.01)
+>     return f"{query}: 搜索结果"
+>
+> print("异步工具用 ainvoke 调：", asyncio.run(async_search.ainvoke({"query": "LangChain"})))
+> ```
+
+### 三、综合题
+
+- [ ] **3-1 多工具 + 失败兜底 + 强制指定工具**
+  分步搭一个能跑的工具型小助手：
+  1. 定义三个工具：① 一个可能失败的计算类工具（除数为 0 时返回一句给模型看的错误说明，**不要抛异常**）；② 一个查天气；③ 一个查新闻；
+  2. 三个工具一起绑定到模型（名称、描述、参数都要说清楚）；
+  3. 写一个循环把多轮工具调用跑完：按工具名分发执行并回传结果，**遇到不认识的工具名立刻报错**；
+  4. 先把工具选择锁死到"查天气"问一句"杭州天气怎么样？"（确认它不选别的）；再换回默认方式问"杭州天气如何？今天有什么新闻？"，观察一次响应里同时要了几个工具；
+  5. 最后故意让计算工具失败一次（问"帮我计算 10 除以 0"），看模型拿到那句错误说明之后怎么处理。
+
+  > [!TIP]- 提示（先自己想，实在想不出再点开）
+  > **一级 · 思路**：先用"分发字典 + 循环"把骨架搭好，再分别验证"指定工具""多工具同时调""失败兜底"三件事
+  > **二级 · 方法**：`tool_choice="get_weather"` 锁工具；`tool_map[call["name"]].invoke(call)`；兜底分支写 `else`（或先判存在再 `raise`）
+  > **三级 · 骨架**：退出条件仍是 `if not response.tool_calls`；失败兜底的关键是工具**返回**错误文本（它会作为 ToolMessage 回到模型手里）
+
+> [!TIP]- 参考答案（做完再点开）
+> ```python
+> # ========== 3-1 多工具 + 失败兜底 + 强制指定工具 ==========
+> @tool(parse_docstring=True)
+> def get_weather_forecast(city: str) -> str:
+>     """
+>     获取当日天气
+>
+>     Args:
+>         city: 城市名称
+>     """
+>     return f"{city}当天晴朗"
+>
+> @tool(parse_docstring=True)
+> def search_news(company: str) -> str:
+>     """
+>     搜索公司新闻
+>
+>     Args:
+>         company: 公司名称
+>     """
+>     return f"{company}今天发布了新产品"
+>
+> tools = [divide, get_weather_forecast, search_news]        # divide 见 2-4
+> tool_map = {t.name: t for t in tools}
+> default_model = model.bind_tools(tools)
+>
+> # 1) 锁死到查天气工具
+> locked_weather = model.bind_tools(tools, tool_choice="get_weather_forecast")
+> print("锁死工具 ->", run_agent("杭州天气怎么样？", locked_weather)[0])     # run_agent 见 2-2
+>
+> # 2) 默认方式：一句话问两件事
+> print("默认方式 ->", run_agent("杭州天气如何？今天有什么新闻？", default_model)[0])
+>
+> # 3) 让计算工具失败一次，看错误信息怎么回到模型手里
+> content, msgs = run_agent("帮我计算 10 除以 0", default_model)
+> print("计算失败后 ->", content)
+> for m in msgs:
+>     if getattr(m, "tool_calls", None):
+>         print("   模型要求调用:", [(c["name"], c["args"]) for c in m.tool_calls])
+>     if m.__class__.__name__ == "ToolMessage":
+>         print("   工具返回给模型的内容:", m.content)
 > ```
