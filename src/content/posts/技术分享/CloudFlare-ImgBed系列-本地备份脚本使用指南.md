@@ -8,6 +8,7 @@ tags:
   - 备份
   - Node.js
   - 脚本
+image: https://img.tsh520.cn/file/blog/post-covers/tech-03-imgbed-backup-script.webp
 description: 图床图片全存在 Telegram，早晚要落到自己硬盘上才安心。这篇介绍我写的本地备份脚本：双击一次，把图床里的文件按原有目录树和文件名全量下载到本地，带清单、能续传、可反复跑。含完整参数表和我踩过的坑。
 ---
 

@@ -5,6 +5,7 @@ description: HTTP 协议的定义与三大特点、请求与响应的数据格�
 tags:
   - HTTP
   - 网络基础
+image: https://img.tsh520.cn/file/blog/post-covers/python-30-http.webp
 order: 30
 ---
 

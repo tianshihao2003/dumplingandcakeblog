@@ -7,6 +7,7 @@ tags:
   - Obsidian
   - Telegram
   - 图床
+image: /assets/images/posts/tech-20-cfbed-picgo-obsidian.png
 description: 最近终于把 Markdown 写作的图片管理痛点彻底解决了——不用再手动传图、不用愁换电脑丢图、也不用担心博客迁移后满屏红叉。现在只要在 Obsidian 里 Ctrl+V 粘贴一张图，它就会自动走 Telegram 存储 → Cloudflare CDN 加速 → 返回外链 → 原地替换 Markdown 链接，整个过程安静又丝滑。整套方案零服务器成本、全链路可控，连 PicGo 和 Obsidian 的配置细节我都给你理清楚了，照着做就能跑起来。
 descriptionSource: ai
 ---

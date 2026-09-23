@@ -5,6 +5,7 @@ description: agent.stream 的七种输出模式（values/updates/messages/tasks/
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-17-agent-streaming.webp
 order: 17
 ---
 

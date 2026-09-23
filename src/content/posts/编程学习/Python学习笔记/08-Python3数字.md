@@ -4,6 +4,7 @@ published: 2026-09-14
 tags:
   - Python
 description: Python3 数字类型、数学函数、随机数函数和三角函数
+image: https://img.tsh520.cn/file/blog/post-covers/python-08-numbers.webp
 order: 8
 ---
 Python 数字数据类型用于存储数值。

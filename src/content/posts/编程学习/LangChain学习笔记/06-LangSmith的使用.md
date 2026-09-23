@@ -5,6 +5,7 @@ description: 用 LangSmith 追踪、监控、评估智能体：四大功能板�
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-06-langsmith.webp
 order: 6
 ---
 

@@ -2,6 +2,7 @@
 title: Web初识与FastAPI入门
 published: 2026-09-20
 description: Web 网站的三个组成部分与 FastAPI 的四步入门用法、两种启动方式，以及 uvicorn 是什么
+image: https://img.tsh520.cn/file/blog/post-covers/python-64-fastapi-intro.webp
 tags:
   - Python
   - Web开发

@@ -5,6 +5,7 @@ description: 大模型的三个局限与 RAG 的六个环节，文档加载器�
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-24-rag-basics.webp
 order: 24
 ---
 

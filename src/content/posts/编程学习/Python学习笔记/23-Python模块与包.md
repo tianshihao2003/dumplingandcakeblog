@@ -6,6 +6,7 @@ tags:
   - 模块
   - 包
 description: Python模块的概念、导入方式、自定义模块、__all__与__name__变量、包的概念与导入方式
+image: https://img.tsh520.cn/file/blog/post-covers/python-23-modules.webp
 order: 23
 ---
 

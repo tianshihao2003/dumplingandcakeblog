@@ -5,6 +5,7 @@ tags:
   - Python
   - 数据结构
 description: Python五大数据容器（字符串、列表、元组、集合、字典）的特性对比与使用场景总结
+image: https://img.tsh520.cn/file/blog/post-covers/python-14-container.webp
 order: 14
 ---
 

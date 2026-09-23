@@ -2,6 +2,7 @@
 title: 实战-TMDB电影榜单统计分析
 published: 2026-09-20
 description: 综合实战：用 Pandas 统计 TMDB-TOP300 电影数据，用 Matplotlib 画出每年数量折线图、语言/类型柱状图与评分占比饼图
+image: https://img.tsh520.cn/file/blog/post-covers/python-59-tmdb-analysis.webp
 tags:
   - Python
   - 数据分析

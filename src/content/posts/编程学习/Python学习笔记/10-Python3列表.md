@@ -4,6 +4,7 @@ published: 2026-09-15
 tags:
   - Python
 description: Python3 列表的创建、访问、增删改查等基本操作
+image: https://img.tsh520.cn/file/blog/post-covers/python-10-list.webp
 order: 10
 ---
 序列是 Python 中最基本的数据结构。

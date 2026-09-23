@@ -5,6 +5,7 @@ description: 用 sort_values 做单列/多列排序，用 groupby 按特征分�
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-56-pandas-sort-group.webp
 order: 56
 ---
 

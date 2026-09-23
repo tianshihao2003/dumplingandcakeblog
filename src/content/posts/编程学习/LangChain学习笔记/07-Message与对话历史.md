@@ -5,6 +5,7 @@ description: LangChain 的四种消息类型与两种写法、content 与 conten
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-07-messages.webp
 order: 7
 ---
 

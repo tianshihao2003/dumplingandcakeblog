@@ -7,6 +7,7 @@ tags:
   - Cloudflare
   - 图床
   - 性能优化
+image: https://img.tsh520.cn/file/blog/post-covers/tech-14-edgeone-cf-imgbed.webp
 description: 完整记录使用腾讯云 EdgeOne CDN 加速 Cloudflare Pages 图床的全过程，从零开始配置，包含踩坑排查和性能测试数据。
 ---
 

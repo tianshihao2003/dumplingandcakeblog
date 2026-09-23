@@ -5,6 +5,7 @@ description: 网页由 HTML/CSS/JS 三部分组成，各自负责结构、表现
 tags:
   - Python
   - 爬虫
+image: https://img.tsh520.cn/file/blog/post-covers/python-44-html-css-js.webp
 order: 44
 ---
 

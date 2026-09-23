@@ -4,6 +4,7 @@ published: 2026-08-19
 tags:
   - Python
 description: Python3 编码、标识符、关键字、注释、缩进和数据类型等基础语法
+image: https://img.tsh520.cn/file/blog/post-covers/python-02-grammar.webp
 order: 2
 ---
 ## 编码

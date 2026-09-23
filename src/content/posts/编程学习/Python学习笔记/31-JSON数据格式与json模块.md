@@ -5,6 +5,7 @@ description: JSON 的语法规则、Python 字典与 JSON 的对应关系，以�
 tags:
   - Python
   - JSON
+image: https://img.tsh520.cn/file/blog/post-covers/python-31-json.webp
 order: 31
 ---
 

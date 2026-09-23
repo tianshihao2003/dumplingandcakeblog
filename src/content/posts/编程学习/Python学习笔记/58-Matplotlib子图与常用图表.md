@@ -5,6 +5,7 @@ description: 用 subplots 在一张画布上创建多个子图，以及折线图
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-58-matplotlib-subplots.webp
 order: 58
 ---
 

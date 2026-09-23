@@ -5,6 +5,7 @@ description: 工具让大模型从"认识世界"走向"改变世界"：工具的
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-09-tools.webp
 order: 9
 ---
 

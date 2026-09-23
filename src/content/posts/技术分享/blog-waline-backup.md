@@ -1,6 +1,7 @@
 ---
 title: Waline 评论系统自动备份到 GitHub
 published: 2026-07-27
+image: https://img.tsh520.cn/file/blog/post-covers/tech-11-waline-backup.webp
 order: 1
 tags:
   - Waline

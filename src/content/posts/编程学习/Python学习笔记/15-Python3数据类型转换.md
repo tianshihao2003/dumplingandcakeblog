@@ -4,6 +4,7 @@ published: 2026-09-14
 tags:
   - Python
 description: Python3 隐式类型转换和显式类型转换的方法
+image: https://img.tsh520.cn/file/blog/post-covers/python-15-conversion.webp
 order: 15
 ---
 有时候，我们需要对数据内置的类型进行转换，数据类型的转换，一般情况下你只需要将数据类型作为函数名即可。

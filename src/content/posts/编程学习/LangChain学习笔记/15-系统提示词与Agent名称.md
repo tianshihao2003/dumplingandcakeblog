@@ -5,6 +5,7 @@ description: system_prompt 的两种写法（str / SystemMessage）与三条使�
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-15-system-prompt.webp
 order: 15
 ---
 

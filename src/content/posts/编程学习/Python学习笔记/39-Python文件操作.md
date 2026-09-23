@@ -5,6 +5,7 @@ description: 文件读写三步法（打开/读写/关闭）、r/w/a 三种模�
 tags:
   - Python
   - 文件操作
+image: https://img.tsh520.cn/file/blog/post-covers/python-39-file.webp
 order: 39
 ---
 

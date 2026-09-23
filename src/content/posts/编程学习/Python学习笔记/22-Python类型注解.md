@@ -5,6 +5,7 @@ tags:
   - Python
   - 类型注解
 description: Python类型注解的基本介绍、变量类型注解、类型推断、函数类型注解
+image: https://img.tsh520.cn/file/blog/post-covers/python-22-typing.webp
 order: 22
 ---
 

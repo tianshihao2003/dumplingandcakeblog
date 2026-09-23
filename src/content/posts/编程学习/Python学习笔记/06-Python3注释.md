@@ -4,6 +4,7 @@ published: 2026-09-14
 tags:
   - Python
 description: Python3 单行注释、多行注释和 Docstring 的使用方法
+image: https://img.tsh520.cn/file/blog/post-covers/python-06-comments.webp
 order: 6
 ---
 Python 中，注释不会影响程序的执行，但是会使代码更易于阅读和理解。

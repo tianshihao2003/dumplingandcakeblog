@@ -5,6 +5,7 @@ description: 用 head/tail/describe/info 查看数据，用单列/多列/iloc/lo
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-54-pandas-select-filter.webp
 order: 54
 ---
 

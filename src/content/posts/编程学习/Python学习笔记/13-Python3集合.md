@@ -4,6 +4,7 @@ published: 2026-09-15
 tags:
   - Python
 description: Python3 集合的创建、添加、删除和集合运算
+image: https://img.tsh520.cn/file/blog/post-covers/python-13-set.webp
 order: 13
 ---
 ## Python3.xPython3 集合

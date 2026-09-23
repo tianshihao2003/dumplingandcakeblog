@@ -5,6 +5,7 @@ description: Pandas 的 DataFrame 与 Series 是什么、四种构建方式和�
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-52-pandas-basics.webp
 order: 52
 ---
 

@@ -4,6 +4,7 @@ published: 2026-09-15
 tags:
   - Python
 description: Python3 字典的创建、访问、修改、删除和常用方法
+image: https://img.tsh520.cn/file/blog/post-covers/python-12-dict.webp
 order: 12
 ---
 字典是另一种可变容器模型，且可存储任意类型对象。

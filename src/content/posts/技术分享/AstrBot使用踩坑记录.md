@@ -6,6 +6,7 @@ tags:
   - Docker
   - NapCat
   - 故障排除
+image: https://img.tsh520.cn/file/blog/post-covers/tech-01-astrbot-pitfalls.webp
 description: 使用 AstrBot + NapCat 部署个人微信/QQ 机器人过程中遇到的各种问题及解决方案，持续更新。
 ---
 

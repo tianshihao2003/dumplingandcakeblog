@@ -5,6 +5,7 @@ description: 用纯 Python 快速搭建交互式网页：Streamlit 的三步使�
 tags:
   - Python
   - Streamlit
+image: https://img.tsh520.cn/file/blog/post-covers/python-35-streamlit.webp
 order: 35
 ---
 

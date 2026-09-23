@@ -4,6 +4,7 @@ published: 2026-09-13
 tags:
   - Python
 description: Python3 变量赋值、Number、String、bool、List、Tuple、Set、Dictionary 数据类型
+image: https://img.tsh520.cn/file/blog/post-covers/python-03-data-types.webp
 order: 3
 ---
 

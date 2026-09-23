@@ -8,6 +8,7 @@ tags:
   - Telegram
   - 图床
   - 备份
+image: https://img.tsh520.cn/file/blog/post-covers/tech-02-webdav-winscp-backup.webp
 description: 图片都存在 Telegram 里，但 Telegram 并不承诺永久保存数据。本教程教你用图床自带的 WebDAV 接口 + WinSCP，把 Telegram 上的图片文件（带目录树）同步回本地硬盘，手动拖一次全量备份，再配一个每周自动同步的计划任务，从此 Telegram 数据丢了也不怕。
 ---
 

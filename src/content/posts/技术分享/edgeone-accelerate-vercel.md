@@ -7,6 +7,7 @@ tags:
   - Vercel
   - 性能优化
   - 教程
+image: https://img.tsh520.cn/file/blog/post-covers/tech-15-edgeone-vercel-cdn.webp
 description: Vercel 部署的网站国内访问慢？用源站域名分离法给 Vercel 套上 EdgeOne 加速，配置详解 + 踩坑记录。
 descriptionSource: manual
 ---

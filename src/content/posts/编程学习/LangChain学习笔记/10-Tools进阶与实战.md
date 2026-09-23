@@ -5,6 +5,7 @@ description: 多工具调用、tool_choice 强制/禁止使用工具，以及 De
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-10-tools-advanced.webp
 order: 10
 ---
 

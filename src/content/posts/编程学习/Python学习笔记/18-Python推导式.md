@@ -4,6 +4,7 @@ published: 2026-09-16
 tags:
   - Python
 description: Python 列表、字典、集合和元组推导式的使用方法
+image: /assets/images/posts/python-18-comprehension.png
 order: 18
 ---
 Python 推导式是一种独特的数据处理方式，可以从一个数据序列构建另一个新的数据序列的结构体。

@@ -4,6 +4,7 @@ published: 2026-09-14
 tags:
   - Python
 description: Python3 字符串的创建、访问、格式化和常用方法
+image: https://img.tsh520.cn/file/blog/post-covers/python-09-strings.webp
 order: 9
 ---
 字符串是 Python 中最常用的数据类型。我们可以使用引号( ' 或 " )来创建字符串。

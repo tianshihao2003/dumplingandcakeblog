@@ -1,6 +1,7 @@
 ---
 title: Meting-API-使用指南
 published: 2026-07-26
+image: /assets/images/posts/tech-05-meting-api-guide.png
 order: 1
 tags:
   - 宝塔面板

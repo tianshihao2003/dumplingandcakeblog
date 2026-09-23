@@ -5,6 +5,7 @@ description: CSV 是逗号分隔值的表格文件格式：手写方式与 csv.D
 tags:
   - Python
   - 爬虫
+image: https://img.tsh520.cn/file/blog/post-covers/python-47-csv.webp
 order: 47
 ---
 

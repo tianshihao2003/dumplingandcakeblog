@@ -5,6 +5,7 @@ description: LangChain 的虚拟环境方案（conda/uv/venv 对比）、conda �
 tags:
   - LangChain
   - 教程
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-03-conda-env.webp
 order: 3
 ---
 

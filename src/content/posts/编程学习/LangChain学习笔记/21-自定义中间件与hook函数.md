@@ -5,6 +5,7 @@ description: 六个 hook 函数（before/after_agent、before/after_model、wrap
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-21-custom-middleware.webp
 order: 21
 ---
 

@@ -5,6 +5,7 @@ description: 用 requests 库发送 HTTP 请求：TIOBE 编程语言排行榜入
 tags:
   - Python
   - 爬虫
+image: https://img.tsh520.cn/file/blog/post-covers/python-43-requests.webp
 order: 43
 ---
 

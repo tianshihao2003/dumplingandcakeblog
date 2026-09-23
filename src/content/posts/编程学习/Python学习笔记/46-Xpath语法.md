@@ -5,6 +5,7 @@ description: Xpath 常用表达式速查：路径、序号、last()、属性过�
 tags:
   - Python
   - 爬虫
+image: https://img.tsh520.cn/file/blog/post-covers/python-46-xpath.webp
 order: 46
 ---
 

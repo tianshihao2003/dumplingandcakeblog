@@ -6,6 +6,7 @@ tags:
   - 插件
   - 效率工具
   - 写作
+image: https://img.tsh520.cn/file/blog/post-covers/tech-08-slash-menu.webp
 description: 一个写作向的 Obsidian 斜杠命令插件：输入 / 或 、 弹出命令卡片，插入标题、表格、代码块、Callout，支持拼音搜索，代码块内自动屏蔽，心流不断。
 ---
 

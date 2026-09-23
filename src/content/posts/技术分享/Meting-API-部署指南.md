@@ -1,6 +1,7 @@
 ---
 title: Meting-API 部署服务器指南
 published: 2026-07-26
+image: https://img.tsh520.cn/file/blog/post-covers/tech-06-meting-api-deploy.webp
 order: 2
 tags:
   - 宝塔面板

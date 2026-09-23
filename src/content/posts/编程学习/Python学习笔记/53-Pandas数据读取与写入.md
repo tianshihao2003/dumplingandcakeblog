@@ -5,6 +5,7 @@ description: 用 Pandas 读取和写入数据文件：read_csv 常用参数、�
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-53-pandas-io.webp
 order: 53
 ---
 

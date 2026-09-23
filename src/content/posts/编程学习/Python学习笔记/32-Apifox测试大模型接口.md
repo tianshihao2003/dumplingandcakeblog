@@ -5,6 +5,7 @@ description: 用 Apifox 在写代码之前先调通 DeepSeek 接口：url、请�
 tags:
   - DeepSeek
   - HTTP
+image: https://img.tsh520.cn/file/blog/post-covers/python-32-apifox.webp
 order: 32
 ---
 

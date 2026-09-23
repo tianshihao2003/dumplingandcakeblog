@@ -6,6 +6,7 @@ tags:
   - DeepSeek
   - 订阅推荐
   - 羊毛
+image: /assets/images/posts/yangmao-01-opencode-go.png
 description: 首月 35 块钱订阅 OpenCode Go，DeepSeek V4 Flash（正式版）随便用：天天从早写到晚，用量进度条纹丝不动，还是直连国内官方 API，不用代理不卡顿。用我的链接注册，咱俩各得 \$5，等于白嫖半个月。
 ---
 

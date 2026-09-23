@@ -5,6 +5,7 @@ description: 数据分析的定义与流程、数据清洗的四个动作，以�
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-51-data-analysis.webp
 order: 51
 ---
 

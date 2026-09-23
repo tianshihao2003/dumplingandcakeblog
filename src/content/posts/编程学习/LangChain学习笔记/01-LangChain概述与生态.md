@@ -5,6 +5,7 @@ description: 为什么需要 LangChain、v0.3 到 v1.2 的架构演进，以及 
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-01-overview-ecosystem.webp
 order: 1
 ---
 

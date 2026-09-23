@@ -6,6 +6,7 @@ tags:
   - 图床
   - 随机图
   - 教程
+image: https://img.tsh520.cn/file/blog/post-covers/tech-04-random-image-api.webp
 description: 用大白话讲清楚自建图床随机图 API 怎么开启、怎么用、有哪些坑——官方文档看不懂的，看这篇就够了。
 ---
 

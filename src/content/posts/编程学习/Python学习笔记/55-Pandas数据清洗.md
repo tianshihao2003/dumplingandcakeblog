@@ -5,6 +5,7 @@ description: 处理缺失值（dropna/fillna/ffill/bfill）、重复值（duplic
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-55-pandas-cleaning.webp
 order: 55
 ---
 

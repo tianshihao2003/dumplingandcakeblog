@@ -5,6 +5,7 @@ description: 用 lxml 库把 HTML 解析成文档对象，再用 Xpath 从标签
 tags:
   - Python
   - 爬虫
+image: https://img.tsh520.cn/file/blog/post-covers/python-45-lxml.webp
 order: 45
 ---
 

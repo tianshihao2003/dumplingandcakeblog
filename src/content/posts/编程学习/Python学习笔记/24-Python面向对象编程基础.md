@@ -7,6 +7,7 @@ tags:
   - 类
   - 对象
 description: Python面向对象编程基础，包括面向过程与面向对象对比、类与对象、类的定义、实例方法、魔法方法、实例属性与类属性
+image: https://img.tsh520.cn/file/blog/post-covers/python-24-oop.webp
 order: 24
 ---
 

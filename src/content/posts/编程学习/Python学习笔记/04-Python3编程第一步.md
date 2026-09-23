@@ -4,6 +4,7 @@ published: 2026-09-15
 tags:
   - Python
 description: Python3 编程入门实例：打印、变量、列表、循环和条件语句
+image: https://img.tsh520.cn/file/blog/post-covers/python-04-first-program.webp
 order: 4
 ---
 在前面的教程中我们已经学习了一些 Python3 的基本语法知识，接下来我们来尝试一些实例。

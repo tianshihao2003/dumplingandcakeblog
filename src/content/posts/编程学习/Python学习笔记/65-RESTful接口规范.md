@@ -2,6 +2,7 @@
 title: RESTful接口规范
 published: 2026-09-20
 description: REST 架构风格：用 URL 定位资源、用 HTTP 动词描述操作，以及传统风格与 REST 风格接口的对比
+image: https://img.tsh520.cn/file/blog/post-covers/python-65-restful.webp
 tags:
   - Python
   - Web开发

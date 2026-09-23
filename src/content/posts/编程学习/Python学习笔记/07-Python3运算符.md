@@ -5,6 +5,7 @@ updated: 2026-09-18
 tags:
   - Python
 description: Python3 算术、比较、赋值、逻辑、成员、身份运算符及优先级
+image: https://img.tsh520.cn/file/blog/post-covers/python-07-operators.webp
 order: 7
 ---
 ## 什么是运算符？

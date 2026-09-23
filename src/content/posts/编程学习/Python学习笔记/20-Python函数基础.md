@@ -5,6 +5,7 @@ tags:
   - Python
   - 函数
 description: Python函数的定义、调用、参数、返回值及说明文档
+image: /assets/images/posts/python-20-function.png
 order: 20
 ---
 
@@ -164,7 +165,7 @@ def circle_area_len(r):
 
 ## 练习题
 
-- [ ] **1. 分数等级判断**
+- [x] **1. 分数等级判断**
   定义一个函数 `get_grade(score)`，根据传入的分数返回对应的等级：
   - 分数 >= 90：返回 "A"
   - 分数 >= 75：返回 "B"
@@ -191,7 +192,7 @@ def circle_area_len(r):
   print(get_grade(40))   # D
   ```
 
-- [ ] **2. 回文串判断**
+- [x] **2. 回文串判断**
   定义一个函数 `is_palindrome(s)`，判断字符串是否是回文串（正读和反读相同），返回 bool 值。
   示例回文串："level"、"radar"、"黄山落叶松叶落山黄"、"12321"
 
@@ -209,7 +210,7 @@ def circle_area_len(r):
   print(is_palindrome("12345"))          # False
   ```
 
-- [ ] **3. 时间转换**
+- [x] **3. 时间转换**
   定义一个函数 `time_convert(seconds)`，将传入的秒数转换为小时、分钟、秒，并返回格式化的字符串。
 
   **知识点：** def 定义函数、整除 `//`、取余 `%`、return 返回字符串

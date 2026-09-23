@@ -4,6 +4,7 @@ published: 2026-09-15
 tags:
   - Python
 description: Python3 元组的创建、访问、运算和内置函数
+image: https://img.tsh520.cn/file/blog/post-covers/python-11-tuple.webp
 order: 11
 ---
 Python 的元组与列表类似，不同之处在于元组的元素不能修改。

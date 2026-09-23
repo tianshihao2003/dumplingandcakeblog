@@ -5,6 +5,7 @@ description: AI、AI 大模型（LLM）、AI 应用三个核心概念的区分�
 tags:
   - AI
   - Python
+image: https://img.tsh520.cn/file/blog/post-covers/python-27-llm.webp
 order: 27
 ---
 

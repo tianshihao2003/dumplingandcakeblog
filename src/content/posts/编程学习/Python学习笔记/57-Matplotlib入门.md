@@ -5,6 +5,7 @@ description: Matplotlib 是什么、如何画折线图，以及画布/标题/轴
 tags:
   - Python
   - 数据分析
+image: https://img.tsh520.cn/file/blog/post-covers/python-57-matplotlib-intro.webp
 order: 57
 ---
 

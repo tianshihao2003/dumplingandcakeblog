@@ -5,6 +5,7 @@ tags:
   - Python
   - 异常处理
 description: Python异常的概念、异常处理语法、捕获多种异常、finally关键字、异常的传递
+image: https://img.tsh520.cn/file/blog/post-covers/python-25-exception.webp
 order: 25
 ---
 

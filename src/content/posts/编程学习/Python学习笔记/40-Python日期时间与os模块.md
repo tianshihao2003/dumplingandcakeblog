@@ -4,6 +4,7 @@ published: 2026-09-18
 description: datetime 生成时间戳与会话标识，os 模块读写环境变量、判断与创建目录、遍历删除文件
 tags:
   - Python
+image: https://img.tsh520.cn/file/blog/post-covers/python-40-datetime-os.webp
 order: 40
 ---
 

@@ -5,6 +5,7 @@ description: Agent 用 response_format 做结构化输出：四种策略（Provi
 tags:
   - LangChain
   - AI
+image: https://img.tsh520.cn/file/blog/post-covers/langchain-16-agent-structured.webp
 order: 16
 ---
 

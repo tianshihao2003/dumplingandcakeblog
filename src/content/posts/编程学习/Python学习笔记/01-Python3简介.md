@@ -4,7 +4,7 @@ published: 2026-08-18
 tags:
   - Python
 description: Python3 语言简介、设计哲学和应用领域
-image: /assets/images/posts/python3-intro.png
+image: https://img.tsh520.cn/file/blog/post-covers/python3-intro.webp
 order: 1
 ---
 ## Python3.xPython3 简介

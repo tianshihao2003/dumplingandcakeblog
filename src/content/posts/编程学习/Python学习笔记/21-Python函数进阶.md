@@ -5,6 +5,7 @@ tags:
   - Python
   - 函数
 description: Python变量作用域、参数详解（位置参数、关键字参数、默认参数、不定长参数）、函数作为参数、匿名函数
+image: https://img.tsh520.cn/file/blog/post-covers/python-21-advanced-function.webp
 order: 21
 ---
 
@@ -375,7 +376,7 @@ print(add(100, 200))
 
 ## 练习题
 
-- [ ] **1. 三角形类型判断**
+- [x] **1. 三角形类型判断**
   定义一个函数 `triangle_type(a, b, c)`，根据传入的三个边长判定三角形类型：
   - 等边三角形：三边相等
   - 等腰三角形：两边相等
@@ -403,7 +404,7 @@ print(add(100, 200))
   print(triangle_type(3, 4, 7))    # 不能构成三角形
   ```
 
-- [ ] **2. 成绩统计函数**
+- [x] **2. 成绩统计函数**
   定义一个函数 `calc_stats(*scores)`，接收任意数量的成绩，返回最高分、最低分、平均分。
 
   **知识点：** 不定长参数 `*args`、内置函数 max/min/sum/len、return 多个返回值
@@ -417,7 +418,7 @@ print(add(100, 200))
   print(f"最高分: {highest}, 最低分: {lowest}, 平均分: {avg}")
   ```
 
-- [ ] **3. 学生信息注册**
+- [x] **3. 学生信息注册**
   定义一个函数 `register(name, age, gender, city='北京')`，使用默认参数，返回学生信息字典。
 
   **知识点：** 默认参数、return 返回字典

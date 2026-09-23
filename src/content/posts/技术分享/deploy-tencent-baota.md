@@ -1,6 +1,7 @@
 ---
 title: Waline 部署教程：云服务器篇
 published: 2026-07-27
+image: https://img.tsh520.cn/file/blog/post-covers/tech-13-waline-deploy-baota.webp
 order: 2
 tags:
   - 宝塔面板

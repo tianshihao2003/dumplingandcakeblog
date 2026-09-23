@@ -6,6 +6,7 @@ tags:
   - Waline
   - 说说
   - 评论系统
+image: /assets/images/posts/tech-16-moment-comment-system.png
 description: 为说说页面的每条动态适配独立评论区，实现自定义聊天室 UI、邮件通知导航到详情页等功能。
 ---
 
