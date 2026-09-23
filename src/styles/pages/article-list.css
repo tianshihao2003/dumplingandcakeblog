@@ -1112,6 +1112,41 @@
 	cursor: not-allowed;
 }
 
+/* 页码输入框：点击中间页码可直接输入跳转（留空回车跳最后一页）
+   刻意做成「可编辑」的样子——带底色和边框，避免看起来跟纯文字一样 */
+.article-list-pagination__input {
+	width: 2.4ch;
+	min-width: 2.4ch;
+	padding: 0.15rem 0.3rem;
+	border: 1px solid color-mix(in oklab, var(--primary) 45%, transparent);
+	border-radius: 0.3rem;
+	outline: none;
+	background: color-mix(in oklab, var(--primary) 12%, transparent);
+	color: var(--primary);
+	font-size: 0.875rem;
+	font-weight: 700;
+	line-height: 1.5;
+	text-align: center;
+	cursor: text;
+	transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.article-list-pagination__input:hover {
+	background: color-mix(in oklab, var(--primary) 18%, transparent);
+}
+
+.article-list-pagination__input:focus {
+	width: 3.4ch;
+	min-width: 3.4ch;
+	border-color: var(--primary);
+	background: color-mix(in oklab, var(--primary) 22%, transparent);
+	box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent);
+}
+
+.article-list-pagination__input::selection {
+	background: color-mix(in oklab, var(--primary) 30%, transparent);
+}
+
 .article-list-pagination__pages {
 	display: flex;
 	align-items: center;

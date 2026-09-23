@@ -68,6 +68,10 @@ function getInitialViewFromDOM(): ArticleListView {
 }
 let gridColumnCount = $state(3);
 let currentPage = $state(1);
+// 页码输入框：唯一数据源是 pageInput，DOM 值由 value={pageInput} 驱动，
+// 输入时在 handlePageInput 里回写。
+// 不要写成 bind:value + oninput 并存——两者会互相覆盖，导致读不到用户清空后的空值。
+let pageInput = $state("1");
 let isMobile = $state(false);
 
 const categoryColorPalette = [
@@ -359,7 +363,12 @@ function handleImageError(event: Event, apiUrls: string[]) {
 
 function goToPage(page: number) {
 	const nextPage = Math.max(1, Math.min(totalPages, page));
-	if (nextPage === currentPage) return;
+	if (nextPage === currentPage) {
+		// 页码没变也要把输入框恢复成当前页（例如输入了超出范围的值）
+		pageInput = String(currentPage);
+		return;
+	}
+	pageInput = String(nextPage);
 	if (containerRef) {
 		window.scrollTo(
 			0,
@@ -393,6 +402,48 @@ function generatePageNumbers(
 }
 
 const pageNumbers = $derived(generatePageNumbers(currentPage, totalPages));
+
+// 注意：不要把 currentPage 回写成 pageInput 的 $effect——那会在用户清空输入框时
+// 把状态又改回当前页，导致「留空回车跳末页」失效。
+// 输入框显示由模板的 value={pageInput} 单向驱动，翻页时在 goToPage 里同步。
+
+function handlePageFocus(event: FocusEvent) {
+	// 聚焦即全选，直接键入即可替换当前页码
+	const el = event.currentTarget as HTMLInputElement;
+	requestAnimationFrame(() => {
+		if (document.activeElement === el) el.select();
+	});
+}
+
+function handlePageInput(event: Event) {
+	// 只保留数字，避免粘贴或输入法带进非数字字符；空字符串要保留（供「留空跳末页」用）
+	const el = event.currentTarget as HTMLInputElement;
+	const digits = el.value.replace(/\D/g, "");
+	if (digits !== el.value) el.value = digits;
+	pageInput = digits;
+}
+
+function handlePageKeyDown(event: KeyboardEvent) {
+	if (event.key === "Enter") {
+		event.preventDefault();
+		const raw = pageInput.trim();
+		// 留空回车 → 跳到最后一页
+		const parsed = raw === "" ? totalPages : Number.parseInt(raw, 10);
+		const target = Number.isNaN(parsed) ? currentPage : parsed;
+		pageInput = String(target);
+		goToPage(target);
+		return;
+	}
+	if (event.key === "Escape") {
+		event.preventDefault();
+		(event.currentTarget as HTMLInputElement).blur();
+	}
+}
+
+function handlePageBlur() {
+	// 未提交就离开：恢复显示当前页，避免输入框留着无效值
+	pageInput = String(currentPage);
+}
 
 onMount(() => {
 	syncViewFromStorage();
@@ -746,8 +797,20 @@ $effect(() => {
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
 				</button>
 
-				<div class="bg-[var(--card-bg)] flex items-center rounded-[0.5rem] px-3.5 h-11 gap-1.5 border border-dashed border-[var(--line-divider)] shadow-sm">
-					<span class="text-sm font-bold text-[var(--primary)] tabular-nums">{currentPage}</span>
+				<div class="bg-[var(--card-bg)] flex items-center rounded-[0.5rem] px-3.5 h-11 gap-1 border border-dashed border-[var(--line-divider)] shadow-sm transition-colors focus-within:border-[var(--primary)]">
+					<input
+						class="article-list-pagination__input tabular-nums"
+						type="text"
+						inputmode="numeric"
+						autocomplete="off"
+						aria-label="输入页码后回车跳转"
+						title="输入页码后回车跳转；留空回车跳到最后页"
+						value={pageInput}
+						oninput={handlePageInput}
+						onkeydown={handlePageKeyDown}
+						onfocus={handlePageFocus}
+						onblur={handlePageBlur}
+					/>
 					<span class="text-sm text-[var(--content-meta)]">/</span>
 					<span class="text-sm font-bold text-[var(--content-meta)] tabular-nums">{totalPages}</span>
 				</div>
