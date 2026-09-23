@@ -218,7 +218,7 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 - 组间按目录名排序而非「组内极值 order」——后者不满足传递性，排序结果会依赖比较顺序，**改动此处务必保持比较函数传递**。
 - 首页「最新更新」（`home-guide-grid.js`，只取前 4 篇）与侧栏「最近更新」（`widget/RecentItems.astro`）不参与此规则，按日期取最新即可。
 - **侧栏小组件默认无阴影（2026-09-21 起）**：`.profile-card`、`.weather-widget`、`.douyin-hot-widget`、`.profile-widget-card` 以及所有走 `WidgetLayout`（`src/components/common/WidgetLayout.astro` 内的 `widget-layout` 选择器）的小组件，静态 `box-shadow: none`，只在 `:hover` 才浮起（`0 0 20px 4px`）。这五处是同一套视觉语言，**改一处必须同步其余**，否则侧栏会出现有的带阴影、有的干净。
-- **侧栏宽度全局默认 280px**，定义在四处且必须保持同步：`src/utils/responsive-utils.ts`（`17.5rem` 列宽 + `md:max-w-70`）、`src/utils/grid-layout-utils.ts`、`src/utils/swup-lifecycle-controller.ts`、`src/pages/guestbook.astro`（移除 grid 类的清单）。**改这几个值等于全站每页侧栏一起变宽、中间内容被挤窄**——2026-09-21 曾误改全局导致所有页面布局变化。只想让某类页面变宽时，写**页面级覆盖**：见 `src/styles/pages/article-list.css` 顶部的 `#main-grid:has(.article-list-page)`（文章列表页/分类页侧栏 320px）。
+- **侧栏宽度全局默认 280px**，定义在四处且必须保持同步：`src/utils/responsive-utils.ts`（`17.5rem` 列宽 + `md:max-w-70`）、`src/utils/grid-layout-utils.ts`、`src/utils/swup-lifecycle-controller.ts`、`src/pages/guestbook.astro`（移除 grid 类的清单）。**改这几个值等于全站每页侧栏一起变宽、中间内容被挤窄**——2026-09-21 曾误改全局导致所有页面布局变化。只想让某类页面变宽时写**页面级覆盖**：`src/styles/pages/article-list.css` 顶部用 `#main-grid:has(.article-list-page--compact)` 只给**文章列表页**侧栏 320px。注意选择器必须用列表页独有的 `--compact` 修饰类——分类页同样带 `.article-list-page`，用它会让分类页一起变宽（2026-09-22 修过一次）。
 - **左侧「全部文章」目录（`PostDirectoryList.astro`）每行不显示日期**，只留标题；标题过长会被省略号截断，侧栏宽度直接决定可读性。目录行的垂直排序仍用 `publishedAt` + `order`，与显示无关。
 
 ### 3.7 文章列表卡片布局与浏览量（2026-09-21）

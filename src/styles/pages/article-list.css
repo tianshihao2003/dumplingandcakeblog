@@ -6,17 +6,22 @@
    完整标题。侧栏宽度默认写在 responsive-utils.ts / grid-layout-utils.ts
    （17.5rem 列宽 + max-w-70），这里是页面级覆盖，不要改那两个全局值——
    改了会让全站每页的侧栏都变宽。 */
+/* 只有文章列表页加宽侧栏（2026-09-21）：让左侧「全部文章」目录能放下
+   完整标题。分类页虽然也用 .article-list-page，但**不加宽**（站长只要求列表页），
+   故选择器用列表页独有的 --compact 修饰类限定范围。
+   侧栏宽度默认写在 responsive-utils.ts / grid-layout-utils.ts（17.5rem 列宽 +
+   max-w-70），这里是页面级覆盖，不要改那两个全局值——改了会让全站每页的侧栏都变宽。 */
 @media (min-width: 768px) {
-	#main-grid:has(.article-list-page) {
+	#main-grid:has(.article-list-page--compact) {
 		grid-template-columns: 20rem minmax(0, 1fr) !important;
 	}
 }
 
 @media (min-width: 1280px) {
-	#main-grid:has(.article-list-page) {
+	#main-grid:has(.article-list-page--compact) {
 		grid-template-columns: 20rem minmax(0, 1fr) 20rem !important;
 	}
-	#main-grid:has(.article-list-page) [class*="max-w-70"] {
+	#main-grid:has(.article-list-page--compact) [class*="max-w-70"] {
 		max-width: 20rem !important;
 	}
 }
