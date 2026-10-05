@@ -337,3 +337,11 @@ const navLinks = navBarConfig.links.map((item: NavBarLink | LinkPreset) => {
   }
 
 </style>
+
+<!-- 空闲预取：常点导航链接的目标页（HTML + 样式表/脚本）先暖进缓存。
+     对齐 VitePress 的 prefetchLinks —— 这是「点了就来」的关键，见 src/utils/hot-prefetch.ts -->
+<script>
+	import { installHotPrefetch } from "@/utils/hot-prefetch";
+
+	installHotPrefetch();
+</script>
