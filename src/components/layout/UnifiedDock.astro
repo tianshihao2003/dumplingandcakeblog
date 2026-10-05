@@ -1,5 +1,4 @@
 ---
-import { getCollection } from "astro:content";
 import { Icon } from "astro-icon/components";
 import Search from "@/components/controls/Search.svelte";
 import MusicPlayer from "@/components/features/MusicPlayer.astro";
@@ -7,24 +6,10 @@ import PostDirectoryList from "@/components/widget/PostDirectoryList.astro";
 import { musicPlayerConfig } from "@/config/musicConfig";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
-import { getCategoryList, getTagList } from "@/utils/content-utils";
-import { getCategoryUrl, getTagUrl } from "@/utils/url-utils";
 
 interface Props {
 	headings?: unknown;
 }
-
-const tags = await getTagList();
-const categories = await getCategoryList();
-
-const ziyuanEntries = await getCollection("ziyuan");
-const announcementEntry = ziyuanEntries.find((e) => e.id === "announcement");
-const announcementData = announcementEntry?.data;
-const announcementContent = announcementData?.content ?? "暂无公告";
-const announcementLink =
-	announcementData && "link" in announcementData
-		? announcementData.link
-		: undefined;
 
 // 音乐播放列表不再内联进页面（站长 2026-10-05）：
 // 统一走 /music-playlist.json + utils/music-playlist.ts，由播放管理器按需拉取
@@ -54,18 +39,6 @@ const isPostDetailPage = /^\/posts\/(?!\d+\/?$)[^/]+\//.test(
   </button>
 
   <div class="ud-stack" id="ud-stack" data-expanded="false">
-    <button class="ud-btn" id="ud-tags-btn" type="button" aria-label="标签">
-      <Icon name="material-symbols:label-outline" is:inline />
-      <span class="ud-tooltip">标签</span>
-    </button>
-    <button class="ud-btn" id="ud-categories-btn" type="button" aria-label="分类">
-      <Icon name="material-symbols:folder-outline" is:inline />
-      <span class="ud-tooltip">分类</span>
-    </button>
-    <button class="ud-btn" id="ud-announcement-btn" type="button" aria-label="公告">
-      <Icon name="material-symbols:campaign-outline-rounded" is:inline />
-      <span class="ud-tooltip">公告</span>
-    </button>
     {musicPlayerConfig.showInNavbar !== false && (
       <button class="ud-btn" id="ud-music-btn" type="button" aria-label="音乐">
         <Icon name="material-symbols:music-note-rounded" is:inline />
@@ -97,42 +70,6 @@ const isPostDetailPage = /^\/posts\/(?!\d+\/?$)[^/]+\//.test(
 </div>
 
 <div class="dock-drawer-overlay" id="dock-drawer-overlay"></div>
-
-<div class="dock-drawer dock-drawer-closed" id="dock-drawer-tags">
-  <div class="dock-drawer-title">[ {i18n(I18nKey.tags)} ]</div>
-  <div class="dock-tags-list">
-    {tags.map((t) => (
-      <a href={getTagUrl(t.name)} class="dock-tag-item">
-        <span class="dock-tag-name"># {t.name.trim()}</span>
-        <span class="dock-tag-count">{t.count}</span>
-      </a>
-    ))}
-  </div>
-</div>
-
-<div class="dock-drawer dock-drawer-closed" id="dock-drawer-categories">
-  <div class="dock-drawer-title">[ {i18n(I18nKey.categories)} ]</div>
-  <div class="dock-tags-list">
-    {categories.map((c) => (
-      <a href={getCategoryUrl(c.name)} class="dock-tag-item">
-        <span class="dock-tag-name"># {c.name.trim()}</span>
-        <span class="dock-tag-count">{c.count}</span>
-      </a>
-    ))}
-  </div>
-</div>
-
-<div class="dock-drawer dock-drawer-closed" id="dock-drawer-announcement">
-  <div class="dock-drawer-title">[ 公告 ]</div>
-  <div class="px-1">
-    <p class="text-sm leading-relaxed mb-3" style="color: var(--deep-text);">{announcementContent}</p>
-    {announcementLink?.enable !== false && announcementLink?.url ? (
-      <a href={announcementLink.url} target={announcementLink.external ? "_blank" : "_self"} rel={announcementLink.external ? "noopener noreferrer" : undefined} class="dock-tag-item inline-flex" style="padding: 0.25rem 0.75rem; font-size: 0.8rem;">
-        {announcementLink.text || "了解更多"}
-      </a>
-    ) : null}
-  </div>
-</div>
 
 {musicPlayerConfig.showInNavbar !== false && (
 <div class="dock-drawer dock-drawer-closed" id="dock-drawer-music">
@@ -365,9 +302,6 @@ const isPostDetailPage = /^\/posts\/(?!\d+\/?$)[^/]+\//.test(
     window.addEventListener("theme-change", updateUnifiedThemeIcons, { signal });
 
     const drawerMap: Record<string, string> = {
-      "ud-tags-btn": "dock-drawer-tags",
-      "ud-categories-btn": "dock-drawer-categories",
-      "ud-announcement-btn": "dock-drawer-announcement",
       "ud-music-btn": "dock-drawer-music",
       "ud-toc-btn": "dock-drawer-toc",
       "ud-posts-btn": "dock-drawer-posts",

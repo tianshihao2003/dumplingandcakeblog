@@ -130,33 +130,6 @@
   margin-bottom: 1rem;
 }
 
-/* 标签列表 */
-.dock-tags-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.dock-tag-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
-  border: 2px solid var(--primary);
-  color: var(--primary);
-  background: var(--page-bg);
-  text-decoration: none;
-  font-size: 0.8125rem;
-  transition: color 150ms, background-color 150ms;
-}
-.dock-tag-item:hover {
-  background-color: var(--primary);
-  color: var(--page-bg);
-}
-.dock-tag-count {
-  font-size: 0.6875rem;
-  opacity: 0.6;
-}
-
 @media (max-width: 768px) {
   .dock-drawer {
     right: 0.5rem;
@@ -187,15 +160,5 @@
   .dock-drawer-overlay.active {
     opacity: 1;
     pointer-events: auto;
-  }
-  .dock-tags-list {
-    gap: 0.25rem;
-    max-height: 35vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .dock-tag-item {
-    padding: 0.1875rem 0.5rem;
-    font-size: 0.75rem;
   }
 }

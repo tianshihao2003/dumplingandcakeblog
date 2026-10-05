@@ -427,6 +427,7 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 
 ### 5.9 右下角浮动按钮规格（2026-09-30，对齐参考博客）
 
+- ⚠️ **2026-10-05 起悬浮坞不再有「标签 / 分类 / 公告」三个按钮**（站长要求，桌面端与移动端同时去掉）：那三个抽屉（`#dock-drawer-tags` / `#dock-drawer-categories` / `#dock-drawer-announcement`）、按钮→抽屉映射、以及只服务它们的 `.dock-tag-*` / `.dock-tags-list` 样式（`src/styles/components/floating-dock.css`）一并删除。展开列（`#ud-stack`）现在只剩 **音乐 + 主题**；标签/分类走导航栏入口，公告走 `Announcement` 小组件（别再往悬浮坞里加回去，除非站长明确要求）。
 - **桌面端悬浮坞**（`src/components/layout/UnifiedDock.astro` 的 `<style>`）：按钮 50×50（`3.125rem`）、圆角 `1.25rem`、**2px 实色描边**（`--deep-text`）、纯色底（`--page-bg`）、无毛玻璃无阴影，悬停/按下**反色**；图标 `1.875rem`；悬浮坞贴边 1.25rem、按钮间距 0.75rem（对齐参考站 `.dock-btn` / `.floating-dock`）。
   - ⚠️ **收起状态那一列要 `display: none`**（`.ud-stack:not([data-expanded="true"])`），否则它虽然没内容却仍占一个 0.75rem 的间距，悬浮坞里会多出一道空档。
 - ⚠️ **手机底部那条浮岛（`MobileDock` + `src/styles/components/mobile-dock.css`）不在这次统一范围内，保持原样**（透明按钮 + 中间凸出的黑色圆钮 + 胶囊圆角）—— 站长 2026-09-30 明确要求改回来，别再顺手「统一规格」。它的总高 `4.25rem`（按钮 3.25rem + 上下留白 0.5rem）被 `dock-drawer`、动态页那 3 个按钮的 `bottom` 偏移按写死的值引用，**改它高度要同步改那两处**。
