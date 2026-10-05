@@ -30,6 +30,7 @@ import { getCategoryFromId } from "@/utils/category-tree";
 import { formatDateI18n, formatDateToYYYYMMDD } from "@/utils/date-utils";
 import { processCoverImageSync } from "@/utils/image-utils";
 import { getCategoryUrl, getTagUrl, url } from "@/utils/url-utils";
+import "../../styles/components/post-hero.css";
 
 export async function getStaticPaths() {
 	const blogEntries = await getSortedPosts();

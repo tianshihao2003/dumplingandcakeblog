@@ -1,3 +1,6 @@
+/* 首页专属样式（home-*）已改为由对应组件在前言 import：
+   HomeHero / HomeTicker / HomeDataLayer / HomeDisplayLayer / HomePortfolioShutterLayer；
+   这样只有渲染这些组件的页面（首页与分页）才会加载它们。 */
 /* ==========================================================================
    Firefly 主样式入口
    CSS Cascade Layers: reset → tokens → base → components → utilities → overrides
@@ -41,15 +44,6 @@
 @import './components/post-list.css';
 @import './components/post-card.css';
 @import './components/post-page.css';
-@import './components/post-hero.css';
-@import './pages/article-list.css';
-@import './components/home-data-layer.css';
-@import './components/home-display-layer.css';
-@import './components/home-hero-dialogue.css';
-@import './components/home-hero.css';
-@import './components/home-portfolio-shutter.css';
-@import './components/home-section.css';
-@import './components/home-ticker.css';
 @import './components/page-loader.css';
 @import './components/friend-card.css';
 @import './components/friend-preview.css';
@@ -68,21 +62,14 @@
 @import './features/widget-responsive.css';
 @import './features/no-sidebar-pages.css';
 @import './features/moments.css';
-@import './features/movies-games.css';
-@import './pages/music-visualizer.css';
 @import './pages/friends.css';
 @import './pages/apps.css';
-@import './pages/notebooks.css';
 @import './features/tts-player.css';
-@import './pages/categories.css';
-@import './pages/moments-filter.css';
 @import './components/about-profile-card.css';
 @import './components/about-chat-bubble.css';
 @import './components/about-social-links.css';
 @import './components/about-tech-stack.css';
 @import './components/about-timeline.css';
-@import './components/about-changelog.css';
-@import './components/guestbook-chat.css';
 @import './components/privacy-modal.css';
 @import './components/page-title.css';
 

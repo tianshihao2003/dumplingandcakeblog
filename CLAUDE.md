@@ -259,7 +259,7 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 
 ### 4.1 入口文件
 
-`src/styles/main.css` 是唯一合法入口，结构：
+`src/styles/main.css` 是**全局/共享样式**的唯一合法入口（只服务某一页或某几个组件的样式不走这里，见 §4.3），结构：
 
 ```css
 @import 'tailwindcss';        /* Tailwind v4 核心 */
@@ -281,12 +281,36 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 
 ### 4.2 硬性规则
 
-- **禁止**在组件外新建独立 CSS 文件，所有样式必须通过 `main.css` 导入
+- **禁止**在组件外新建独立 CSS 文件；**全局/共享**样式必须通过 `main.css` 导入，**页面/组件专属**样式由使用它的组件/页面前言 `import "../../styles/xxx.css";`（见 §4.3）
 - **禁止**使用 Stylus（已迁移完毕），统一用纯 CSS
 - **禁止**新建 `!important`（现有 465 处是历史遗留，新代码不得增加）
 - **禁止**使用 `#000`/`#fff` 硬编码颜色，必须用 `var(--*)` 令牌
 - 暗色模式选择器统一使用 `:root.dark`（不要用 `.dark`、`html.dark`、`@media (prefers-color-scheme)`）
 - `@apply` 仅在无法用 Tailwind class 实现时使用（如 CSS 伪元素）
+
+### 4.3 页面/组件专属样式：由组件自己 import（2026-10-05 起）
+
+原来 `src/styles/**` 全部被 `main.css` 全局导入，等于**每一页都背所有页面的 CSS**。实测改成「谁用谁 import」后：
+首页 CSS 510→363KB、/projects/ 520→327KB、文章页 914→759KB（详见 changelog v1.59.0）。
+
+**做法**：只服务某一页或某几个组件的样式文件，从 `main.css` 里删掉 `@import`，改由使用它的
+组件/页面前言 `import "../../styles/pages/xxx.css";`（Astro/Vite 会自动把它并进「渲染了该组件的页面」的
+CSS 包，别处不再加载；同一文件多处 import 只算一次）。
+
+已按此规则搬走的 16 个：`pages/{moments-filter,categories,article-list,notebooks,music-visualizer}.css`、
+`features/{movies-games,article-toc-panel}.css`、`components/{home-hero,home-hero-dialogue,home-section,home-ticker,
+home-data-layer,home-display-layer,home-portfolio-shutter,post-hero,about-changelog,guestbook-chat}.css`。
+
+坑与套路：
+- ⚠️ **插 import 要躲开多行 import**：`import {` 这种开头行后面插样式 import 会把语句切断（本次踩到
+  `ChangelogGraph.astro` / `GuestbookChatComposer.svelte`）——插在最后一个**完整** import 语句之后。
+- 判断某文件该不该搬：取它最常用的类名，全仓搜消费方；消费方只有一页/一类组件就搬。
+- 验证两招：① **静态覆盖校验**——页面 HTML 里出现某类名（先剥掉 `<script>`，否则 JS 字符串会误报），
+  它加载的外链 CSS **加内联 `<style>`**（Astro 会把部分组件样式内联进 HTML）里必须能找到该选择器；
+  ② **浏览器指纹**——对每个被动页面抓一组 `getComputedStyle` 值，改前改后逐项比对
+  （vw 驱动的值会随视口宽度变，比对前先看 `window.innerWidth`）。
+- 仍留在 `main.css` 的：`tokens/`、`base/`、`layout/`、`features/` 里全局生效的（内容/markdown/toc/滚动条）、
+  `vendor/`、以及跨页复用的 `components/`（navbar/sidebar/post-list/mobile-dock…）。
 
 ### 4.3 颜色令牌速查
 
@@ -802,7 +826,7 @@ return controller;
 ### 14.1 添加新页面
 
 1. 创建 `src/pages/myPage.astro`，继承 `MainGridLayout`
-2. 可选：`src/styles/pages/myPage.css` + `main.css` 导入
+2. 可选：`src/styles/pages/myPage.css` + **在该页面前言里 import**（不要加到 `main.css`，见 §4.3）
 3. 可选：`src/config/navBarConfig.ts` 添加导航链接
 4. 可选：`src/i18n/i18nKey.ts` + 5 个语言文件添加翻译
 
@@ -823,7 +847,7 @@ return controller;
 
 1. `grep -rn "ComponentName" src/` 确认无引用
 2. 删除组件文件
-3. 从 `main.css` 移除样式导入
+3. 移除样式导入（全局的从 `main.css`，页面/组件专属的从引用它的组件前言）
 4. 从 `config/index.ts` 移除配置导出
 5. 从 5 个语言文件移除 i18n 键
 6. 从 `types/config.ts` 移除类型
@@ -854,7 +878,7 @@ return controller;
 | Swup 容器内用 `client:load` | 每次导航重新挂载 |
 | 新建 Stylus 文件 | 已迁移完毕，统一用 CSS |
 | 新增 `!important` | 现有 465 处是历史遗留 |
-| 组件外新建 CSS 文件 | 必须通过 `main.css` 导入 |
+| 组件外新建 CSS 文件 | 全局样式经 `main.css` 导入；页面/组件专属样式由该组件前言 import（§4.3） |
 | `main.css` 中 `@import` 位置错误 | 会破坏样式优先级 |
 | 删除 `tokens/colors.css` | 主题系统失效 |
 | 修改 `backgroundWallpaper.ts` 的 `mode` | 已移除壁纸切换功能 |

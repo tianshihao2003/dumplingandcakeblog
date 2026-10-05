@@ -7,6 +7,7 @@ import { Icon } from "astro-icon/components";
 import PageTitle from "@/components/common/PageTitle.astro";
 import { getCategoryList, getCategoryTree } from "@/utils/content-utils";
 import { getTagGraphData } from "@/utils/tag-graph-data";
+import "../styles/pages/categories.css";
 
 const categoryTree = await getCategoryTree();
 const categoryList = await getCategoryList();

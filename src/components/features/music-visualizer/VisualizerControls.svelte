@@ -1,6 +1,7 @@
 <script lang="ts">
 import Icon from "@components/common/Icon.svelte";
 import { onDestroy, onMount } from "svelte";
+import "../../../styles/pages/music-visualizer.css";
 
 interface Track {
 	name: string;

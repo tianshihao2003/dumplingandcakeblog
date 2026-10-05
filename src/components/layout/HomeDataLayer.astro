@@ -14,6 +14,7 @@ import { formatDateI18n } from "@/utils/date-utils";
 import { countReadableCharacters } from "@/utils/home-data-layer.js";
 import { getGuidePostSets } from "@/utils/home-guide-grid.js";
 import { getPostUrlBySlug, getTagUrl, url } from "@/utils/url-utils";
+import "../../styles/components/home-data-layer.css";
 
 const posts = await getSortedPosts();
 const categories = await getCategoryList();

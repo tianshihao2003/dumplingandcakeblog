@@ -9,6 +9,7 @@ import {
 	parseArticleCoverApiUrls,
 } from "@/utils/article-cover-lifecycle";
 import { removeFileExtension } from "@/utils/url-utils";
+import "../../styles/pages/article-list.css";
 
 type ArticleListView = "list" | "grid";
 

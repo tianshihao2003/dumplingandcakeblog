@@ -50,6 +50,7 @@ import {
 } from "@/utils/notebook-chat";
 import GuestbookChatComposer from "../features/GuestbookChatComposer.svelte";
 import GuestbookChatMessage from "../features/GuestbookChatMessage.svelte";
+import "../../styles/components/guestbook-chat.css";
 
 const CHANNEL_PATH = NOTEBOOK_CHANNEL;
 const PAGE_SIZE = 30;

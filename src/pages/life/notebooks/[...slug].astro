@@ -6,6 +6,8 @@ import NotebookCommentModal from "@/components/comment/NotebookCommentModal.svel
 import ArchiveHeatmap from "@/components/widget/ArchiveHeatmap.astro";
 import { profileConfig } from "@/config";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import "../../../styles/pages/notebooks.css";
+import "../../../styles/components/post-hero.css";
 
 export async function getStaticPaths() {
 	const allEntries = await getCollection("notebooks");

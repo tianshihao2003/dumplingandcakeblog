@@ -46,6 +46,7 @@ import {
 } from "@/utils/moment-chat";
 import GuestbookChatComposer from "../features/GuestbookChatComposer.svelte";
 import GuestbookChatMessage from "../features/GuestbookChatMessage.svelte";
+import "../../styles/components/guestbook-chat.css";
 
 const CHANNEL_PATH = MOMENT_CHANNEL;
 const PAGE_SIZE = 30;

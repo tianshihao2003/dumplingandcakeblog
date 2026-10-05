@@ -44,6 +44,7 @@ import {
 } from "@/utils/guestbook-chat";
 import GuestbookChatComposer from "./GuestbookChatComposer.svelte";
 import GuestbookChatMessage from "./GuestbookChatMessage.svelte";
+import "../../styles/components/guestbook-chat.css";
 
 const CHANNEL_PATH = "/guestbook/";
 const PAGE_SIZE = 30;

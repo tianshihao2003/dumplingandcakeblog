@@ -2,6 +2,9 @@
 import { getImage } from "astro:assets";
 import type { ImageMetadata } from "astro";
 import { homeConfig, siteConfig } from "@/config";
+import "../../styles/components/home-hero.css";
+import "../../styles/components/home-hero-dialogue.css";
+import "../../styles/components/home-section.css";
 
 const workHours = siteConfig.workHours ?? {
 	start: 9,
