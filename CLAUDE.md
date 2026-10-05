@@ -304,6 +304,10 @@ home-data-layer,home-display-layer,home-portfolio-shutter,post-hero,about-change
 坑与套路：
 - ⚠️ **插 import 要躲开多行 import**：`import {` 这种开头行后面插样式 import 会把语句切断（本次踩到
   `ChangelogGraph.astro` / `GuestbookChatComposer.svelte`）——插在最后一个**完整** import 语句之后。
+- ⚠️ **同一份样式别在嵌套组件里重复 import**：挂在最外层入口组件上即可。嵌套组件各 import 一次会被
+  Vite 打成两个 chunk、页面重复加载两遍（2026-10-05 在 `guestbook-chat.css` 上踩到：文章页白背 37.6KB，
+  已把内层 `GuestbookChatComposer/Message.svelte` 的 import 删掉，只留 `GuestbookChat` / `MomentCommentChat` /
+  `NotebookCommentModal` 三个入口）。
 - 判断某文件该不该搬：取它最常用的类名，全仓搜消费方；消费方只有一页/一类组件就搬。
 - 验证两招：① **静态覆盖校验**——页面 HTML 里出现某类名（先剥掉 `<script>`，否则 JS 字符串会误报），
   它加载的外链 CSS **加内联 `<style>`**（Astro 会把部分组件样式内联进 HTML）里必须能找到该选择器；

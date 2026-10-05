@@ -17,7 +17,6 @@ import type { GuestbookChatMessage } from "@/types/guestbook-chat";
 import type { MomentQuote } from "@/types/moment-chat";
 import { getGuestbookInitials } from "@/utils/guestbook-chat";
 import { renderGuestbookMessage } from "@/utils/guestbook-chat-markup";
-import "../../styles/components/guestbook-chat.css";
 
 interface Props {
 	message: GuestbookChatMessage;

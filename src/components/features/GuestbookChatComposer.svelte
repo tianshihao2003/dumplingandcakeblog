@@ -22,7 +22,6 @@ import {
 	uploadGuestbookImage,
 	WALINE_INLINE_IMAGE_SIZE_LIMIT,
 } from "@/utils/guestbook-chat";
-import "../../styles/components/guestbook-chat.css";
 
 interface Props {
 	profile: GuestbookProfile;
