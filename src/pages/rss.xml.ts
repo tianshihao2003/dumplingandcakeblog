@@ -2,7 +2,7 @@ import { loadRenderers } from "astro:container";
 import { render } from "astro:content";
 import { getContainerRenderer as getMDXRenderer } from "@astrojs/mdx/container-renderer";
 import rss, { type RSSFeedItem } from "@astrojs/rss";
-import { getSortedPosts } from "@utils/content-utils";
+import { excludeHiddenNotes, getSortedPosts } from "@utils/content-utils";
 import { formatDateI18nWithTime } from "@utils/date-utils";
 import { url } from "@utils/url-utils";
 import type { APIContext } from "astro";
@@ -20,7 +20,7 @@ function stripInvalidXmlChars(str: string): string {
 }
 
 export async function GET(context: APIContext): Promise<Response> {
-	const blog = await getSortedPosts();
+	const blog = excludeHiddenNotes(await getSortedPosts());
 	const renderers = await loadRenderers([getMDXRenderer()]);
 	const container = await AstroContainer.create({ renderers });
 	const feedItems: RSSFeedItem[] = [];

@@ -8,7 +8,7 @@ import { siteConfig } from "@/config";
 import { coverImageConfig } from "@/config/coverImageConfig";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import { getCategoryFromId } from "@/utils/category-tree";
-import { getSortedPosts } from "@/utils/content-utils";
+import { excludeHiddenNotes, getSortedPosts } from "@/utils/content-utils";
 import { getApiUrlList, processCoverImageSync } from "@/utils/image-utils";
 import {
 	getCategoryUrl,
@@ -24,7 +24,7 @@ export const getStaticPaths = (async () => {
 
 const title = "文章列表";
 const description = "按整页滚动浏览所有文章。";
-const posts = await getSortedPosts();
+const posts = excludeHiddenNotes(await getSortedPosts());
 const articleImageFiles = import.meta.glob<ImageMetadata>(
 	"../../content/**/*.{png,jpg,jpeg,webp,avif}",
 	{

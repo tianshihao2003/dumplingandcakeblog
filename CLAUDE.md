@@ -432,6 +432,17 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 - ⚠️ **手机底部那条浮岛（`MobileDock` + `src/styles/components/mobile-dock.css`）不在这次统一范围内，保持原样**（透明按钮 + 中间凸出的黑色圆钮 + 胶囊圆角）—— 站长 2026-09-30 明确要求改回来，别再顺手「统一规格」。它的总高 `4.25rem`（按钮 3.25rem + 上下留白 0.5rem）被 `dock-drawer`、动态页那 3 个按钮的 `bottom` 偏移按写死的值引用，**改它高度要同步改那两处**。
 - ⚠️ **图标空白 = sprite 丢符号**（本次踩到）：页面里的 `<Icon>` 默认走 astro-icon 的 sprite（`<use href="#ai:…">`），这份 sprite 有已知的丢符号问题（`src/components/common/Icon.astro` 就是为绕开它而写的包装组件）。症状是图标**整块空白**而不报错，`document.querySelector("symbol#ai:…")` 能确认缺没缺。判断/修复：给那个 `<Icon>` 加 `is:inline`（路径直接内联），或改用 `@/components/common/Icon.astro`。
 
+### 5.13 自用系列笔记：不进文章列表与 RSS（2026-10-03）
+
+- 配置在 src/config/notesConfig.ts 的 notesHiddenFromLists（写分类文件夹路径，支持多级；前缀匹配整棵子树）。
+  id 与配置值都先归一化、再按路径段匹配（Java笔记本 不会误伤 Java笔记本2）。以后增删就改这个数组一行。
+- 生效点**只有三处**（都调 utils/content-utils 的 excludeHiddenNotes，纯过滤函数，不动 getSortedPosts 签名）：
+  src/pages/posts/[...page].astro（文章列表页）、src/pages/rss.xml.ts、src/pages/rss.astro。
+- **分类详情页 /categories/... 照常显示这些笔记**；首页、归档、搜索、统计计数、sitemap 都保持原样。
+  想连首页/归档一起隐藏，就在对应页面的调用点再包一层 excludeHiddenNotes。
+- 与 draft 的分工：draft 是「全站隐藏（dev 可见）」；本机制是「只从列表与 RSS 拿掉，详情页与分类页照常看得到」。
+- 当前隐藏 287 篇：编程学习/{JavaWeb学习笔记,Python学习笔记,LangChain学习笔记,MySQL学习笔记,JavaWebAI} + Java笔记本 + 学习路线。
+
 ### 5.12 相册页（/album/）整面照片墙（2026-09-30）
 
 - **一个页面装所有照片**：11 个相册（约 238 张）全部走图床 `imgbedFolder`，客户端并行拉每个文件夹的

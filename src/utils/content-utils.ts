@@ -26,6 +26,8 @@ function resolveOrder(order?: number): number {
  * 组间不能用「组内最大 order」比较——那样不满足传递性，排序结果会依赖比较顺序。
  * 供按目录聚合的列表（左侧全站文章目录）复用相同的组内规则。
  */
+import { isHiddenFromLists } from "@/config/notesConfig";
+
 export function compareInSameDate(a: SortableEntry, b: SortableEntry): number {
 	const folderA = getCategoryFromId(a.id);
 	const folderB = getCategoryFromId(b.id);
@@ -70,6 +72,14 @@ async function getRawSortedPosts() {
 
 	const sorted = allBlogPosts.sort(comparePostsByOrderAndDate);
 	return sorted;
+}
+
+/**
+ * 过滤掉「不进列表」的自用系列笔记（配置在 src/config/notesConfig.ts）。
+ * 只在文章列表页与 RSS 调用；分类详情页、首页、归档、搜索、统计都不调用。
+ */
+export function excludeHiddenNotes<T extends { id: string }>(posts: T[]): T[] {
+	return posts.filter((post) => !isHiddenFromLists(post.id));
 }
 
 export async function getSortedPosts() {
