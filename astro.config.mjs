@@ -72,10 +72,7 @@ export default defineConfig({
 			// 于是点击切页时样式表已就位、几乎零等待
 			preload: { hover: true, visible: false },
 			accessibility: true,
-			// 切页不再等目标页资源：updateHead 的 awaitAssets 默认 true，会把「替换内容」
-			// 卡到目标页 CSS/JS 全部就绪之后（表现就是「进度条跑完才切页」）。关掉它内容立刻换；
-			// persistAssets 让上一页的样式表先留着、等新样式到齐再撤，避免闪样式。
-			updateHead: { awaitAssets: false, persistAssets: true, persistTags: false },
+			updateHead: true,
 			updateBodyClass: false,
 			globalInstance: true,
 			// 滚动相关配置优化
