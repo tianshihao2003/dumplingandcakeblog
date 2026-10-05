@@ -49,11 +49,11 @@ export { momentConfig } from "./momentConfig"; // 动态评论配置
 // 组件配置
 export { musicPlayerConfig } from "./musicConfig"; // 音乐播放器配置
 export { navBarConfig, navBarSearchConfig } from "./navBarConfig"; // 导航栏配置与搜索配置
+export { isHiddenFromLists, notesHiddenFromLists } from "./notesConfig"; // 自用系列笔记：不进文章列表页与 RSS
 export { live2dModelConfig, spineModelConfig } from "./pioConfig"; // 看板娘配置
 export { profileConfig } from "./profileConfig"; // 用户资料配置
 export { relationshipConfig } from "./relationshipConfig"; // 恋爱计时配置
 export { sakuraConfig } from "./sakuraConfig"; // 樱花特效配置
-export { isHiddenFromLists, notesHiddenFromLists } from "./notesConfig"; // 自用系列笔记：不进文章列表页与 RSS
 // 布局配置
 export { sidebarLayoutConfig } from "./sidebarConfig"; // 侧边栏布局配置
 // 核心配置

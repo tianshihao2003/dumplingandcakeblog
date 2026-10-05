@@ -42,6 +42,6 @@ export function isHiddenFromLists(id: string): boolean {
 	const target = normalize(id);
 	return notesHiddenFromLists.some((folder) => {
 		const prefix = normalize(folder);
-		return target === prefix || target.startsWith(prefix + "/");
+		return target === prefix || target.startsWith(`${prefix}/`);
 	});
 }
