@@ -313,6 +313,10 @@ home-data-layer,home-display-layer,home-portfolio-shutter,post-hero,about-change
   它加载的外链 CSS **加内联 `<style>`**（Astro 会把部分组件样式内联进 HTML）里必须能找到该选择器；
   ② **浏览器指纹**——对每个被动页面抓一组 `getComputedStyle` 值，改前改后逐项比对
   （vw 驱动的值会随视口宽度变，比对前先看 `window.innerWidth`）。
+- ⚠️ **搬迁后必须覆盖「所有用到这些类名的页面」再验证**：只挑一个探针类名抽查会漏（2026-10-05 踩到：
+  `notebooks.css` 只挂到 `[...slug].astro`，**列表页 `index.astro` 被漏掉**，页面 48 个类名没规则、样式全丢，
+  站长先发现了）。可靠做法：按「样式表签名」把 `dist` 页面分组，逐组拿「页面用到的类名 ∩ 该文件类名」去比对
+  「页面 CSS 里有没有对应规则」，缺规则的占比超阈值就报出来。
 - 仍留在 `main.css` 的：`tokens/`、`base/`、`layout/`、`features/` 里全局生效的（内容/markdown/toc/滚动条）、
   `vendor/`、以及跨页复用的 `components/`（navbar/sidebar/post-list/mobile-dock…）。
 
