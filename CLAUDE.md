@@ -432,6 +432,12 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 - ⚠️ **手机底部那条浮岛（`MobileDock` + `src/styles/components/mobile-dock.css`）不在这次统一范围内，保持原样**（透明按钮 + 中间凸出的黑色圆钮 + 胶囊圆角）—— 站长 2026-09-30 明确要求改回来，别再顺手「统一规格」。它的总高 `4.25rem`（按钮 3.25rem + 上下留白 0.5rem）被 `dock-drawer`、动态页那 3 个按钮的 `bottom` 偏移按写死的值引用，**改它高度要同步改那两处**。
 - ⚠️ **图标空白 = sprite 丢符号**（本次踩到）：页面里的 `<Icon>` 默认走 astro-icon 的 sprite（`<use href="#ai:…">`），这份 sprite 有已知的丢符号问题（`src/components/common/Icon.astro` 就是为绕开它而写的包装组件）。症状是图标**整块空白**而不报错，`document.querySelector("symbol#ai:…")` 能确认缺没缺。判断/修复：给那个 `<Icon>` 加 `is:inline`（路径直接内联），或改用 `@/components/common/Icon.astro`。
 
+### 5.15 「全部文章」目录只在文章阅读页渲染（2026-10-05）
+
+- **悬浮坞里的「全部文章」抽屉**（`UnifiedDock.astro` 的 `#dock-drawer-posts` → `PostDirectoryList`：365 条树状列表，实测约 257KB HTML）原先**每一页都背**。现在用服务端 `isPostDetailPage`（`/posts/<slug>/`；列表页 `/posts/` 与分页 `/posts/N/` 用负向先行断言排除）包住渲染，非文章页 HTML 里不再有目录（实测 /projects/ 856KB → 599KB；9 个非文章页的 `data-post-slug` 全为 0，365 篇文章页照旧保留）。另外「文章」按钮本身在 ≥769px 是 `display: none`（`#ud-toc-btn, #ud-posts-btn`），这个抽屉主要在手机端用，桌面端看全部文章走右侧栏的 `PostDirectory`。
+- ✅ **不需要也不该加客户端补拉**：`#unified-dock` 就在 `#swup-container` 内（DOM 链 `#unified-dock → #swup-container → #main-content-wrapper`），SPA 导航时悬浮坞整块被 Swup 换成新页面的版本、内联脚本一并重跑 —— 首页点进文章页时目录、当前文章高亮、「文章」按钮都是自然就位的。2026-10-05 试过「取一张文章页的 HTML 再注入目录 + 手工补脚本」的补拉写法，是纯死代码（Swup 已处理），别再走那条路。三条路径已在浏览器实测：文章页整页加载 / 首页 / 首页→文章 SPA。
+- ℹ️ 组件真身是 **`components/layout/UnifiedDock.astro`**；仓库里另有历史遗留的 `components/controls/FloatingDock.astro` 与 `components/layout/MobilePostToolbar.astro`，**已无人 import**（旧文档与注释里仍可能用 FloatingDock 指代现在的悬浮坞），改悬浮坞别改错文件。
+
 ### 5.14 四个页面已下线（2026-10-03）
 
 - **/schedules/ 日历、/bills/ 账单、/apps/ 应用展示、/music/ 音乐页面**的路由文件与导航入口（导航栏 + 移动菜单的「我的」分组）已删除；navBarConfig「记录」分组的默认跳转已从 /music/ 改为 /archive/。

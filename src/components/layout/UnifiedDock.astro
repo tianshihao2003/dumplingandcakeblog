@@ -54,6 +54,15 @@ const musicEntries = customBangumi
 			new Date(a.published || 0).getTime(),
 	);
 const dockMusicPlaylist = JSON.stringify(musicEntries);
+
+// 「全部文章」目录只在**文章阅读页**渲染（站长 2026-10-05：其他页面都不需要）：
+// 它给每页背了约 250KB 的 HTML（365 篇的标题/链接/slug），非文章页一律不带。
+// 悬浮坞在 #swup-container 内，SPA 导航时它随容器一起被 Swup 换新（内联脚本也会重跑），
+// 所以这里用服务端判断就够了，不需要客户端补拉。
+// 文章详情：/posts/<slug>/（可多级 slug）；/posts/ 与 /posts/2/ 是列表页分页，排除
+const isPostDetailPage = /^\/posts\/(?!\d+\/?$)[^/]+\//.test(
+	Astro.url.pathname,
+);
 ---
 
 <div class="ud-dock" id="unified-dock" aria-label="快捷工具">
@@ -169,7 +178,7 @@ const dockMusicPlaylist = JSON.stringify(musicEntries);
 
 <div class="dock-drawer dock-drawer-closed" id="dock-drawer-posts">
   <div class="dock-drawer-title">[ 全部文章 ]</div>
-  <PostDirectoryList />
+  {isPostDetailPage && <PostDirectoryList />}
 </div>
 
 <style>
