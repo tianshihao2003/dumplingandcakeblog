@@ -24,10 +24,10 @@ import { url } from "@/utils/url-utils";
   )
 }
 
-<!-- 引入消息框组件 -->
+<!-- 只在启用时才输出配置（站长 2026-10-05：关闭状态下原先也要背 12KB 配置） -->
 <MessageBox />
 
-<script is:inline define:vars={{ spineModelConfig, modelPath: url(spineModelConfig.model.path), atlasPath: url(spineModelConfig.model.path.replace(".json", ".atlas")), cssPath: url("/pio/static/spine-player.min.css"), jsPath: url("/pio/static/spine-player.min.js") }}>
+<script is:inline define:vars={{ spineModelConfig: spineModelConfig.enable ? spineModelConfig : { enable: false }, modelPath: url(spineModelConfig.model.path), atlasPath: url(spineModelConfig.model.path.replace(".json", ".atlas")), cssPath: url("/pio/static/spine-player.min.css"), jsPath: url("/pio/static/spine-player.min.js") }}>
   // 动态加载 Spine CSS（带本地备用）
   function loadSpineCSS() {
     if (!spineModelConfig.enable) return;

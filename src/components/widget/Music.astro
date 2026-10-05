@@ -1,8 +1,6 @@
 ---
-import { getCollection } from "astro:content";
 import WidgetLayout from "@/components/common/WidgetLayout.astro";
 import MusicPlayer from "@/components/features/MusicPlayer.astro";
-import { musicPlayerConfig } from "@/config/musicConfig";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 
@@ -14,39 +12,9 @@ const { class: className, style } = Astro.props;
 
 const widgetId = `music-widget-${Math.random().toString(36).substring(2, 9)}`;
 
-const metingApiBase = musicPlayerConfig.meting?.api
-	? musicPlayerConfig.meting.api.split("?")[0]
-	: "https://mu.tsh520.cn/api";
-
-// Fetch bangumi collection (same source as music page)
-const customBangumi = await getCollection("bangumi");
-const musicEntries = customBangumi
-	.filter((item) => item.data.category === "music")
-	.map((item) => {
-		const { data } = item;
-		const imageSrc =
-			typeof data.image === "string" ? data.image : data.image.src;
-		return {
-			name: data.title,
-			artist: data.artist || "",
-			pic: imageSrc,
-			url: data.audioUrl || "",
-			lrc: data.lrcUrl || "",
-			metingServer: data.metingServer || "",
-			metingId: data.metingId || "",
-			published: data.published,
-		};
-	})
-	.filter((item) => item.url || item.metingId)
-	.sort(
-		(a, b) =>
-			new Date(b.published || 0).getTime() -
-			new Date(a.published || 0).getTime(),
-	);
-
-const playlistJson = JSON.stringify(musicEntries);
+// 播放列表不再内联：由音乐管理器按需拉 /music-playlist.json（站长 2026-10-05）
 ---
 
 <WidgetLayout id={`${widgetId}-layout`} class={className} style={style} name={i18n(I18nKey.music)}>
-    <MusicPlayer id={widgetId} externalPlaylist={playlistJson} metingApiBase={metingApiBase} />
+    <MusicPlayer id={widgetId} />
 </WidgetLayout>

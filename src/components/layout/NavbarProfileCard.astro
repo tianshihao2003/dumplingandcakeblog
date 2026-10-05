@@ -40,15 +40,10 @@ type PersonalSite = {
 	icon: string;
 	external: boolean;
 };
-type MiniPost = { title: string; url: string; date: string };
 type ProfileData = {
 	personalSites: PersonalSite[];
-	/** 12 × 4 的发文数（月 × 月内周段） */
+	/** 12 × 4 的发文数（月 × 月内周段）：服务端直接渲染进热力图，只有 48 个数字 */
 	heat: number[][];
-	/** 今年的文章（按月份分组），给热力图与「点格子看当月文章」用 */
-	postsByMonth: MiniPost[][];
-	/** 预先序列化好的 postsByMonth：每页渲染都要写进 data-posts，只序列化一次 */
-	postsJson: string;
 };
 
 let profileDataPromise: Promise<ProfileData> | null = null;
@@ -78,40 +73,28 @@ async function loadProfileData(): Promise<ProfileData> {
 			}))
 			.sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
 
-		/* 热力图 + 当月文章：只带今年的，控制内联 JSON 的体积 */
+		/* 热力图：只统计今年的发文数（12 月 × 4 周段，48 个数字，服务端直接渲染）。
+		   「点格子看当月文章」的 postsByMonth 原先也在这里内联（约 51KB），
+		   站长 2026-10-05 起改为点格子时再拉 /profile-posts.json（见 pages/profile-posts.json.ts）。 */
 		const posts = await getCollection("posts");
 		const year = new Date().getFullYear();
 		const heat: number[][] = Array.from({ length: 12 }, () => [0, 0, 0, 0]);
-		const postsByMonth: MiniPost[][] = Array.from({ length: 12 }, () => []);
 		for (const post of posts) {
 			const date = post.data.published;
 			if (date.getFullYear() !== year) continue;
 			const week = Math.min(3, Math.floor((date.getDate() - 1) / 7));
 			heat[date.getMonth()][week] += 1;
-			postsByMonth[date.getMonth()].push({
-				title: post.data.title,
-				url: url(`/posts/${post.id}/`),
-				date: `${date.getMonth() + 1}/${date.getDate()}`,
-			});
-		}
-		for (const list of postsByMonth) {
-			list.sort(
-				(a, b) => Number.parseInt(b.date, 10) - Number.parseInt(a.date, 10),
-			);
 		}
 
-		return {
-			personalSites,
-			heat,
-			postsByMonth,
-			postsJson: JSON.stringify(postsByMonth),
-		};
+		return { personalSites, heat };
 	})();
 
 	return profileDataPromise;
 }
 
-const { personalSites, heat, postsJson } = await loadProfileData();
+const { personalSites, heat } = await loadProfileData();
+/** 「点格子看当月文章」的数据源：不再内联，按需拉取 */
+const profilePostsUrl = url("/profile-posts.json");
 const maxCount = Math.max(1, ...heat.flat());
 const heatLevel = (count: number): number => {
 	if (count === 0) return 0;
@@ -152,7 +135,7 @@ const events = [
 	data-nav-profile
 	data-events={JSON.stringify(events)}
 	data-day-suffix={i18n(I18nKey.dayShort)}
-	data-posts={postsJson}
+	data-posts-url={profilePostsUrl}
 	data-posts-title={i18n(I18nKey.profilePostsOfMonth)}
 	data-no-posts={i18n(I18nKey.profileNoPosts)}
 >
@@ -365,10 +348,31 @@ const events = [
 	const events: { key: string; month: number; day: number }[] = JSON.parse(
 		root?.dataset.events ?? "[]",
 	);
-	/** 今年的文章（按月份分组），给「点格子看当月文章列表」用 */
-	const postsByMonth: { title: string; url: string; date: string }[][] = JSON.parse(
-		root?.dataset.posts ?? "[]",
-	);
+	/** 「点格子看当月文章」的数据：不内联进 HTML，首次点格子时拉一次并缓存 */
+	type MiniPost = { title: string; url: string; date: string };
+	const postsUrl = root?.dataset.postsUrl ?? "/profile-posts.json";
+	let postsByMonth: MiniPost[][] = [];
+	let postsLoaded = false;
+	let postsPromise: Promise<void> | null = null;
+	function ensurePosts(): Promise<void> {
+		if (postsLoaded) return Promise.resolve();
+		if (!postsPromise) {
+			postsPromise = fetch(postsUrl, { credentials: "same-origin" })
+				.then((res) =>
+					res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`)),
+				)
+				.then((data: unknown) => {
+					postsByMonth = Array.isArray(data) ? (data as MiniPost[][]) : [];
+				})
+				.catch(() => {
+					postsByMonth = [];
+				})
+				.then(() => {
+					postsLoaded = true;
+				});
+		}
+		return postsPromise;
+	}
 	const postsTitleTemplate = root?.dataset.postsTitle ?? "{month} · {count}";
 	const noPostsText = root?.dataset.noPosts ?? "";
 
@@ -459,7 +463,8 @@ const events = [
 	);
 
 	/** 把某个月的文章列表渲染进 posts 视图 */
-	function renderPosts(month: number): void {
+	async function renderPosts(month: number): Promise<void> {
+		await ensurePosts();
 		const list = postsByMonth[month] ?? [];
 		if (postsTitleEl) {
 			postsTitleEl.textContent = postsTitleTemplate
@@ -544,7 +549,7 @@ const events = [
 			);
 			if (!cell) return;
 			event.stopPropagation();
-			renderPosts(Number(cell.dataset.navProfileCell));
+			void renderPosts(Number(cell.dataset.navProfileCell));
 			showView("posts");
 		});
 

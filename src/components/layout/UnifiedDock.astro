@@ -26,34 +26,8 @@ const announcementLink =
 		? announcementData.link
 		: undefined;
 
-const metingApiBase = musicPlayerConfig.meting?.api
-	? musicPlayerConfig.meting.api.split("?")[0]
-	: "https://mu.tsh520.cn/api";
-const customBangumi = await getCollection("bangumi");
-const musicEntries = customBangumi
-	.filter((item) => item.data.category === "music")
-	.map((item) => {
-		const { data } = item;
-		const imageSrc =
-			typeof data.image === "string" ? data.image : data.image.src;
-		return {
-			name: data.title,
-			artist: data.artist || "",
-			pic: imageSrc,
-			url: data.audioUrl || "",
-			lrc: data.lrcUrl || "",
-			metingServer: data.metingServer || "",
-			metingId: data.metingId || "",
-			published: data.published,
-		};
-	})
-	.filter((item) => item.url || item.metingId)
-	.sort(
-		(a, b) =>
-			new Date(b.published || 0).getTime() -
-			new Date(a.published || 0).getTime(),
-	);
-const dockMusicPlaylist = JSON.stringify(musicEntries);
+// 音乐播放列表不再内联进页面（站长 2026-10-05）：
+// 统一走 /music-playlist.json + utils/music-playlist.ts，由播放管理器按需拉取
 
 // 「全部文章」目录只在**文章阅读页**渲染（站长 2026-10-05：其他页面都不需要）：
 // 它给每页背了约 250KB 的 HTML（365 篇的标题/链接/slug），非文章页一律不带。
@@ -163,7 +137,7 @@ const isPostDetailPage = /^\/posts\/(?!\d+\/?$)[^/]+\//.test(
 {musicPlayerConfig.showInNavbar !== false && (
 <div class="dock-drawer dock-drawer-closed" id="dock-drawer-music">
   <div class="dock-drawer-title">[ {i18n(I18nKey.music)} ]</div>
-  <MusicPlayer externalPlaylist={dockMusicPlaylist} metingApiBase={metingApiBase} />
+  <MusicPlayer />
 </div>
 )}
 

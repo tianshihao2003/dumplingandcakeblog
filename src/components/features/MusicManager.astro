@@ -1,5 +1,4 @@
 ---
-import { getCollection } from "astro:content";
 import { musicPlayerConfig } from "@/config/musicConfig";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
@@ -7,35 +6,12 @@ import { url } from "@/utils/url-utils";
 
 const config = musicPlayerConfig;
 
-// 从 bangumi 集合加载音乐播放列表（与音乐页面共享数据源）
+// 播放列表（bangumi 集合里的 music 条目）不再内联进页面：站长 2026-10-05 起改为
+// 静态 JSON（/music-playlist.json），由 init() 按需拉一次；构建逻辑见 utils/music-playlist.ts
+const musicPlaylistUrl = url("/music-playlist.json");
 const metingApiBase = config.meting?.api
 	? config.meting.api.split("?")[0]
 	: "https://mu.tsh520.cn/api";
-const customBangumi = await getCollection("bangumi");
-const bangumiPlaylist = customBangumi
-	.filter((item) => item.data.category === "music")
-	.map((item) => {
-		const { data } = item;
-		const imageSrc =
-			typeof data.image === "string" ? data.image : data.image.src;
-		return {
-			name: data.title,
-			artist: data.artist || "",
-			url: data.audioUrl || "",
-			pic: imageSrc,
-			lrc: data.lrcUrl || "",
-			metingServer: data.metingServer || "",
-			metingId: data.metingId || "",
-			published: data.published,
-		};
-	})
-	.filter((item) => item.url || item.metingId)
-	.sort(
-		(a, b) =>
-			new Date(b.published || 0).getTime() -
-			new Date(a.published || 0).getTime(),
-	);
-
 const localPlaylist =
 	config.mode === "local" && config.local?.playlist
 		? config.local.playlist.map((song) => {
@@ -86,7 +62,7 @@ const managerConfigStr = JSON.stringify({
 });
 ---
 
-<script is:inline data-swup-ignore-script define:vars={{ managerConfigStr, bangumiPlaylistJson: JSON.stringify(bangumiPlaylist), metingApiBase }}>
+<script is:inline data-swup-ignore-script define:vars={{ managerConfigStr, playlistUrl: musicPlaylistUrl, metingApiBase }}>
 (function () {
     // Singleton guard – only create once
     if (window.__fireflyMusic) return;
@@ -426,9 +402,14 @@ const managerConfigStr = JSON.stringify({
                 state.playlist = config.localPlaylist || [];
             }
 
-            // 自动加载 bangumi 播放列表（构建时注入）
+            // 播放列表：静态 JSON，按需拉一次（原先内联在每页 HTML 里）
             var bangumi = [];
-            try { bangumi = JSON.parse(bangumiPlaylistJson || '[]'); } catch(e) {}
+            try {
+                var resp = await fetch(playlistUrl, { credentials: 'same-origin' });
+                if (resp.ok) bangumi = await resp.json();
+            } catch(e) {
+                console.warn('[MusicManager] playlist fetch failed:', e);
+            }
             if (bangumi.length > 0 && !_externalLoaded) {
                 var resolved = await resolveMetingTracks(bangumi);
                 state.playlist = resolved;

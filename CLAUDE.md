@@ -432,6 +432,15 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 - ⚠️ **手机底部那条浮岛（`MobileDock` + `src/styles/components/mobile-dock.css`）不在这次统一范围内，保持原样**（透明按钮 + 中间凸出的黑色圆钮 + 胶囊圆角）—— 站长 2026-09-30 明确要求改回来，别再顺手「统一规格」。它的总高 `4.25rem`（按钮 3.25rem + 上下留白 0.5rem）被 `dock-drawer`、动态页那 3 个按钮的 `bottom` 偏移按写死的值引用，**改它高度要同步改那两处**。
 - ⚠️ **图标空白 = sprite 丢符号**（本次踩到）：页面里的 `<Icon>` 默认走 astro-icon 的 sprite（`<use href="#ai:…">`），这份 sprite 有已知的丢符号问题（`src/components/common/Icon.astro` 就是为绕开它而写的包装组件）。症状是图标**整块空白**而不报错，`document.querySelector("symbol#ai:…")` 能确认缺没缺。判断/修复：给那个 `<Icon>` 加 `is:inline`（路径直接内联），或改用 `@/components/common/Icon.astro`。
 
+### 5.16 大块数据不再内联：按需拉静态 JSON（2026-10-05）
+
+- **音乐播放列表**：bangumi 的 music 条目（约 30KB）原先内联进每页 HTML，而且是**三份**（悬浮坞的 `MusicPlayer`、侧栏 `Music` 小组件、`MusicManager`）。现在只在 `/music-playlist.json` 输出一次（构建逻辑统一在 `src/utils/music-playlist.ts` 的 `getMusicPlaylist()`，顺手去掉了客户端用不到的 `published` 字段），由 `MusicManager` 在 `init()` 时 fetch 一次（`playlistUrl` 经 `define:vars` 传入）。`MusicPlayer` 不再接收 `externalPlaylist` / `metingApiBase`（那套「外部歌单注入」路径已删：管理器自己就会加载），init 后由 `fm:init` 事件同步 UI；播放行为不变。
+- **资料卡「点格子看当月文章」**：`postsByMonth`（今年 364 篇，约 51KB）原先内联在 `data-posts`；现在只在 `/profile-posts.json` 输出（`src/pages/profile-posts.json.ts`），卡片脚本**首次点格子**时才 fetch 并缓存（`ensurePosts()`）。热力图本身照旧服务端渲染（只有 12×4 个数字），页面加载时不发这个请求。
+- **Spine 看板娘**：关闭状态下也从 `define:vars` 里排除配置（原先关着也要背 12KB）；`enable: false` 时脚本照样会跑但拿到的只是 `{ enable: false }`。
+- 实测：**每一页少 140KB**（首页 557.7→417.5KB、/projects/ 599.4→459.2KB、文章页 981.9→841.8KB）；两个 JSON 分别 27.8KB / 43.4KB（gzip 4.1 / 8.7KB）。
+- 排查套路：整页里「内联 `<script>` 中 `JSON.parse` 一大坨字符串」的地方就是可疑点；大 JSON 一律走 `src/pages/*.json.ts` 端点 + 用时 fetch。
+- ⚠️ **已知可优化（本次未做）**：`MusicManager` 的 `resolveMetingTracks` 在 init 时会把**所有**带 `metingId` 的曲目逐个请求 meting API（当前歌单 94 首），只解析当前播放的那首会明显更快。
+
 ### 5.15 「全部文章」目录只在文章阅读页渲染（2026-10-05）
 
 - **悬浮坞里的「全部文章」抽屉**（`UnifiedDock.astro` 的 `#dock-drawer-posts` → `PostDirectoryList`：365 条树状列表，实测约 257KB HTML）原先**每一页都背**。现在用服务端 `isPostDetailPage`（`/posts/<slug>/`；列表页 `/posts/` 与分页 `/posts/N/` 用负向先行断言排除）包住渲染，非文章页 HTML 里不再有目录（实测 /projects/ 856KB → 599KB；9 个非文章页的 `data-post-slug` 全为 0，365 篇文章页照旧保留）。另外「文章」按钮本身在 ≥769px 是 `display: none`（`#ud-toc-btn, #ud-posts-btn`），这个抽屉主要在手机端用，桌面端看全部文章走右侧栏的 `PostDirectory`。
