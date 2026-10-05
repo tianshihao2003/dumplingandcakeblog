@@ -432,6 +432,12 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 - ⚠️ **手机底部那条浮岛（`MobileDock` + `src/styles/components/mobile-dock.css`）不在这次统一范围内，保持原样**（透明按钮 + 中间凸出的黑色圆钮 + 胶囊圆角）—— 站长 2026-09-30 明确要求改回来，别再顺手「统一规格」。它的总高 `4.25rem`（按钮 3.25rem + 上下留白 0.5rem）被 `dock-drawer`、动态页那 3 个按钮的 `bottom` 偏移按写死的值引用，**改它高度要同步改那两处**。
 - ⚠️ **图标空白 = sprite 丢符号**（本次踩到）：页面里的 `<Icon>` 默认走 astro-icon 的 sprite（`<use href="#ai:…">`），这份 sprite 有已知的丢符号问题（`src/components/common/Icon.astro` 就是为绕开它而写的包装组件）。症状是图标**整块空白**而不报错，`document.querySelector("symbol#ai:…")` 能确认缺没缺。判断/修复：给那个 `<Icon>` 加 `is:inline`（路径直接内联），或改用 `@/components/common/Icon.astro`。
 
+### 5.14 四个页面已下线（2026-10-03）
+
+- **/schedules/ 日历、/bills/ 账单、/apps/ 应用展示、/music/ 音乐页面**的路由文件与导航入口（导航栏 + 移动菜单的「我的」分组）已删除；navBarConfig「记录」分组的默认跳转已从 /music/ 改为 /archive/。
+- ⚠️ **不要顺手删这几个集合与内容**：bills(117) / schedules(7) / apps(1) 的 schema 与 md 都还在（页面先下线、数据保留），SiteStats 仍在用 bills 统计。想彻底清掉要站长确认。
+- ⚠️ **音乐功能与音乐页面无关**：右下角悬浮坞的音乐按钮/抽屉 + musicConfig + bangumi 的 music 条目是另一条链路，删页面时不要动它们。
+
 ### 5.13 自用系列笔记：不进文章列表与 RSS（2026-10-03）
 
 - 配置在 src/config/notesConfig.ts 的 notesHiddenFromLists（写分类文件夹路径，支持多级；前缀匹配整棵子树）。

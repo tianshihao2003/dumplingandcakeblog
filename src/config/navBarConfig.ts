@@ -107,40 +107,6 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		});
 	}
 
-	// 我的 - 日历、账单、应用展示、音乐
-	links.push({
-		name: "我的",
-		url: "/schedules/",
-		icon: "material-symbols:person",
-		children: [
-			{
-				name: "日历",
-				url: "/schedules/",
-				icon: "material-symbols:calendar-today-outline",
-			},
-			{
-				name: "账单",
-				url: "/bills/",
-				icon: "material-symbols:account-balance-wallet-outline",
-			},
-			{
-				name: "应用展示",
-				url: "/apps/",
-				icon: "material-symbols:apps",
-			},
-			...(siteConfig.pages.musicPage
-				? [
-						{
-							name: "音乐",
-							url: "/music/",
-							icon: "material-symbols:music-note",
-							external: true,
-						} as NavBarLink,
-					]
-				: []),
-		],
-	});
-
 	// 关于及其子菜单
 	links.push({
 		name: "关于",
