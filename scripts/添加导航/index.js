@@ -4,7 +4,7 @@
  * 添加网站导航条目脚本
  *
  * 用法：
- *   node scripts/add-daohang/index.js
+ *   node scripts/添加导航/index.js
  *   node scripts/add-daohang/index.js --url=https://example.com
  *
  * 功能：
