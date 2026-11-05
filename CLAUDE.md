@@ -1212,7 +1212,8 @@ git check-ignore -v "src/content/随便新建/x.md"          # 有输出 = 忽�
 # 在 src/content：集合目录也应"会备份"（无输出 = 会备份）
 git check-ignore -v "文章/某分类/x.md"                   # 无输出 = 会备份
 git check-ignore -v "学习笔记/某主题/x.md"               # 无输出 = 会备份
-git check-ignore -v --no-index ".obsidian/plugins/x/data.json.bak-xxx"  # 有输出 = 密钥不入库
+git check-ignore -v --no-index ".obsidian/plugins/x/data.json"          # 无输出 = 插件设置会备份
+git check-ignore -v --no-index ".obsidian/plugins/x/data.json.bak-xxx"  # 有输出 = 旧凭据不入库
 ```
 
 > `git check-ignore` 默认对**已跟踪**文件不报规则，要验证规则本身请加 `--no-index`。
@@ -1221,12 +1222,15 @@ git check-ignore -v --no-index ".obsidian/plugins/x/data.json.bak-xxx"  # 有输
 
 - 首次提交：`chore: 私人内容首次归档`（448 文件，`.git` 约 12M）；推送 `gh repo create content-backup --private`。
 - 备份范围（2026-11-05 起）：**整个 `src/content/`**，含全部博客集合目录、学习笔记、笔记本归档、notes、
-  临时收集、工作、`Obsidian/`、精简 `.obsidian` 配置、`.workbuddy` 记忆。
-  仅排除 `.trash/`（Obsidian 回收站）、`.sync-vault/`（LiveSync 缓存）、插件二进制与密钥。
-- **`.obsidian/plugins/*/data.json*` 永不入库**（图床密码 / LiveSync token / 微信读书 cookie 明文）。
-  规则必须写成 `data.json*`：曾经只写精确的 `data.json`，漏掉了 `data.json.bak-2026-08-15T…`，
-  该 bak 已被跟踪并推送到私有仓（2026-11-05 用 `git rm --cached` 移出索引，历史里仍有，必要时去微信读书重登踢掉 cookie）。
-  `main.js`、`styles.css` 也不入库（插件装得回来）。
+  临时收集、工作、`Obsidian/`、`.obsidian` 配置（**含各插件 `data.json` 设置**）、`.workbuddy` 记忆。
+  仅排除 `.trash/`（Obsidian 回收站）、`.sync-vault/`（LiveSync 缓存）、插件二进制 `main.js`/`styles.css`。
+- **插件设置 `data.json` 已入库**（2026-11-05 站长决定，仓库为 private）：14 个插件的 data.json 随仓库备份，
+  换机可直接还原模板目录、附件规则、图床、LiveSync 库等参数。
+  ⚠️ 这些文件含 **LiveSync 库口令 / 微信读书 cookie / 图床 token / obsidian-git 远程认证**，
+  因此 `content-backup` **必须永久保持 private**；一旦转公开要先清洗历史。
+- 但**派生备份 `.obsidian/plugins/*/data.json.bak*` 仍排除**：过期凭据无恢复价值。
+  注意历史上 `data.json.bak-2026-08-15T…` 曾进过首次归档 commit（`b771ebe`），
+  2026-11-05 已从索引移除；如需彻底清除要 `git filter-repo` 重写，或去微信读书重登踢掉旧 cookie。
 - **不要给 `学习笔记/` 再单独 `git init`**（会形成三层嵌套）。
 - `.git/info/exclude` 不随 clone 走：换机器要手动抄一份（内容见 `dumplingandcake-notes/DEPLOY.md`）。
 
