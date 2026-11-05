@@ -1183,7 +1183,12 @@ description: 一句话概括（显示在列表页）
 |---|---|---|
 | 规则位置 | 根 `.gitignore`：先 `src/content/*/` 全忽略，再逐条 `!src/content/xx/` 放行 | `src/content/.git/info/exclude` 黑名单 |
 | 新建目录 | **忽略**（不上传，安全默认） | **纳入**（下次 commit 即备份） |
-| 已跟踪集合目录 | 跟踪（公开） | 排除（不重复备份） |
+| 已跟踪集合目录 | 跟踪（公开） | **全量备份**（2026-11-05 起，不再排除） |
+
+> 2026-11-05 起备份仓改为**全量备份整个 `src/content/`**：原先的 11 条集合目录排除规则
+> （文章/页面/动态/影视/足迹/相册/导航/资源/友链/更新日志/笔记本）已删除，
+> 备份仓与博客主仓各自完整、互不依赖。代价是**集合目录在两侧各有一份**，
+> 在 Obsidian 里改文章后，备份仓由 obsidian-git 自动提交，主仓仍需手动 commit & push。
 
 ### 三条铁律
 
@@ -1193,8 +1198,9 @@ description: 一句话概括（显示在列表页）
    （当时 `更新日志/2026-10-26-*.md` 两个新文件就这样被藏了）。备份仓库的规则只能写 `.git/info/exclude`。
 2. **注意命令作用域**：在 `dumplingandcakeblog/` 执行 git 操作的是博客主仓；
    在 `dumplingandcakeblog/src/content/` 执行的是备份仓库。两个仓库的 `git status` 互不兼容。
-3. **新增公开集时要两边都改**：主仓 `.gitignore` 加 `!src/content/xx/` + `src/content.config.ts` 加 collection
-   + 路由 + `.pages.yml`；**同时**在备份仓库 `.git/info/exclude` 加 `xx/`，否则公开内容会被重复备份。
+3. **新增公开集时只改主仓**：主仓 `.gitignore` 加 `!src/content/xx/` + `src/content.config.ts` 加 collection
+   + 路由 + `.pages.yml` 即可。备份仓自 2026-11-05 起全量备份，**不需要**再改 `.git/info/exclude`
+   （反之：要让某个目录**不进**备份仓，才去 exclude 里加一条）。
 
 ### 验证方法（改完必须跑）
 
@@ -1203,16 +1209,23 @@ description: 一句话概括（显示在列表页）
 git check-ignore -v "src/content/文章/某分类/x.md"      # 无输出 = 跟踪
 git check-ignore -v "src/content/随便新建/x.md"          # 有输出 = 忽略
 
-# 在 src/content：反之
-git check-ignore -v "文章/某分类/x.md"                   # 有输出 = 跳过备份
+# 在 src/content：集合目录也应"会备份"（无输出 = 会备份）
+git check-ignore -v "文章/某分类/x.md"                   # 无输出 = 会备份
 git check-ignore -v "学习笔记/某主题/x.md"               # 无输出 = 会备份
+git check-ignore -v --no-index ".obsidian/plugins/x/data.json.bak-xxx"  # 有输出 = 密钥不入库
 ```
+
+> `git check-ignore` 默认对**已跟踪**文件不报规则，要验证规则本身请加 `--no-index`。
 
 ### 备份仓库要点
 
 - 首次提交：`chore: 私人内容首次归档`（448 文件，`.git` 约 12M）；推送 `gh repo create content-backup --private`。
-- 备份范围：学习笔记 / 笔记本归档 / notes / 临时收集 / 工作 / `Obsidian/` / 精简 `.obsidian` 配置。
-- **`.obsidian/plugins/*/data.json` 永不入库**（图床密码 / LiveSync token / 微信读书 cookie 明文）；
+- 备份范围（2026-11-05 起）：**整个 `src/content/`**，含全部博客集合目录、学习笔记、笔记本归档、notes、
+  临时收集、工作、`Obsidian/`、精简 `.obsidian` 配置、`.workbuddy` 记忆。
+  仅排除 `.trash/`（Obsidian 回收站）、`.sync-vault/`（LiveSync 缓存）、插件二进制与密钥。
+- **`.obsidian/plugins/*/data.json*` 永不入库**（图床密码 / LiveSync token / 微信读书 cookie 明文）。
+  规则必须写成 `data.json*`：曾经只写精确的 `data.json`，漏掉了 `data.json.bak-2026-08-15T…`，
+  该 bak 已被跟踪并推送到私有仓（2026-11-05 用 `git rm --cached` 移出索引，历史里仍有，必要时去微信读书重登踢掉 cookie）。
   `main.js`、`styles.css` 也不入库（插件装得回来）。
 - **不要给 `学习笔记/` 再单独 `git init`**（会形成三层嵌套）。
 - `.git/info/exclude` 不随 clone 走：换机器要手动抄一份（内容见 `dumplingandcake-notes/DEPLOY.md`）。
