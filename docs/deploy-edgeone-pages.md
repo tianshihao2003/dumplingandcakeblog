@@ -100,3 +100,41 @@ EdgeOne Pages 托管（blog.tsh520.cn 直接绑定 Pages 项目）
 | 构建失败 | 先看 Node 版本是否 ≥ 22、pnpm 是否 9.14.x、构建命令是否为 `pnpm build`；与 `build.yml` 的 CI 行为对照 |
 | 功能静默缺失（评论/统计空白） | 检查 13 个环境变量是否逐项填齐（见第二节表） |
 | 需要换域名 | 改 `src/config/siteConfig.ts:16` 的 `site_url`（sitemap/robots/RSS/canonical 自动跟随）+ 控制台重新绑定域名；注意 `src/config/musicConfig.ts` 等硬编码的 `*.tsh520.cn` 子域不受影响 |
+| 线上全站 404，但 `/xxx` 与 `/xxx/index.html` 都 200 | 平台不再把带尾斜杠的目录请求解析到 `index.html`（2026-11-18 起出现，产物本身完好）。检查仓库根 `edgeone.json` 是否存在且已随最新部署生效，见第六节 |
+
+## 六、尾斜杠路由（2026-11-19）
+
+**现象**：`/about`、`/about/index.html` 均 200，但 `/about/` 返回 404；全站站内链接、canonical、sitemap 都是带尾斜杠的写法，于是看起来「全站 404」。预览域名正常、自定义域名异常，构建日志无报错。
+
+**原因**：Astro 目录路由产物是 `xxx/index.html`，带尾斜杠的请求需要托管层把它映射到该文件。EdgeOne Pages 自 2026-11-18 起在自定义域名层不再做这个隐式映射（无斜杠 → `index.html` 的内部规则仍在）。**不是构建问题**：`dist/` 产物、CSS/JS 资源、`/xxx/index.html` 直取都正常。
+
+**修法**：仓库根目录的 `edgeone.json` 用 `rewrites` 显式补回映射，随构建部署生效：
+
+```json
+{
+  "rewrites": [
+    { "source": "/:level1/", "destination": "/:level1/index.html" },
+    { "source": "/:level1/:level2/", "destination": "/:level1/:level2/index.html" },
+    { "source": "/:level1/:level2/:level3/", "destination": "/:level1/:level2/:level3/index.html" },
+    { "source": "/:level1/:level2/:level3/:level4/", "destination": "/:level1/:level2/:level3/:level4/index.html" },
+    { "source": "/:level1/:level2/:level3/:level4/:level5/", "destination": "/:level1/:level2/:level3/:level4/:level5/index.html" }
+  ]
+}
+```
+
+规则要点（依据 [edgeone.json 官方文档](https://edgeone.ai/document/edgeone-json)）：
+
+- `:levelN` 是**单级**路径占位符，只能逐层枚举，定位不到多级路径；同一条 `source` 里占位符名不能重复，所以每层换一个名字。
+- `source` 必须以 `/` 开头；`rewrites` 最多 100 条；`source` 每条最多一个 `*`。
+- 当前产物最深 4 级（`/posts/分类/子分类/文章/`），第 5 条是余量；再加深要照格式补。
+- **不要**用 `"source": "/*"` → `/index.html` 的 SPA fallback 冒充修复：它会让不存在的路径返回首页 200（软 404），污染搜索索引。
+
+**部署后验证**（每条都该 200，且标题对得上）：
+
+```bash
+curl -s -o /dev/null -w "%{http_code} %{url_effective}\n" https://blog.tsh520.cn/about/
+curl -s -o /dev/null -w "%{http_code}\n" "https://blog.tsh520.cn/categories/技术分享/"
+curl -s -o /dev/null -w "%{http_code}\n" "https://blog.tsh520.cn/posts/博客指南/博客使用指南/"
+```
+
+若个别路径仍 404：先排除边缘缓存（加 `?v=时间戳` 或控制台清缓存）→ 仍失败则提 EdgeOne 工单，备选方案是改 `astro.config.mjs` 的 `trailingSlash: "never"`（全站 URL 形态变化，涉及 sitemap/canonical/旧链接，需单独评估）。

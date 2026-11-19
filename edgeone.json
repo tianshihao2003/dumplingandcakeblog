@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/:level1/",
+      "destination": "/:level1/index.html"
+    },
+    {
+      "source": "/:level1/:level2/",
+      "destination": "/:level1/:level2/index.html"
+    },
+    {
+      "source": "/:level1/:level2/:level3/",
+      "destination": "/:level1/:level2/:level3/index.html"
+    },
+    {
+      "source": "/:level1/:level2/:level3/:level4/",
+      "destination": "/:level1/:level2/:level3/:level4/index.html"
+    },
+    {
+      "source": "/:level1/:level2/:level3/:level4/:level5/",
+      "destination": "/:level1/:level2/:level3/:level4/:level5/index.html"
+    }
+  ]
+}
