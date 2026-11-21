@@ -4,7 +4,7 @@ published: 2026-11-19
 tags:
   - 美化
 image: 文章/技术分享/assets/Windows终端美化指南/file-20261119153317523.png
-description:
+description: ""
 ---
 
 > 目标：把 Windows Terminal 配成 **「浅色毛玻璃 + Frost 白底配色 + 自定义背景图 + Powerline 提示符」**。 全程照抄即可，不需要编程基础。每一步都标了「做什么」和「为什么」。
