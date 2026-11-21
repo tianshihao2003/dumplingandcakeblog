@@ -67,7 +67,7 @@ const getDynamicNavBarConfig = (): NavBarConfig => {
 		icon: "material-symbols:local-cafe",
 		children: [
 			{
-				name: "说说",
+				name: "闪念",
 				url: "/moments/",
 				icon: "material-symbols:chat-bubble-outline",
 			},
