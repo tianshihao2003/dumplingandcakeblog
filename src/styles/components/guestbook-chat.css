@@ -22,7 +22,7 @@ html:has(.guestbook-page) #left-sidebar-dynamic,
 html:has(.guestbook-page) #right-sidebar-static,
 html:has(.guestbook-page) #right-sidebar-dynamic,
 html:has(.guestbook-page) #mobile-bottom-sidebar,
-html:has(.guestbook-page) #main-grid > .footer {
+html:has(.guestbook-page) .footer {
 	display: none !important;
 }
 

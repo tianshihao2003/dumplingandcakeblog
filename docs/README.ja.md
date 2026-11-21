@@ -191,8 +191,7 @@ src/
 │   ├── commentConfig.ts      # コメントシステム設定
 │   ├── announcementConfig.ts # お知らせ設定
 │   ├── licenseConfig.ts      # ライセンス設定
-│   ├── footerConfig.ts       # フッター設定
-│   ├── FooterConfig.html     # フッターHTMLコンテンツ
+│   ├── footerConfig.ts       # 手描き Doodle Crew フッター
 │   ├── expressiveCodeConfig.ts # コードハイライト設定
 │   ├── sakuraConfig.ts       # 桜エフェクト設定
 │   ├── fontConfig.ts         # フォント設定

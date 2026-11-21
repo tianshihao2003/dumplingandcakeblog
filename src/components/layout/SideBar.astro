@@ -258,11 +258,31 @@ const bottomComponents = isMobileBottom ? filteredComponents : [];
     });
   }
 
-  checkSidebarMode();
+  // 页面内容会异步变长（朋友圈卡片、加载更多、筛选重排），
+  // 只在 load 时判断一次会让侧栏一直停在 static，长页面就滚没了。
+  var mainObserver = null;
+
+  function observeMainContent() {
+    if (typeof ResizeObserver === "undefined") return;
+    var mainContent = document.getElementById("swup-container");
+    if (!mainContent) return;
+    if (mainObserver) mainObserver.disconnect();
+    mainObserver = new ResizeObserver(function() {
+      checkSidebarMode();
+    });
+    mainObserver.observe(mainContent);
+  }
+
+  function initSidebarMode() {
+    checkSidebarMode();
+    observeMainContent();
+  }
+
+  initSidebarMode();
   window.addEventListener("resize", checkSidebarMode);
-  document.addEventListener("astro:page-load", checkSidebarMode);
+  document.addEventListener("astro:page-load", initSidebarMode);
   document.addEventListener("swup:content:replaced", function() {
-    setTimeout(checkSidebarMode, 100);
+    setTimeout(initSidebarMode, 100);
   });
 })();
 </script>

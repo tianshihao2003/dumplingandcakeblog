@@ -1,0 +1,1002 @@
+/* ==========================================================================
+   Doodle Crew 页脚
+   移植自 React 版内联样式；颜色走 --page-bg / --deep-text，强调色保留橙色。
+   动效统一放在 prefers-reduced-motion: no-preference 里，静态布局始终生效。
+   ========================================================================== */
+
+.dcf {
+	position: relative;
+	isolation: isolate;
+	overflow: hidden;
+	overflow: clip;
+	width: 100%;
+	box-sizing: border-box;
+	display: flex;
+	flex-direction: column;
+	background: var(--dcf-bg);
+	color: var(--dcf-ink);
+	font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, Roboto,
+		sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	--dcf-soft: color-mix(in oklab, var(--dcf-ink) 62%, var(--dcf-bg));
+	--dcf-line: color-mix(in oklab, var(--dcf-ink) 14%, var(--dcf-bg));
+	--dcf-pad: clamp(16px, 4vw, 56px);
+}
+
+:where(.dcf) *,
+:where(.dcf) *::before,
+:where(.dcf) *::after {
+	box-sizing: border-box;
+}
+
+:where(.dcf) a {
+	color: inherit;
+	text-decoration: none;
+}
+
+:where(.dcf) button {
+	appearance: none;
+	background: none;
+	border: 0;
+	padding: 0;
+	margin: 0;
+	font: inherit;
+	color: inherit;
+	cursor: pointer;
+}
+
+:where(.dcf) h2,
+:where(.dcf) h3,
+:where(.dcf) p,
+:where(.dcf) ul {
+	margin: 0;
+	padding: 0;
+}
+
+:where(.dcf) ul {
+	list-style: none;
+}
+
+.dcf svg {
+	max-width: none;
+	overflow: visible;
+}
+
+.dcf :focus-visible {
+	outline: 2px dashed var(--dcf-ink);
+	outline-offset: 4px;
+	border-radius: 6px;
+}
+
+.dcf-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+}
+
+/* ---- 顶部信息带 ---------------------------------------------------------- */
+
+.dcf-top {
+	display: grid;
+	grid-template-columns: minmax(0, 1.1fr) minmax(0, 2fr);
+	grid-template-rows: auto 1fr;
+	column-gap: clamp(24px, 5vw, 80px);
+	row-gap: 14px;
+	padding: clamp(28px, 4.5vw, 56px) var(--dcf-pad) 0;
+	max-width: var(--page-width, 1360px);
+	width: 100%;
+	margin: 0 auto;
+	position: relative;
+	z-index: 3;
+}
+
+.dcf-brand {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	grid-column: 1;
+	grid-row: 1;
+}
+
+.dcf-logo {
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 999px;
+	border: 2px solid var(--dcf-ink);
+	background: var(--dcf-bg);
+	transform: rotate(-6deg);
+	transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.dcf-brand:hover .dcf-logo {
+	transform: rotate(8deg) scale(1.06);
+}
+
+.dcf-brandname {
+	font-weight: 800;
+	font-size: 19px;
+	letter-spacing: -0.02em;
+}
+
+.dcf-blurb {
+	grid-column: 1;
+	grid-row: 2;
+	font-family: var(--dcf-serif);
+	font-size: 15px;
+	line-height: 1.55;
+	color: var(--dcf-soft);
+	max-width: 34ch;
+}
+
+.dcf-cols {
+	grid-column: 2;
+	grid-row: 1 / span 2;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 20px;
+}
+
+.dcf-coltitle {
+	font-size: 12px;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	margin-bottom: 12px;
+}
+
+.dcf-col li {
+	margin: 0 0 7px;
+}
+
+.dcf-link {
+	position: relative;
+	display: inline-block;
+	font-size: 14px;
+	font-weight: 550;
+	color: var(--dcf-soft);
+	padding: 2px 0;
+	transition: color 0.2s;
+}
+
+.dcf-link:hover {
+	color: var(--dcf-ink);
+}
+
+.dcf-squiggle {
+	position: absolute;
+	left: -2px;
+	right: -2px;
+	bottom: -4px;
+	width: calc(100% + 4px);
+	height: 7px;
+	pointer-events: none;
+}
+
+.dcf-squiggle path {
+	fill: none;
+	stroke: var(--dcf-accent);
+	stroke-width: 2.2;
+	stroke-linecap: round;
+	stroke-dasharray: 1;
+	stroke-dashoffset: 1;
+	/* 静止时完全隐藏：圆头线帽在 offset=1 时仍会露出一个小点 */
+	opacity: 0;
+	transition:
+		stroke-dashoffset 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+		opacity 0.15s;
+}
+
+.dcf-link:hover .dcf-squiggle path,
+.dcf-link:focus-visible .dcf-squiggle path {
+	stroke-dashoffset: 0;
+	opacity: 1;
+}
+
+/* ---- 巨型字舞台 ---------------------------------------------------------- */
+
+.dcf-world {
+	position: relative;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	padding: clamp(22px, 4vw, 48px) var(--dcf-pad) 0;
+	max-width: var(--page-width, 1360px);
+	width: 100%;
+	margin: 0 auto;
+}
+
+.dcf-stage {
+	position: relative;
+	z-index: 1;
+}
+
+.dcf-svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+.dcf-svg text {
+	fill: var(--dcf-ink);
+}
+
+.dcf-art {
+	fill: var(--dcf-bg);
+	stroke: var(--dcf-ink);
+	stroke-width: 2.5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+.dcf-art .n {
+	fill: none;
+}
+
+.dcf-art .k {
+	fill: var(--dcf-ink);
+}
+
+.dcf-art .a {
+	fill: var(--dcf-accent);
+}
+
+.dcf-art .o {
+	fill: #ff9f1c;
+}
+
+.dcf-art .r {
+	fill: #ff4d4d;
+}
+
+.dcf-art .thin {
+	stroke-width: 1.5;
+}
+
+.dcf-art .thick {
+	stroke-width: 3.4;
+}
+
+.dcf-art .dcf-glint {
+	fill: var(--dcf-bg);
+	stroke: none;
+}
+
+.dcf-art .dcf-shadow {
+	fill: var(--dcf-ink);
+	stroke: none;
+	opacity: 0.14;
+}
+
+.dcf-ground path {
+	fill: none;
+	stroke: var(--dcf-ink);
+	stroke-width: 2.4;
+	stroke-linecap: round;
+}
+
+.dcf-ground .dcf-tufts {
+	stroke-width: 1.8;
+}
+
+.dcf-pebble {
+	fill: var(--dcf-bg);
+	stroke: var(--dcf-ink);
+	stroke-width: 1.6;
+}
+
+.dcf-dust {
+	fill: none;
+	stroke: var(--dcf-ink);
+	stroke-width: 3;
+	stroke-linecap: round;
+	opacity: 0;
+}
+
+.dcf-hit {
+	fill: transparent;
+	stroke: none;
+	cursor: pointer;
+	outline: none;
+}
+
+.dcf-hit:focus-visible {
+	stroke: var(--dcf-ink);
+	stroke-width: 2.5;
+	stroke-dasharray: 6 6;
+}
+
+.dcf-glyph {
+	transform-box: fill-box;
+	transform-origin: 50% 100%;
+}
+
+.dcf-tail {
+	transform-box: fill-box;
+	transform-origin: 0% 100%;
+}
+
+.dcf-hopper {
+	transform-box: fill-box;
+	transform-origin: 50% 100%;
+}
+
+.dcf-arrive {
+	transform-box: fill-box;
+	transform-origin: 50% 100%;
+}
+
+.dcf-art.dcf-sway {
+	transform-box: fill-box;
+	transform-origin: 50% 100%;
+}
+
+.dcf-art.dcf-peck {
+	transform-box: fill-box;
+	transform-origin: 50% 100%;
+}
+
+/* ---- 气泡 ---------------------------------------------------------------- */
+
+.dcf-bubbles {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 2;
+}
+
+.dcf-bubble {
+	position: absolute;
+	transform: translate(-50%, -100%) rotate(-2deg);
+	transform-origin: 50% 100%;
+	background: var(--dcf-bg);
+	color: var(--dcf-ink);
+	border: 2px solid var(--dcf-ink);
+	border-radius: 16px;
+	padding: 7px 12px;
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.25;
+	white-space: nowrap;
+	box-shadow: 3px 3px 0 var(--dcf-ink);
+	margin-top: -4px;
+}
+
+.dcf-bubble::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: -9px;
+	width: 14px;
+	height: 14px;
+	background: var(--dcf-bg);
+	border-right: 2px solid var(--dcf-ink);
+	border-bottom: 2px solid var(--dcf-ink);
+	transform: translateX(-50%) rotate(45deg) skew(8deg, 8deg);
+}
+
+.dcf-bubble.is-left {
+	transform: translate(-88%, -100%) rotate(2deg);
+	transform-origin: 88% 100%;
+}
+
+.dcf-bubble.is-left::after {
+	left: 88%;
+}
+
+.dcf-bubble.is-right {
+	transform: translate(-12%, -100%) rotate(2deg);
+	transform-origin: 12% 100%;
+}
+
+.dcf-bubble.is-right::after {
+	left: 12%;
+}
+
+/* ---- 飘落涂鸦 ------------------------------------------------------------ */
+
+.dcf-doodles {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 2;
+	overflow: hidden;
+}
+
+.dcf-doodle {
+	position: absolute;
+	left: 0;
+	top: 0;
+	pointer-events: auto;
+	cursor: pointer;
+	will-change: transform;
+	touch-action: manipulation;
+}
+
+.dcf-doodle-in {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.dcf[data-interactive="0"] .dcf-doodle {
+	pointer-events: none;
+}
+
+.dcf-doodle svg,
+.dcf-icon {
+	display: block;
+	stroke: var(--dcf-ink);
+	stroke-width: 1.9;
+	stroke-linejoin: round;
+	stroke-linecap: round;
+}
+
+.dcf-doodle svg {
+	width: 100%;
+	height: 100%;
+	filter: drop-shadow(
+		2px 2px 0 color-mix(in oklab, var(--dcf-ink) 18%, transparent)
+	);
+}
+
+.dcf-paperfill {
+	fill: var(--dcf-bg);
+}
+
+/* ---- 文案与按钮 ---------------------------------------------------------- */
+
+.dcf-cta {
+	position: relative;
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	padding: clamp(20px, 3vw, 34px) 0 clamp(30px, 4vw, 48px);
+	text-align: center;
+}
+
+.dcf-tagline {
+	font-family: var(--dcf-serif);
+	font-size: clamp(17px, 1.9vw, 22px);
+	line-height: 1.4;
+	letter-spacing: -0.005em;
+	max-width: 44ch;
+	text-wrap: balance;
+}
+
+.dcf-word {
+	display: inline-block;
+	white-space: pre;
+}
+
+.dcf-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+}
+
+.dcf-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 46px;
+	padding: 0 20px 0 16px;
+	border-radius: 999px;
+	border: 2px solid var(--dcf-ink);
+	font-size: 14.5px;
+	font-weight: 750;
+	letter-spacing: -0.01em;
+	box-shadow: 0 3px 0 var(--dcf-ink);
+	transition:
+		transform 0.18s cubic-bezier(0.3, 1.4, 0.5, 1),
+		box-shadow 0.18s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.dcf-btn.is-outline {
+	background: var(--dcf-bg);
+	color: var(--dcf-ink);
+}
+
+.dcf-btn.is-solid {
+	background: var(--dcf-ink);
+	color: var(--dcf-bg);
+	box-shadow: 0 3px 0 var(--dcf-accent);
+}
+
+.dcf-btn.is-solid .dcf-icon {
+	stroke: var(--dcf-bg);
+}
+
+.dcf-btn:hover {
+	transform: translateY(-2px) rotate(-1.2deg);
+	box-shadow: 0 5px 0 var(--dcf-ink);
+}
+
+.dcf-btn.is-solid:hover {
+	box-shadow: 0 5px 0 var(--dcf-accent);
+}
+
+.dcf-btn:active {
+	transform: translateY(2px);
+	box-shadow: 0 1px 0 var(--dcf-ink);
+	transition-duration: 0.06s;
+}
+
+.dcf-btn.is-solid:active {
+	box-shadow: 0 1px 0 var(--dcf-accent);
+}
+
+/* ---- 底部信息条 ---------------------------------------------------------- */
+
+.dcf-bar {
+	position: relative;
+	z-index: 3;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px 26px;
+	padding: 18px var(--dcf-pad) 22px;
+	max-width: var(--page-width, 1360px);
+	width: 100%;
+	margin: 0 auto;
+	border-top: 1.5px dashed var(--dcf-line);
+	font-size: 13px;
+}
+
+.dcf-copy {
+	color: var(--dcf-soft);
+	margin-right: auto;
+}
+
+.dcf-inline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 18px;
+}
+
+.dcf-inline .dcf-link {
+	font-size: 13px;
+}
+
+.dcf-socials .dcf-link {
+	color: var(--dcf-ink);
+	font-weight: 700;
+}
+
+/* ---- 分镜初始态 ---------------------------------------------------------- */
+
+.dcf[data-play="0"] .dcf-letter,
+.dcf[data-play="0"] .dcf-arrive,
+.dcf[data-play="0"] .dcf-word,
+.dcf[data-play="0"] .dcf-pop,
+.dcf[data-play="0"] .dcf-rise,
+.dcf[data-play="0"] .dcf-fade,
+.dcf[data-play="0"] .dcf-doodle-in {
+	opacity: 0;
+}
+
+.dcf[data-play="0"] .dcf-draw {
+	stroke-dasharray: 1;
+	stroke-dashoffset: 1;
+}
+
+/* ---- 动画（尊重减少动态效果） -------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+	.dcf[data-play="1"] .dcf-letter {
+		animation: dcf-stamp 0.62s cubic-bezier(0.2, 0.8, 0.25, 1.15) var(--d)
+			both;
+	}
+
+	.dcf[data-play="1"] .dcf-dust {
+		animation: dcf-dust 0.5s ease-out calc(var(--d) + 0.22s) both;
+	}
+
+	.dcf[data-play="1"] .dcf-draw {
+		stroke-dasharray: 1;
+		animation: dcf-draw 1.1s cubic-bezier(0.6, 0, 0.3, 1) var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-fade {
+		animation: dcf-fade 0.6s ease-out var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-arrive-front {
+		animation: dcf-rise-up 0.75s cubic-bezier(0.3, 1.5, 0.5, 1) var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-arrive-top {
+		animation: dcf-plop 0.8s cubic-bezier(0.3, 0.9, 0.4, 1) var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-arrive-behind {
+		animation: dcf-peek 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-word {
+		animation: dcf-word 0.6s cubic-bezier(0.2, 0.8, 0.3, 1) var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-pop {
+		animation: dcf-popin 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-rise {
+		animation: dcf-fadeup 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) var(--d) both;
+	}
+
+	.dcf[data-play="1"] .dcf-doodle-in {
+		animation: dcf-fade 0.6s ease-out var(--d) both;
+	}
+
+	.dcf[data-interactive="1"] .dcf-glyph:hover {
+		animation: dcf-jiggle 0.6s cubic-bezier(0.3, 1.5, 0.5, 1);
+	}
+
+	.dcf-art.dcf-bob {
+		animation: dcf-bob 3.2s ease-in-out infinite;
+	}
+
+	.dcf-art.dcf-sway {
+		animation: dcf-swing 4s ease-in-out infinite;
+	}
+
+	.dcf-art.dcf-peck {
+		animation: dcf-peck 5.5s ease-in-out infinite;
+	}
+
+	.dcf-tail {
+		animation: dcf-tail 2.8s ease-in-out infinite;
+	}
+
+	.dcf-hopper.is-hop {
+		animation: dcf-hop 0.62s cubic-bezier(0.3, 0.7, 0.4, 1);
+	}
+
+	.dcf-bubble {
+		animation: dcf-bubble 0.32s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+	}
+
+	.dcf-btn:hover .dcf-icon {
+		animation: dcf-wiggle 0.5s ease-in-out;
+	}
+}
+
+@keyframes dcf-stamp {
+	0% {
+		opacity: 0;
+		transform: translateY(-34%) scale(1.28) rotate(var(--r));
+	}
+	55% {
+		opacity: 1;
+		transform: translateY(2%) scale(0.95, 1.05) rotate(0deg);
+	}
+	75% {
+		transform: translateY(0) scale(1.04, 0.95);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes dcf-dust {
+	0% {
+		opacity: 0;
+		stroke-dasharray: 0 40;
+	}
+	30% {
+		opacity: 0.9;
+	}
+	100% {
+		opacity: 0;
+		stroke-dasharray: 14 40;
+		stroke-dashoffset: -16;
+	}
+}
+
+@keyframes dcf-draw {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+@keyframes dcf-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes dcf-rise-up {
+	0% {
+		opacity: 0;
+		transform: translateY(30%) scale(0.7, 0.3);
+	}
+	45% {
+		opacity: 1;
+		transform: translateY(-8%) scale(0.92, 1.12);
+	}
+	70% {
+		transform: translateY(0) scale(1.08, 0.92);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes dcf-plop {
+	0% {
+		opacity: 0;
+		transform: translateY(-90%);
+	}
+	50% {
+		opacity: 1;
+		transform: translateY(0) scale(1.1, 0.86);
+	}
+	68% {
+		transform: translateY(-10%) scale(0.96, 1.04);
+	}
+	84% {
+		transform: translateY(0) scale(1.03, 0.97);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes dcf-peek {
+	0% {
+		opacity: 0;
+		transform: translateY(55%);
+	}
+	60% {
+		opacity: 1;
+		transform: translateY(-6%);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes dcf-word {
+	from {
+		opacity: 0;
+		transform: translateY(0.6em) rotate(3deg);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes dcf-popin {
+	0% {
+		opacity: 0;
+		transform: translateY(10px) scale(0.6) rotate(-4deg);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes dcf-fadeup {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes dcf-jiggle {
+	0% {
+		transform: none;
+	}
+	25% {
+		transform: rotate(-4deg) scale(1.03, 0.97);
+	}
+	50% {
+		transform: rotate(3deg) translateY(-3%);
+	}
+	75% {
+		transform: rotate(-1.5deg);
+	}
+	100% {
+		transform: none;
+	}
+}
+
+@keyframes dcf-hop {
+	0% {
+		transform: none;
+	}
+	18% {
+		transform: scale(1.12, 0.84);
+	}
+	45% {
+		transform: translateY(-28%) scale(0.94, 1.08);
+	}
+	72% {
+		transform: translateY(0) scale(1.1, 0.88);
+	}
+	86% {
+		transform: scale(0.97, 1.03);
+	}
+	100% {
+		transform: none;
+	}
+}
+
+@keyframes dcf-bob {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-5px);
+	}
+}
+
+@keyframes dcf-swing {
+	0%,
+	100% {
+		transform: rotate(-2deg);
+	}
+	50% {
+		transform: rotate(2.5deg);
+	}
+}
+
+@keyframes dcf-peck {
+	0%,
+	62%,
+	100% {
+		transform: none;
+	}
+	66% {
+		transform: rotate(14deg) translateY(2px);
+	}
+	70% {
+		transform: none;
+	}
+	74% {
+		transform: rotate(12deg) translateY(2px);
+	}
+	78% {
+		transform: none;
+	}
+}
+
+@keyframes dcf-tail {
+	0%,
+	100% {
+		transform: rotate(0deg);
+	}
+	50% {
+		transform: rotate(-12deg);
+	}
+}
+
+@keyframes dcf-bubble {
+	from {
+		opacity: 0;
+		scale: 0.6;
+	}
+	to {
+		opacity: 1;
+		scale: 1;
+	}
+}
+
+@keyframes dcf-wiggle {
+	0%,
+	100% {
+		transform: none;
+	}
+	30% {
+		transform: rotate(-14deg) scale(1.15);
+	}
+	60% {
+		transform: rotate(10deg);
+	}
+}
+
+/* 减少动态效果时连小过渡也关掉（不新增 !important） */
+@media (prefers-reduced-motion: reduce) {
+	.dcf-logo,
+	.dcf-btn,
+	.dcf-link,
+	.dcf-squiggle path {
+		transition: none;
+	}
+}
+
+/* JS 被禁用时 data-play 永远是 0，直接把分镜终态显示出来 */
+@media (scripting: none) {
+	/* 没有 JS 时涂鸦没有位置，全部叠在左上角，直接不显示 */
+	.dcf-doodles {
+		display: none;
+	}
+
+	.dcf[data-play="0"] .dcf-letter,
+	.dcf[data-play="0"] .dcf-arrive,
+	.dcf[data-play="0"] .dcf-word,
+	.dcf[data-play="0"] .dcf-pop,
+	.dcf[data-play="0"] .dcf-rise,
+	.dcf[data-play="0"] .dcf-fade,
+	.dcf[data-play="0"] .dcf-doodle-in {
+		opacity: 1;
+	}
+
+	.dcf[data-play="0"] .dcf-draw {
+		stroke-dasharray: none;
+		stroke-dashoffset: 0;
+	}
+}
+
+/* ---- 响应式 -------------------------------------------------------------- */
+
+@media (max-width: 860px) {
+	.dcf-top {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto;
+	}
+
+	.dcf-brand,
+	.dcf-blurb,
+	.dcf-cols {
+		grid-column: 1;
+		grid-row: auto;
+	}
+
+	.dcf-cols {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		margin-top: 14px;
+		row-gap: 22px;
+	}
+
+	.dcf-copy {
+		width: 100%;
+		margin-right: 0;
+	}
+}
+
+@media (max-width: 767px) {
+	/* 给固定 MobileDock 让位（0.75rem 边距 + 3.25rem 高度 + 余量） */
+	.dcf-bar {
+		padding-bottom: calc(22px + 4.5rem);
+	}
+}
+
+@media (max-width: 480px) {
+	.dcf-btn {
+		height: 42px;
+		font-size: 13.5px;
+		padding: 0 16px 0 13px;
+	}
+
+	.dcf-bubble {
+		font-size: 12px;
+		padding: 6px 10px;
+	}
+}

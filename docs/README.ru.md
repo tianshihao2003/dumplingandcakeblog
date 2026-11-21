@@ -192,8 +192,7 @@ src/
 │   ├── commentConfig.ts      # Конфигурация системы комментариев
 │   ├── announcementConfig.ts # Конфигурация объявлений
 │   ├── licenseConfig.ts      # Конфигурация лицензии
-│   ├── footerConfig.ts       # Конфигурация подвала
-│   ├── FooterConfig.html     # HTML-контент подвала
+│   ├── footerConfig.ts       # Подвал Doodle Crew (надпись, персонажи, ссылки, реквизиты)
 │   ├── expressiveCodeConfig.ts # Конфигурация подсветки кода
 │   ├── sakuraConfig.ts       # Конфигурация эффекта сакуры
 │   ├── fontConfig.ts         # Конфигурация шрифтов

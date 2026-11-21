@@ -509,9 +509,76 @@ export type FontConfig = {
 	preload?: boolean; // 是否预加载字体文件以提高性能
 };
 
+// ===== 页脚（Doodle Crew）=====
+export type Seat = "front" | "top" | "behind";
+
+export type CrewKind = "yeti" | "kid" | "bird" | "cat" | "ghost" | "mushroom";
+
+export type DoodleKind =
+	| "flame"
+	| "sandwich"
+	| "star"
+	| "heart"
+	| "bolt"
+	| "sparkle"
+	| "spiral"
+	| "plane";
+
+export type FooterLink = {
+	label: string;
+	href?: string;
+	external?: boolean;
+	rel?: string;
+	/** 非 HTML 资源（如 /rss.xml）加 data-no-swup，避免被 Swup 当页面接管 */
+	noSwup?: boolean;
+};
+
+export type FooterColumn = {
+	title: string;
+	links: FooterLink[];
+};
+
+export type FooterAction = {
+	label: string;
+	href: string;
+	icon?: DoodleKind;
+	variant?: "solid" | "outline";
+	external?: boolean;
+	noSwup?: boolean;
+};
+
+export type CrewMember = {
+	kind: CrewKind;
+	/** 巨型字里的字母下标 */
+	letter: number;
+	seat?: Seat;
+	/** 沿字母左右滑动，单位是字母宽度 */
+	offset?: number;
+	scale?: number;
+	flip?: boolean;
+	name?: string;
+	says?: string;
+};
+
 export type FooterConfig = {
-	enable: boolean; // 是否启用Footer HTML注入功能
-	customHtml?: string; // 自定义HTML内容，用于添加备案号等信息
+	/** 巨型字，短、大写、4–9 个字母最好看 */
+	wordmark: string;
+	brand: string;
+	blurb?: string;
+	tagline: string;
+	columns: FooterColumn[];
+	actions: FooterAction[];
+	copyright: string;
+	legal: FooterLink[];
+	socials: FooterLink[];
+	crew: CrewMember[];
+	doodles: DoodleKind[];
+	doodleCount: number;
+	palette?: { background?: string; ink?: string; accent?: string };
+	fontFamily?: string;
+	serifFamily?: string;
+	tracking?: number;
+	interactive?: boolean;
 };
 
 export type CoverImageConfig = {

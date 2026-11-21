@@ -158,8 +158,7 @@ src/
 │   ├── commentConfig.ts      # Comment system configuration
 │   ├── announcementConfig.ts # Announcement configuration
 │   ├── licenseConfig.ts      # License configuration
-│   ├── footerConfig.ts       # Footer configuration
-│   ├── FooterConfig.html     # Footer HTML content
+│   ├── footerConfig.ts       # Doodle Crew footer (wordmark, crew, links, filings)
 │   ├── expressiveCodeConfig.ts # Code highlighting configuration
 │   ├── sakuraConfig.ts       # Sakura effect configuration
 │   ├── fontConfig.ts         # Font configuration

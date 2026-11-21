@@ -155,31 +155,8 @@ const staticBarClass = mainContentClass.replace("transition-main", "").trim();
 // grid-class-carrier 始终存储非首页的网格类，供 JS 恢复用
 const gridCols = baseGridCols;
 
-const footerClass = ["footer", "col-span-1", "onload-animation"];
-
-if (
-	updatedGridConfig.isBothSidebars &&
-	updatedGridConfig.hasLeftComponents &&
-	updatedGridConfig.hasRightComponents
-) {
-	// 双侧栏：平板端跨2列，桌面端在中间列
-	footerClass.push("md:col-span-2 xl:col-start-2 xl:col-span-1");
-} else if (
-	updatedGridConfig.hasLeftComponents &&
-	!updatedGridConfig.hasRightComponents
-) {
-	footerClass.push("md:col-span-2 xl:col-start-2 xl:col-span-1");
-} else if (
-	!updatedGridConfig.hasLeftComponents &&
-	updatedGridConfig.hasRightComponents
-) {
-	// 仅右侧栏：平板端跨2列，内容在第1列
-	footerClass.push("md:col-span-2 md:col-start-1 xl:col-start-1 xl:col-span-1");
-} else {
-	footerClass.push("xl:col-start-1 xl:col-span-1");
-}
-
-const footerClassName = footerClass.join(" ");
+// 页脚已移到 #main-grid / max-w 容器外，自己就是整屏宽
+const footerClassName = "footer onload-animation pointer-events-auto";
 
 const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 
@@ -284,14 +261,16 @@ const navLinks = await resolveNavLinks(navBarConfig.links);
                 </div>
             )}
 
-            <!-- data-site-footer：右侧目录面板用它做底部钳制与「切换相关文章」的参考线 -->
-            <div class={footerClassName} data-site-footer>
-                <Footer></Footer>
-            </div>
         </div>
 
         <SpineModel></SpineModel>
         {live2dModelConfig.enable && <Live2DWidget config={live2dModelConfig} />}
+    </div>
+
+    <!-- 页脚放在 max-w 容器外：整行/整屏宽，不被左右侧栏和 page-width 挤压。
+         data-site-footer：右侧目录面板用它做底部钳制与「切换相关文章」的参考线 -->
+    <div class={footerClassName} data-site-footer>
+        <Footer></Footer>
     </div>
 </div>
 

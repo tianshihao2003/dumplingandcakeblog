@@ -50,13 +50,13 @@
 ```
 src/
 ├── assets/images/       # 头像、封面等构建时图片
-├── components/          # 按功能域组织的组件（133 个文件）
+├── components/          # 按功能域组织的组件（137 个文件）
 │   ├── analytics/       # GA, Clarity, Umami (3)
 │   ├── comment/         # 评论系统：index + 5 种后端 + 2 个弹窗组件（Waline 树形回复 pid/rid/at + 表情 :item: 标记，昵称/邮箱必填） (9)
 │   ├── common/          # 跨域共享基础组件 (17)
 │   ├── controls/        # 交互控件：搜索、归档三视图树（ArchivePanel/ArchiveTree）、主题、Dock (8)
 │   ├── features/        # 独立功能模块 (26, 含 music-visualizer/、ArticleTtsPlayer.svelte 文章朗读播放器)
-│   ├── layout/          # 布局组件：Navbar, Footer, SideBar, HomeHero... (19)
+│   ├── layout/          # 布局组件：Navbar, Footer, SideBar, HomeHero... (23)
 │   ├── misc/            # License, RelatedPosts, SharePoster (3)
 │   ├── moments/         # 动态卡片与评论弹窗
 │   ├── pages/           # 页面级组件：bangumi, books（Bookshelf/BookCard：3D 书本卡片 + 影视页同款胶囊筛选（分类+读过/在读/想读）+ ClientPagination 分页 8/6 本每页，SSR 隐藏非首页防闪烁）, movies-games, music (10)
@@ -80,7 +80,7 @@ src/
 │       guestbook, movies-games/, music, projects, search,
 │       sponsor, rss, robots.txt, og
 ├── plugins/             # 自定义 remark/rehype 插件 (10)
-├── styles/              # CSS 样式（73 个文件，含 about 技术栈/时间线/更新日志图谱）
+├── styles/              # CSS 样式（74 个文件，含 about 技术栈/时间线/更新日志图谱）
 │   ├── tokens/          # 设计令牌：colors, breakpoints, animation, z-index
 │   ├── base/            # reset, utilities
 │   ├── components/      # 组件样式
@@ -246,6 +246,7 @@ Layout.astro          ← HTML 骨架：<html>, <head>, <body>, 全局组件, �
 - **为什么必须"服务端渲染全部 + 运行期切 class"**：侧栏渲染在 Swup 容器之外（`#left-sidebar-wrapper` / `#right-sidebar-static`），客户端导航时不重新渲染。实现链路：`SideBar.astro` 输出 `data-show-pages` / `data-hide-pages` 并按当前页给出初始 `hidden`（防闪烁）→ `src/utils/sidebar-utils.ts#updateSidebarComponentsVisibility` 在首屏与 `swup:content:replaced` / `page:view` 后重算。**不要改成构建期过滤**——那样导航后侧栏不会更新。
 - **`/posts/` 列表页与 `/posts/<slug>/` 详情页是不同类型**：`isCurrentPagePost()`（`grid-layout-utils.ts`）已修正为严格匹配详情页（旧实现 `includes("/posts/")` 会把列表页误判成文章页）。所以 `showOnPostPage: false` 的组件现在**在文章列表页会显示**（原先被误隐藏）。
 - **无侧栏页面（2026-09-22）**：文章列表 / **分类详情（2026-10-26 加入）** / 导航站 / 归档 / 说说 / 留言板 / 更新日志 / 友链这几个页面**整栏隐藏左右侧栏**、内容区放宽到约原中间列宽的 4/3（`src/styles/features/no-sidebar-pages.css`）。标记由 `MainGridLayout.astro` 按页面类型写到 `#content-wrapper[data-no-sidebar]`——该元素在 Swup 容器内、导航时随内容替换，所以**纯 CSS `:has()` 就能跟随切换，不需要 JS**（用 JS 会有一帧闪烁）。增删页面改 `NO_SIDEBAR_PAGE_TYPES` 数组；调宽度改 CSS 里的系数（现多为逐页一条 `max-width`，分类详情与 `/posts/` 都取 932px）。⚠️ 只加进数组不给 CSS 宽度规则 → 侧栏没了但内容不是预期宽度，两处要一起改。
+- **长页面侧栏吸附（2026-11-21）**：`SideBar.astro` 的 inline 脚本按 `#swup-container.scrollHeight > innerHeight` 给 `[id$="-sidebar"]` 加 `is-long-page`，`widget-responsive.css` 用 `position: sticky; bottom: 0; align-self: flex-end` 把侧栏底部钉在视口底部，直到内容/页脚结束才继续上移。⚠️ 朋友圈等异步卡片会让内容在 load 后才变长，脚本必须用 `ResizeObserver` 观察 `#swup-container` 重算，不能只在 load 时判断一次。
 
 ### 3.9 文章朗读（TTS，2026-09-15 新增）
 
@@ -512,6 +513,14 @@ home-data-layer,post-hero,about-changelog,guestbook-chat}.css`
 - **不动的地方**：`src/content/更新日志/2026-10-22-…` 与 `src/content/临时收集/…/待办笔记.md` 里的旧名 —— 那是历史记录，改了就失真。
 - 再次提醒 §5.20 的教训：改名前全仓 `grep -rn "中文旧名"`，光改 `siteConfig.title` 会漏。
 
+### 5.22 手绘 Doodle Crew 页脚（2026-11-21，React → Svelte 5）
+
+- **结构**：`src/components/layout/DoodleCrewFooter.svelte`（主体 + rAF/IO/字体测量）、`doodle-crew-footer/engine.ts`（纯计算 + 角色元数据）、`doodle-crew-footer/DoodleCrewArt.svelte`（六种角色 SVG）、`doodle-crew-footer/DoodleShape.svelte`（八种小涂鸦）。样式在 `src/styles/components/doodle-crew-footer.css`，由主体组件 `import`（§4.3）。
+- **没有引入 React / shadcn**：原组件只是 React 渲染器，所有图形都是内联 SVG，直接移植成 Svelte 5 runes；`client:visible` 挂在 `Footer.astro`，页脚在 `#swup-container` 外，换页只水合一次。
+- **内容唯一来源**：`src/config/footerConfig.ts` + `FooterConfig` 类型（`src/types/config.ts`）。旧的 `FooterConfig.html` 和 `enable/customHtml` 已删除；备案号/版权走 `legal` / `copyright`。
+- **布局**：`MainGridLayout.astro` 把页脚放在 `#main-grid` / `max-w` 容器**外面**，自己占整屏宽；内部 top/world/bar 用 `--page-width` 居中。侧栏页不会再被左右栏或 page-width 挤压。`data-site-footer` 保留，文章目录底部钳制继续以它为参考。
+- **降级**：动效全在 `@media (prefers-reduced-motion: no-preference)`；`@media (scripting: none)` 直接显示分镜终态并隐藏涂鸦（无 JS 时涂鸦没有位置）。不新增 `!important`。
+- **特殊页**：`/guestbook/`、`/categories/` 图谱、`/music/` 仍由现有 CSS 隐藏 `.footer`；新页脚跟着一起隐藏。
 
 ### 5.18 归档页（2026-10-20 整页照参考站重做）
 
@@ -642,7 +651,7 @@ home-data-layer,post-hero,about-changelog,guestbook-chat}.css`
 
 ### 其他配置
 
-`adConfig`, `announcementConfig`, `circleConfig`, `coverImageConfig`, `expressiveCodeConfig`, `fontConfig`, `footerConfig`, `friendsConfig`, `guestbookConfig`, `licenseConfig`, `momentConfig`(动态评论配置), `pioConfig`(Live2D/Spine), `relationshipConfig`, `sakuraConfig`, `skillsConfig`, `sponsorConfig`, `ttsConfig`(文章朗读)
+`adConfig`, `announcementConfig`, `circleConfig`, `coverImageConfig`, `expressiveCodeConfig`, `fontConfig`, `footerConfig`(手绘 Doodle Crew 页脚：巨型字/角色/链接/备案), `friendsConfig`, `guestbookConfig`, `licenseConfig`, `momentConfig`(动态评论配置), `pioConfig`(Live2D/Spine), `relationshipConfig`, `sakuraConfig`, `skillsConfig`, `sponsorConfig`, `ttsConfig`(文章朗读)
 
 > **代码块语言别名（在 `astro.config.mjs`，不在 src/config）**：Shiki 没有 `mysql` 语法（只有 `sql`），所以 `expressiveCode({ shiki: { langAlias: { mysql: "sql" } } })` 把 ` ```mysql ` 映射到 SQL 高亮。没有这条映射时，构建会刷 `astro-expressive-code` 的 "language could not be found" 警告并把代码块降级成纯文本。新增其它别名（如 `vue3` → `vue`）同样加在这里。
 
@@ -995,6 +1004,7 @@ return controller;
 | 修改博客各功能 frontmatter 字段（`src/content.config.ts` 的 zod schema / `.pages.yml` / 页面 `normalizeImages`/`getGridCols` 等展示逻辑）未同步 AstrBot 插件 `plug-in/AstrBot/AstrBot BlogWriter` 的 `build_*_md` 生成逻辑 | 插件写入的旧格式导致页面 `images` 为空、归档卡片/灯箱不显示或 zod 校验失败（如 2026-09-27 笔记从正文 `![](url)` 改为 `images` 数组，前端已用 `images` 宫格展示） | 凡改动 moments/bangumi/笔记本/album/daohang 等集合的字段名、类型或渲染约定，必须立即检查并同步更新插件的 `blog_writer_core.py:build_*_md` 与 `tests/test_core.py`，并提醒站长同步发布插件新版本 |
 | 把 API Key / Token / 密码硬编码进任何被 git 跟踪的文件（scripts/、注释、markdown 都算），或轻信注释里"会被 .gitignore 保护"的声明而不实测 | 公开仓库全历史可读，GitGuardian 告警、密钥被扫描器批量收割滥用（2026-08-30 GitGuardian 事故：DashScope Key 硬编码在 `scripts/生成摘要/index.ts` 长期公开，声明受 .gitignore 保护但实际从未生效） | 密钥一律放 `.env`（已 gitignore）+ `process.env.XXX` 读取，脚本调用带 `--env-file=.env`，`.env.example` 只留空模板；新增任何疑似含密钥的文件，提交前必须实测 `git check-ignore <path>` 与 `git ls-files <path>` 确认未被跟踪；一旦泄露：**先去对应控制台吊销重发（唯一根治）**，再从代码清除，git 历史清理通常不必要且代价大 |
 | 用文件 mtime 做集合排序/展示的兜底依据 | CI（EdgeOne/GitHub Actions）每次全新 clone，所有文件 mtime 都等于构建时刻、比任何业务日期都新——缺字段的旧条目会永远霸占"最新"区块（2026-09 友链页"新朋友"事故） | 排序只认 frontmatter 业务字段（如 friends 的 `added`）；字段缺失时构建期 `console.warn` 并让条目落到最后 |
+| 用 `import.meta.glob("../../**")` 扫封面/头像 | 会把 `src/content` 下任意文件（如私有 `.py` 脚本）当模块解析，生产构建报 `PARSE_ERROR`（2026-11-21 公众号脚本踩到） | glob 必须限定图片扩展名 `**/*.{png,jpg,jpeg,webp,avif,gif,svg}` |
 | 拿 Astro content 集合的 `item.id` 拼磁盘路径 / 匹配 public 静态文件 | id 是 github-slugger 规则（小写 + 移除标点、空格转连字符），与磁盘文件名不一致（`39-胡超，作品集.md` → id `39-胡超作品集`、`33-RAGNote.md` → `33-ragnote`），Linux CI 大小写敏感必失配 | 文件名 ↔ id 换算必须走同一 slug 规则（截图脚本 `scripts/友链截图/index.mjs` 已内置 github-slugger）；新增含大写/标点文件名的友链后核对 `public/assets/friends-shots/` 截图命名 |
 | dev server 开着同时跑 `pnpm build` | 两者抢 `node_modules/.astro/data-store.json` 锁，报 `EPERM ... data-store.json.tmp -> data-store.json`，易被误判为代码错误 | 先关 dev（或杀掉残留 node/astro 进程）再构建，见 §18.1 |
 

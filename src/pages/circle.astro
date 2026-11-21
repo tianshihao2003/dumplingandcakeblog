@@ -79,7 +79,7 @@ const description = i18n(I18nKey.circleSubtitle);
 
     <!-- 加载更多 -->
     <div class="circle-load-more" id="circle-load-more" style="display:none;">
-      <div class="load-more-spinner"></div>
+      <button type="button" class="load-more-btn" id="load-more-btn">加载更多</button>
     </div>
 
     <!-- 没有更多 -->
@@ -205,22 +205,18 @@ const description = i18n(I18nKey.circleSubtitle);
 
   function loadMore() {
     if (isLoadingMore) return;
+    var btn = $("load-more-btn");
+    if (!btn) return;
     isLoadingMore = true;
+    btn.disabled = true;
+    btn.textContent = "加载中...";
     setTimeout(function() {
       displayedCount += pageSize;
       renderGrid();
       isLoadingMore = false;
+      btn.disabled = false;
+      btn.textContent = "加载更多";
     }, 300);
-  }
-
-  function onScroll() {
-    var loadMoreEl = $("circle-load-more");
-    if (!loadMoreEl || loadMoreEl.style.display === "none") return;
-
-    var rect = loadMoreEl.getBoundingClientRect();
-    if (rect.top < window.innerHeight + 200) {
-      loadMore();
-    }
   }
 
   function fetchData() {
@@ -261,49 +257,10 @@ const description = i18n(I18nKey.circleSubtitle);
     showGrid();
   }
 
-  function bindEvents() {
-    var retryBtn = $("retry-btn");
-    var refreshBtn = $("refresh-btn");
-    var sortCreated = $("sort-created");
-    var sortUpdated = $("sort-updated");
-
-    if (retryBtn) retryBtn.addEventListener("click", fetchData);
-    if (refreshBtn) {
-      refreshBtn.addEventListener("click", function() {
-        if (!currentData) return;
-        var notice = $("circle-notice");
-        var noticeText = $("notice-text");
-        if (!notice || !noticeText) return;
-        notice.style.display = "";
-        noticeText.innerHTML = '钓鱼中... （Lv.7 当前称号：钓鱼高手）<img src="/assets/images/emoji/1000023901.gif" alt="" style="display:inline-block;width:1.25rem;height:1.25rem;vertical-align:middle;margin-left:0.125rem;" />';
-        setTimeout(function() {
-          showNotice(currentData);
-        }, 1600);
-      });
-    }
-    if (sortCreated) {
-      sortCreated.addEventListener("click", function() {
-        currentSort = "created";
-        sortCreated.classList.add("is-active");
-        if (sortUpdated) sortUpdated.classList.remove("is-active");
-        renderGrid();
-      });
-    }
-    if (sortUpdated) {
-      sortUpdated.addEventListener("click", function() {
-        currentSort = "updated";
-        sortUpdated.classList.add("is-active");
-        if (sortCreated) sortCreated.classList.remove("is-active");
-        renderGrid();
-      });
-    }
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-  }
-
   // 使用事件委托，避免重复绑定问题
   document.addEventListener("click", function(e) {
     if (e.target.closest("#retry-btn")) fetchData();
+    if (e.target.closest("#load-more-btn")) loadMore();
     if (e.target.closest("#refresh-btn")) {
       if (!currentData) return;
       var notice = $("circle-notice");
@@ -328,15 +285,6 @@ const description = i18n(I18nKey.circleSubtitle);
       renderGrid();
     }
   });
-
-  window.addEventListener("scroll", function() {
-    var loadMoreEl = $("circle-load-more");
-    if (!loadMoreEl || loadMoreEl.style.display === "none") return;
-    var rect = loadMoreEl.getBoundingClientRect();
-    if (rect.top < window.innerHeight + 200) {
-      loadMore();
-    }
-  }, { passive: true });
 
   // 初始化
   function doInit() {

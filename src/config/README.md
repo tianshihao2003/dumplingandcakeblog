@@ -15,7 +15,7 @@ src/config/
 ├── commentConfig.ts      # 评论系统配置
 ├── announcementConfig.ts # 公告配置
 ├── licenseConfig.ts      # 许可证配置
-├── footerConfig.ts       # 页脚配置
+├── footerConfig.ts       # 手绘 Doodle Crew 页脚配置
 ├── expressiveCodeConfig.ts # 代码高亮配置
 ├── fontConfig.ts         # 字体配置
 ├── sidebarConfig.ts      # 侧边栏配置
@@ -51,7 +51,7 @@ import { profileConfig } from '../config/profileConfig';
 - `commentConfig.ts` - 评论系统配置（Twikoo 评论和文章访问量统计）
 - `announcementConfig.ts` - 公告配置（标题、内容、链接等）
 - `licenseConfig.ts` - 许可证配置（CC 协议等）
-- `footerConfig.ts` - 页脚配置（HTML 注入等）
+- `footerConfig.ts` - 手绘 Doodle Crew 页脚（巨型字、角色、链接、版权与备案）
 - `expressiveCodeConfig.ts` - 代码高亮配置（主题等）
 - `fontConfig.ts` - 字体配置（字体族、大小等）
 - `sidebarConfig.ts` - 侧边栏配置（组件布局等）

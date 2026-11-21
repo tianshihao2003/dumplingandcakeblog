@@ -161,8 +161,7 @@ src/
 │   ├── commentConfig.ts      # 评论系统配置
 │   ├── announcementConfig.ts # 公告配置
 │   ├── licenseConfig.ts      # 许可证配置
-│   ├── footerConfig.ts       # 页脚配置
-│   ├── FooterConfig.html     # 页脚HTML内容
+│   ├── footerConfig.ts       # 手绘 Doodle Crew 页脚（巨型字/角色/链接/备案）
 │   ├── expressiveCodeConfig.ts # 代码高亮配置
 │   ├── sakuraConfig.ts       # 樱花特效配置
 │   ├── fontConfig.ts         # 字体配置

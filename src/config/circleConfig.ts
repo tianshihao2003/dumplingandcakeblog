@@ -20,8 +20,8 @@ export const circleConfig: CircleConfig = {
 	// EdgeOne 托管的 data.json 地址
 	dataUrl: "https://cir.tsh520.cn/data.json",
 
-	// 每页显示 20 篇文章
-	pageSize: 20,
+	// 每页显示 24 篇文章（桌面端 4 列 × 6 行）
+	pageSize: 24,
 
 	// 显示统计卡片（友链总数、活跃数、文章数等）
 	showStats: true,
