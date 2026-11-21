@@ -116,6 +116,7 @@ docs/                     # 部署文档（deploy-pagescms-vercel.md 等）+ ssh
 | `emoji/` | 表情与小图标（openai-dark/light.png 等） |
 | `icons/` | 组件图标（profile.png 等） |
 | `notebooks/` | 笔记封面（编号 webp，2026-10-20 笔记功能下线后已无引用，保留未删） |
+| `moments/` | 动态（闪念）图片，由 `~/.agents/skills/inbox-to-moments` 从 `临时收集/0-Inbox/assets/闪念笔记/` 复制进来；动态正文引用 `/assets/images/moments/<文件名>`，不走图床 |
 | `sponsors/` | 赞助二维码 |
 | `loading/` | 页面加载图 |
 | `moments-cover.jpg` | 说说页封面 |
