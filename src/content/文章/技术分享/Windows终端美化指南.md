@@ -3,7 +3,7 @@ title: Windows 终端美化指南
 published: 2026-11-19
 tags:
   - 美化
-image: 文章/技术分享/assets/Windows终端美化指南/file-20261119153317523.png
+image: assets/Windows终端美化指南/file-20261119153317523.png
 description: ""
 ---
 
