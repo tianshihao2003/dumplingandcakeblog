@@ -1,0 +1,440 @@
+/* ==========================================================================
+   更新日志 /changelog/ —— 日志表格：搜索 + 类型筛选 + 逐行展开
+   仅由 src/pages/changelog.astro 使用
+   ========================================================================== */
+
+.clog {
+	--clog-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo,
+		Consolas, monospace;
+}
+
+/* ── 工具栏 ── */
+.clog__bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1rem;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--line-divider);
+}
+
+.clog__count {
+	margin: 0;
+	color: var(--content-meta);
+	font-size: 0.8125rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.clog__tools {
+	display: flex;
+	flex: 1 1 18rem;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.clog__search {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.clog__search svg {
+	position: absolute;
+	top: 50%;
+	left: 0.75rem;
+	color: var(--content-meta);
+	pointer-events: none;
+	transform: translateY(-50%);
+}
+
+.clog__search input {
+	width: 100%;
+	height: 2.25rem;
+	padding: 0 0.75rem 0 2.25rem;
+	border: 1px solid var(--line-divider);
+	border-radius: var(--radius-medium);
+	background: transparent;
+	color: var(--deep-text);
+	font-size: 0.875rem;
+}
+
+.clog__search input::placeholder {
+	color: var(--content-meta);
+}
+
+.clog__search input:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 1px;
+}
+
+.clog__toggle {
+	display: inline-flex;
+	height: 2.25rem;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0 0.875rem;
+	border: 1px solid var(--line-divider);
+	border-radius: var(--radius-medium);
+	background: transparent;
+	color: var(--content-meta);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition:
+		background-color 0.18s ease,
+		border-color 0.18s ease,
+		color 0.18s ease;
+}
+
+.clog__toggle:hover {
+	background: var(--btn-plain-bg-hover);
+	color: var(--deep-text);
+}
+
+.clog__toggle.is-on {
+	border-color: var(--primary);
+	color: var(--deep-text);
+}
+
+.clog__toggle-count {
+	display: inline-grid;
+	min-width: 1.25rem;
+	height: 1.25rem;
+	place-items: center;
+	padding: 0 0.25rem;
+	border-radius: 999px;
+	background: var(--deep-text);
+	color: var(--page-bg);
+	font-size: 0.6875rem;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ── 主体：筛选栏 + 列表 ── */
+.clog__body {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.clog__filters {
+	padding: 1rem 0;
+	border-bottom: 1px solid var(--line-divider);
+	animation: clog-panel-in 0.18s ease;
+}
+
+.clog__filters-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	margin-bottom: 0.625rem;
+	color: var(--content-meta);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+}
+
+.clog__clear {
+	padding: 0.125rem 0.375rem;
+	border: 0;
+	border-radius: 0.25rem;
+	background: transparent;
+	color: var(--content-meta);
+	font-size: 0.75rem;
+	cursor: pointer;
+}
+
+.clog__clear:hover {
+	background: var(--btn-plain-bg-hover);
+	color: var(--deep-text);
+}
+
+.clog__chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.clog-chip {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.375rem 0.625rem;
+	border: 1px solid var(--line-divider);
+	border-radius: var(--radius-medium);
+	background: transparent;
+	color: var(--content-meta);
+	font-size: 0.8125rem;
+	text-align: start;
+	cursor: pointer;
+	transition:
+		background-color 0.18s ease,
+		border-color 0.18s ease,
+		color 0.18s ease;
+}
+
+.clog-chip:hover {
+	border-color: var(--type-color);
+	color: var(--deep-text);
+}
+
+.clog-chip.is-on {
+	border-color: var(--type-color);
+	background: color-mix(in oklab, var(--type-color) 10%, transparent);
+	color: var(--type-color);
+}
+
+.clog-chip__count {
+	margin-left: auto;
+	color: var(--content-meta);
+	font-size: 0.6875rem;
+	font-variant-numeric: tabular-nums;
+}
+
+.clog-chip.is-on .clog-chip__count {
+	color: inherit;
+	opacity: 0.75;
+}
+
+/* ── 列表 ── */
+.clog__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.clog-item {
+	border-bottom: 1px solid var(--line-divider);
+}
+
+.clog-item:last-child {
+	border-bottom: 0;
+}
+
+.clog-row {
+	display: grid;
+	width: 100%;
+	grid-template-columns: 1rem auto 9.5rem minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.875rem 0.5rem;
+	border: 0;
+	background: transparent;
+	color: var(--deep-text);
+	text-align: start;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.clog-row:hover {
+	background: var(--btn-plain-bg-hover);
+}
+
+.clog-row:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: -2px;
+}
+
+.clog-row__chev {
+	color: var(--content-meta);
+	transition: transform 0.2s ease;
+}
+
+.clog-item.is-open .clog-row__chev {
+	transform: rotate(180deg);
+}
+
+.clog-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0.125rem 0.5rem;
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--type-color) 12%, transparent);
+	color: var(--type-color);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.clog-badge::before {
+	content: "";
+	width: 0.375rem;
+	height: 0.375rem;
+	flex: 0 0 0.375rem;
+	border-radius: 999px;
+	background: currentColor;
+}
+
+.clog-row__time,
+.clog-row__ver {
+	color: var(--content-meta);
+	font-family: var(--clog-mono);
+	font-size: 0.75rem;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.clog-row__msg {
+	min-width: 0;
+	overflow: hidden;
+	color: var(--deep-text);
+	font-size: 0.875rem;
+	font-weight: 600;
+	line-height: 1.45;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ── 展开详情 ── */
+.clog-detail {
+	padding: 0 0.5rem 1.125rem 2.75rem;
+}
+
+.clog-detail__label {
+	display: block;
+	margin-bottom: 0.375rem;
+	color: var(--content-meta);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+}
+
+.clog-detail__text {
+	margin: 0 0 0.875rem;
+	padding: 0.75rem 0.875rem;
+	border-radius: var(--radius-medium);
+	background: color-mix(in oklab, var(--content-meta) 8%, transparent);
+	color: var(--deep-text);
+	font-size: 0.875rem;
+	line-height: 1.65;
+}
+
+.clog-detail__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+	gap: 0.875rem;
+	margin: 0;
+}
+
+.clog-detail__grid dt {
+	color: var(--content-meta);
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+}
+
+.clog-detail__grid dd {
+	margin: 0.25rem 0 0;
+	color: var(--deep-text);
+	font-family: var(--clog-mono);
+	font-size: 0.8125rem;
+}
+
+.clog__empty {
+	margin: 0;
+	padding: 3rem 0;
+	color: var(--content-meta);
+	font-size: 0.875rem;
+	text-align: center;
+}
+
+/* ── 类型配色 ── */
+.clog [data-type="feature"] {
+	--type-color: #0f9b8e;
+}
+.clog [data-type="improvement"] {
+	--type-color: #3f7cac;
+}
+.clog [data-type="fix"] {
+	--type-color: #d64545;
+}
+.clog [data-type="removal"] {
+	--type-color: #6b7280;
+}
+
+:root.dark .clog [data-type="feature"] {
+	--type-color: #45c7b9;
+}
+:root.dark .clog [data-type="improvement"] {
+	--type-color: #7eb0d8;
+}
+:root.dark .clog [data-type="fix"] {
+	--type-color: #f17d7b;
+}
+:root.dark .clog [data-type="removal"] {
+	--type-color: #9ca3af;
+}
+
+@keyframes clog-panel-in {
+	from {
+		opacity: 0;
+		transform: translateY(-0.25rem);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* ── 桌面：筛选栏做左列，列表在右 ── */
+@media (min-width: 901px) {
+	.clog.is-filtering .clog__body {
+		grid-template-columns: 14rem minmax(0, 1fr);
+	}
+
+	.clog.is-filtering .clog__filters {
+		padding-right: 1.25rem;
+		border-right: 1px solid var(--line-divider);
+		border-bottom: 0;
+	}
+
+	.clog.is-filtering .clog__chips {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.clog.is-filtering .clog__list,
+	.clog.is-filtering .clog__empty {
+		padding-left: 1.25rem;
+	}
+}
+
+/* ── 窄屏：一行放不下，消息换行 ── */
+@media (max-width: 720px) {
+	.clog-row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 0.625rem;
+		padding: 0.875rem 0.25rem;
+	}
+
+	.clog-row__msg {
+		order: 9;
+		flex: 1 0 100%;
+		white-space: normal;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+	}
+
+	.clog-row__ver {
+		margin-left: auto;
+	}
+
+	.clog-detail {
+		padding: 0 0.25rem 1rem;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.clog__filters {
+		animation: none;
+	}
+
+	.clog-row,
+	.clog-row__chev {
+		transition: none;
+	}
+}

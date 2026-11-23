@@ -298,12 +298,12 @@ CSS 包，别处不再加载；同一文件多处 import 只算一次）。
 
 已按此规则搬走的 16 个：`pages/{moments-filter,categories,article-list,notebooks,music-visualizer}.css`、
 `features/{movies-games,article-toc-panel}.css`、`components/{home-hero,home-hero-dialogue,home-section,home-ticker,
-home-data-layer,post-hero,about-changelog,guestbook-chat}.css`
+home-data-layer,post-hero,guestbook-chat}.css`、`pages/changelog-logs.css`
 （`home-display-layer` / `home-portfolio-shutter` 已随组件于 2026-10-20 删除，不在其中）。
 
 坑与套路：
 - ⚠️ **插 import 要躲开多行 import**：`import {` 这种开头行后面插样式 import 会把语句切断（本次踩到
-  `ChangelogGraph.astro` / `GuestbookChatComposer.svelte`）——插在最后一个**完整** import 语句之后。
+  `GuestbookChatComposer.svelte`）——插在最后一个**完整** import 语句之后。
 - ⚠️ **同一份样式别在嵌套组件里重复 import**：挂在最外层入口组件上即可。嵌套组件各 import 一次会被
   Vite 打成两个 chunk、页面重复加载两遍（2026-10-05 在 `guestbook-chat.css` 上踩到：文章页白背 37.6KB，
   已把内层 `GuestbookChatComposer/Message.svelte` 的 import 删掉，只留 `GuestbookChat` / `MomentCommentChat` /
@@ -876,7 +876,7 @@ export function initMyFeature() {
 
 - ⚠️ **必须监听 `window`**（2026-10-20 归档页踩到）：事件由 `swup-lifecycle-controller.ts` 里的 `window.dispatchEvent(new CustomEvent("swup:content:replaced"))` 派发，**派发目标是 window**，事件传播路径里不包含 `document` —— 写成 `document.addEventListener` 会**永远收不到**（不报错、无告警）。
   症状是「首次进入正常、切到别的页再回来就坏了」：只有首屏 SSR 或完整刷新才会初始化。归档页的表现是面包屑/筛选胶囊/全部收起整块消失。
-- 现存若干组件（`Bookshelf`、`bangumi/FilterControls`、`TabNav`、`ChangelogGraph`、`PostDirectoryList` 等）里仍写着 `document.addEventListener("swup:content:replaced")`，如果发现这些页面「换页回来功能失效」，先怀疑这一处，改成 `window` 即可。
+- 现存若干组件（`Bookshelf`、`bangumi/FilterControls`、`TabNav`、`PostDirectoryList` 等）里仍写着 `document.addEventListener("swup:content:replaced")`，如果发现这些页面「换页回来功能失效」，先怀疑这一处，改成 `window` 即可。
 
 ### 11.5 切页性能：进度条与样式预取（2026-09-29）
 

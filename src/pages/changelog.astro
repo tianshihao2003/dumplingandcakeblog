@@ -1,11 +1,13 @@
 ---
-import ChangelogGraph from "@components/about/ChangelogGraph.astro";
-import { Icon } from "astro-icon/components";
+import { getCollection } from "astro:content";
 import PageTitle from "@/components/common/PageTitle.astro";
+import ChangelogLogs from "@/components/pages/ChangelogLogs.svelte";
 import { siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import { changelogEntriesFromCollection } from "@/utils/changelog";
+import "../styles/pages/changelog-logs.css";
 
 if (!siteConfig.pages.changelog) {
 	return Astro.redirect("/404/");
@@ -13,6 +15,9 @@ if (!siteConfig.pages.changelog) {
 
 const displayTitle = i18n(I18nKey.changelogTitle);
 const displaySubtitle = i18n(I18nKey.changelogSubtitle);
+const entries = changelogEntriesFromCollection(
+	await getCollection("changelog"),
+);
 ---
 
 <MainGridLayout title={displayTitle} description={displaySubtitle}>
@@ -22,11 +27,11 @@ const displaySubtitle = i18n(I18nKey.changelogSubtitle);
 				<PageTitle
 					title={displayTitle}
 					eyebrow="Changelog"
-					description="这个博客的每一次改动"
+					description={displaySubtitle}
 				/>
 			</div>
 
-			<ChangelogGraph limit={0} />
+			<ChangelogLogs {entries} client:visible />
 		</div>
 	</div>
 </MainGridLayout>
