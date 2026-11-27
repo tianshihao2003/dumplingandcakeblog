@@ -84,13 +84,16 @@ src/.opencode
 # TTS 服务本地缓存（部署产物，不入库）
 scripts/TTS服务/cache/
 
-# ===== src/content = Obsidian 库根：新目录默认不进仓库 =====
-# 规则：先忽略 src/content 下的**所有目录**，再逐个放行站点集合目录。
-# 效果：以后在 Obsidian 里于 src/content 下新建文件夹，默认不会被 git 跟踪（不用再单独配）；
+# ===== src/content = Obsidian 库根：新条目默认不进仓库 =====
+# 规则：先忽略 src/content 下的**所有条目**，再逐个放行站点集合目录。
+# 注意是 `src/content/*` 而不是 `src/content/*/`：后者只匹配目录，
+#      根级文件（首页.md、AGENTS.md 等）会漏网，一执行 git add . 就公开到 GitHub。
+# 效果：以后在 Obsidian 里于 src/content 下新建文件夹或根级 md，默认都不跟踪；
 #      若某个新目录**要**上传，照下面格式加一行 !src/content/目录名/ 即可。
 # 注意：已跟踪的文件不受 .gitignore 影响；如果某个目录已经 git add 过，
 #      要先 git rm -r --cached "src/content/xxx" 才会真正从仓库移除（本地文件保留）。
-src/content/*/
+# 验证：git check-ignore -v --no-index "src/content/任意文件"
+src/content/*
 !src/content/文章/
 !src/content/页面/
 !src/content/动态/
