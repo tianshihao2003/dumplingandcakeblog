@@ -247,3 +247,22 @@ Obsidian 侧：打开 `B:\Obsidian Vault Collection\Obsidian Vault content`，�
 - 主仓是否停止跟踪内容 / 构建期注入 / EdgeOne token
 - PagesCMS、AstrBot、友链截图与状态 workflow 适配
 - `学习笔记 → dumplingandcake-notes` 同步源改造
+
+## 14. 执行记录（2026-11-27）
+
+迁移实际执行结果，供复盘：
+
+| 步骤 | 结果 |
+|---|---|
+| 提交 | 博客仓 `e4ffaae7` / `b11eda5f` / `f866a970`；库仓 `5cb0124` / `ae3e00f`（关闭 LiveSync） |
+| 锚点 | 库仓 tag `pre-decouple-vault`（`ae3e00f`，已推）；博客仓 tag `pre-decouple-blog`（`f866a970`） |
+| 拷贝 | robocopy `/E /COPY:DAT /DCOPY:DAT`：2653 文件 / 473 目录 / 0 失败，退出码 1 |
+| 哈希 | SHA256 逐文件比对：源 2653 项、目标 2653 项、**0 差异** |
+| 库 Git | HEAD `ae3e00f`、跟踪 2387、`fsck` 仅 dangling blob、两个 remote 正常 |
+| 构建基线 | 迁移前 `pnpm build`：291 页 / 290 个 `index.html`，清单存 `%TEMP%\routes-before.txt` |
+| 切换 | 因 OpenCode 工作区句柄占用，重命名在应用内无法执行；由站长在应用外运行 `%TEMP%\opencode\switch-content.ps1` 完成 |
+| 切换后 | `src\content` = Junction → B 盘；博客仓跟踪 700、`git status -- src/content` 空；库仓经 junction HEAD `ae3e00f`、2387 |
+| 构建校验 | 切换后 `pnpm build`：291 页，路由清单与基线 **0 差异** |
+| 待办 | Obsidian 打开 B 盘库；启用 LiveSync 并等首次比对；obsidian-git 自动提交推送验证；删 `content-rollback`；文档与插件绝对路径更新 |
+
+> 踩坑记录：Windows PowerShell 5.1 读取无 BOM 的 UTF-8 脚本会按 GBK 解析，中文字符串直接导致语法错误。给用户执行的脚本一律用纯 ASCII。
