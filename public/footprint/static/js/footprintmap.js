@@ -137,7 +137,7 @@
     };
 
     const PhotoViewer = (() => {
-        let el, imgEl, prevBtn, nextBtn, state = { images: [], index: 0 }, isInit = false;
+        let el, imgEl, prevBtn, nextBtn, state = { images: [], index: 0 }, isInit = false, detachTimer;
         function init() {
             if (isInit) return;
             el = document.createElement('div'); el.className = 'footprint-photo-viewer';
@@ -149,6 +149,14 @@
             document.addEventListener('keydown', (e) => { if (!el.classList.contains('is-visible')) return; if (e.key === 'Escape') close(); if (e.key === 'ArrowLeft') prev(); if (e.key === 'ArrowRight') next(); });
             isInit = true;
         }
+        // 关闭后等淡出动画结束再从 DOM 摘掉：查看器挂在 body 上，Swup 切页不会替换它，
+        // 留着会因页面级 CSS 被换掉而退化成一张裸图
+        function detachSoon() {
+            clearTimeout(detachTimer);
+            detachTimer = setTimeout(() => {
+                if (!el.classList.contains('is-visible') && el.parentElement) el.parentElement.removeChild(el);
+            }, 300);
+        }
         function update() {
             if (!state.images.length) return;
             const loader = el.querySelector('.footprint-photo-viewer__loader');
@@ -159,12 +167,13 @@
             prevBtn.style.display = state.images.length > 1 ? '' : 'none'; nextBtn.style.display = state.images.length > 1 ? '' : 'none';
         }
         function open(images, idx = 0) {
+            clearTimeout(detachTimer);
             init(); state.images = images; state.index = idx; update();
             const fs = document.fullscreenElement;
             if (fs && el.parentElement !== fs) fs.appendChild(el); else if (!fs && el.parentElement !== document.body) document.body.appendChild(el);
             el.classList.add('is-visible'); document.documentElement.classList.add('footprint-photo-viewer-open');
         }
-        function close() { el.classList.remove('is-visible'); document.documentElement.classList.remove('footprint-photo-viewer-open'); }
+        function close() { el.classList.remove('is-visible'); document.documentElement.classList.remove('footprint-photo-viewer-open'); detachSoon(); }
         function prev() { state.index = (state.index - 1 + state.images.length) % state.images.length; update(); }
         function next() { state.index = (state.index + 1) % state.images.length; update(); }
         return { open };
@@ -415,6 +424,14 @@
             hWrap.append(hLabel, hBtn); container.appendChild(hWrap);
         }
     }
+
+    // Swup 切页只替换容器内容，挂在 body 上的查看器和 html 上的滚动锁会残留
+    // 这里同时兜住「打开状态直接切页」的情况（关闭后退场由 detachSoon 处理）
+    function cleanupPhotoViewer() {
+        document.documentElement.classList.remove('footprint-photo-viewer-open');
+        document.querySelectorAll('.footprint-photo-viewer').forEach(node => node.remove());
+    }
+    window.addEventListener('swup:content:replaced', cleanupPhotoViewer);
 
     document.addEventListener('DOMContentLoaded', () => document.querySelectorAll('.footprint-map').forEach(initMap));
     window.FootprintMap.bootstrapMap = function (el) { const container = (typeof el === 'string') ? document.querySelector(el) : el; if (!container) return Promise.reject(new Error('container not found')); return initMap(container); };
