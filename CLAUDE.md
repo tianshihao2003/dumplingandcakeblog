@@ -1187,6 +1187,10 @@ description: 一句话概括（显示在列表页）
 
 ## 23. 内容目录的双仓库模型（新增 2026-10-26）
 
+> ⚠️ **2026-11-28 起模型已变更**：Obsidian 库整体搬到 `B:` 盘，博客内容单独放进库内的 `blog/`，
+> 博客仓的 `src/content` 现在是指向 `blog/` 的 junction，不再是库根。以下 23 节正文保留为历史，
+> 当前规则以 **§23.1** 为准。
+
 `src/content/` 既是 Obsidian 库根，**本身又是一个独立 git 仓库**（私人内容备份），
 所以这里是「仓库套仓库」。两个仓库对「新文件夹」的态度正好相反：
 
@@ -1251,3 +1255,59 @@ git check-ignore -v --no-index ".obsidian/plugins/x/data.json.bak-xxx"  # 有输
 （VitePress + `@sugarat/theme`，与本站构建、部署、依赖全部无关）。
 它把 `src/content/学习笔记` 只读同步到自己的 `docs/posts`，操作手册在该目录的 `DEPLOY.md`。
 **本站任何 `pnpm build` / `pnpm check` / biome 都不覆盖它**，改它不影响本站。
+
+### 23.1 2026-11-28 解耦后的实际结构
+
+```
+B:\Obsidian Vault Collection\Obsidian Vault content\   ← Obsidian 库根（content-backup 私有仓库）
+├── .git\                      备份仓（obsidian-git 每 30 分钟 commit，自动 push）
+├── .obsidian\
+├── blog\                      博客内容（10 个集合目录）
+│   ├── 文章\ 页面\ 动态\ 影视\ 足迹\ 相册\ 导航\ 资源\ 友链\（含 墓碑）\ 更新日志\
+├── 学习笔记\ 本地笔记\ 工作\ 公众号\ 临时收集\ …（博客不跟踪）
+└── AGENTS.md                  库级规范
+
+E:\GithubProgect\MyRunProject\dumplingandcakeblog\     ← 博客主仓（公开）
+└── src\content\  →（junction）→ B:\…\blog\            只看得见 blog/ 的 10 个目录
+```
+
+| | 博客主仓 | 备份仓（`B:\…\Obsidian Vault content\.git`） |
+|---|---|---|
+| 能看到的内容 | 仅 `src\content\` 下 10 个集合目录（700 个文件） | 整个 Obsidian 库（含 blog、学习笔记、`.obsidian`） |
+| 路径规则 | 根 `.gitignore`：`src/content/*` 全忽略 + 10 条 `!src/content/xx/` 放行（未变） | `.git/info/exclude` 黑名单 |
+| 新增公开集 | `.gitignore` 加放行 + `content.config.ts` + 路由 + `.pages.yml` | 自动全量备份，无需改动 |
+
+**新铁律：**
+
+1. `src/content` 是 **junction**，不是真实目录。它指向 `B:\…\Obsidian Vault content\blog`；
+   想改博客内容，去 Obsidian 的 `blog/` 下改，或通过 `src/content/...` 改（同一份文件）。
+2. **禁止在 `src\content`（即 `blog/`）下放 `.gitignore`**：博客主仓会读它，导致集合目录被整体忽略。
+3. **命令作用域**：在 `dumplingandcakeblog\` 里 `git` 是博客主仓；在 `B:\…\Obsidian Vault content\` 里
+   是备份仓；在 `src\content\` 里跑 git 只会看到 junction 指向的 blog 内容，`git status` 属于博客主仓。
+4. **B 盘盘符或路径变化时**：junction 会失效，博客仓会瞬间看到 700 个删除。
+   **不要提交**，先重建链接：
+   ```powershell
+   cmd /c rmdir "E:\GithubProgect\MyRunProject\dumplingandcakeblog\src\content"
+   cmd /c mklink /J "…\src\content" "B:\Obsidian Vault Collection\Obsidian Vault content\blog"
+   ```
+5. **禁止在博客仓根跑 `git clean -xdf`**：风险范围虽然缩小到 `blog/`，但仍会删掉
+   `assets/` 里未被跟踪的图片。
+6. 库根的 `AGENTS.md` **不再位于 `src/content/AGENTS.md`**；它只在
+   `B:\…\Obsidian Vault content\AGENTS.md`。
+
+**验证：**
+
+```powershell
+# 链接指向
+(Get-Item "src\content" -Force).Target        # 应为 …\Obsidian Vault content\blog
+
+# 集合跟踪、非集合忽略
+git check-ignore -v "src/content/文章/技术分享/x.md"       # 无输出 = 跟踪
+git check-ignore -v --no-index "src/content/随机/x.md"      # 有输出 = 忽略
+
+# 博客仓只应有 700 个内容文件
+(git ls-files "src/content" | Measure-Object).Count
+```
+
+**关联项目路径已同步**：`dumplingandcake-notes` 的 `DEFAULT_SRC`、字体脚本、`AGENTS.md`、`DEPLOY.md`
+都改为 `B:\Obsidian Vault Collection\Obsidian Vault content\学习笔记`（不再经过 `src/content` 中转）。

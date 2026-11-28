@@ -6,7 +6,8 @@
 
 ## 开工前
 
-- 写/改内容（文章、动态、友链、更新日志、导航……）先读 **`src/content/AGENTS.md`**：那里的 schema / 字段坑比代码坑更容易静默搞坏页面。⚠️ 该文件只在本地备份仓里，**主仓不跟踪**，新 clone 可能没有。
+- 写/改内容（文章、动态、友链、更新日志、导航……）先读库根的 **`B:\Obsidian Vault Collection\Obsidian Vault content\AGENTS.md`**：那里的 schema / 字段坑比代码坑更容易静默搞坏页面。⚠️ 该文件只在本地库（备份仓）里，**主仓不跟踪**，新 clone 可能没有。
+- `src/content` 是指向 `B:\…\Obsidian Vault content\blog` 的 **junction**；博客内容实际住在库里的 `blog/`，不再等于库根（2026-11-28 解耦，见 CLAUDE.md §23.1）。
 - 在 `src/content/` 里跑的 `pnpm` 一定失败（没有 package.json）；所有命令回仓库根执行。
 - 技术栈：Astro 7.1.6 + Svelte 5（runes）+ Tailwind v4，**无 `tailwind.config.js`**，勿照 Astro 6 / Tailwind 3 文档操作。
 - pnpm 9.14 是唯一包管理器（`preinstall` only-allow 强制），Node ≥ 22。
